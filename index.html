@@ -64,7 +64,32 @@ const vrButton=VRButton.createButton(renderer);
 document.body.appendChild(vrButton);
 scene.add(new THREE.HemisphereLight(0xffffff,0x172033,1.5));const sun=new THREE.DirectionalLight(0xffffff,2);sun.position.set(3,8,2);scene.add(sun);
 const player=new THREE.Group();player.position.set(0,0,4);player.add(camera);scene.add(player);
-const floor=new THREE.Mesh(new THREE.BoxGeometry(14,.12,14),new THREE.MeshStandardMaterial({color:0x28304a,roughness:.85}));floor.position.y=-.06;scene.add(floor);
+
+// Generic first-person test body. Visual only, no gameplay/input changes.
+const playerBody=new THREE.Group();
+const bodyMat=new THREE.MeshStandardMaterial({color:0x64748b,roughness:.9});
+const skinMat=new THREE.MeshStandardMaterial({color:0xd6a77a,roughness:.9});
+const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.32,.7,6,12),bodyMat);
+torso.position.set(0,.78,0);
+playerBody.add(torso);
+const head=new THREE.Mesh(new THREE.SphereGeometry(.22,16,12),skinMat);
+head.position.set(0,1.48,0);
+playerBody.add(head);
+const armGeo=new THREE.CapsuleGeometry(.09,.5,5,8);
+for(const side of [-1,1]){
+  const arm=new THREE.Mesh(armGeo,bodyMat);
+  arm.position.set(side*.4,.92,0);
+  arm.rotation.z=side*.18;
+  playerBody.add(arm);
+}
+const legGeo=new THREE.CapsuleGeometry(.11,.55,5,8);
+for(const side of [-1,1]){
+  const leg=new THREE.Mesh(legGeo,bodyMat);
+  leg.position.set(side*.16,.25,0);
+  playerBody.add(leg);
+}
+player.add(playerBody);
+const floor=new THREE.Mesh(new THREE.BoxGeometry(14,.12,14),new THREE.MeshStandardMaterial({color:0x28304a,roughness:.85}));new THREE.Mesh(new THREE.BoxGeometry(14,.12,14),new THREE.MeshStandardMaterial({color:0x28304a,roughness:.85}));floor.position.y=-.06;scene.add(floor);
 const wallMat=new THREE.MeshStandardMaterial({color:0x3d4660});for(const [x,z,sx,sz] of [[0,-7,14,.15],[-7,0,.15,14],[7,0,.15,14],[0,7,14,.15]]){const w=new THREE.Mesh(new THREE.BoxGeometry(sx,3,sz),wallMat);w.position.set(x,1.5,z);scene.add(w)}
 for(const [x,z] of [[-3,-2],[3,-2],[-2,1],[2,2],[0,-4]]){const o=new THREE.Mesh(new THREE.BoxGeometry(1.2,1.2,1.2),new THREE.MeshStandardMaterial({color:0x64748b}));o.position.set(x,.6,z);scene.add(o)}
 const targets=[];const targetHomes=[[-4,-5],[0,-5],[4,-5],[-4,0],[4,0]];for(const [x,z] of targetHomes){const t=new THREE.Mesh(new THREE.CylinderGeometry(.55,.55,.15,24),new THREE.MeshStandardMaterial({color:0xf472b6,emissive:0x4a102d,emissiveIntensity:.5}));t.rotation.x=Math.PI/2;t.position.set(x,1.3,z);scene.add(t);targets.push(t)}
