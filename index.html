@@ -613,7 +613,7 @@ const dt=Math.min(clock.getDelta(),.05);shotCooldown=Math.max(0,shotCooldown-dt)
   }
   if(p.userData.life<=0)inkParticleGroup.remove(p);
 }for(const m of targetMotion){if(m.t.material.color.getHex()!==0x22d3ee){m.t.position.x=m.homeX+Math.sin(performance.now()*.0012+m.phase)*.65;m.t.position.y=1.3+Math.sin(performance.now()*.0017+m.phase)*.18}}updateGamepadStatus();if(debugMode){for(const m of targetMotion)m.t.scale.setScalar(1.05+Math.sin(performance.now()*.004+m.phase)*.08);}const pad=controllerInput();const jc=joyconInput();const touchX=(keys.has("right")?1:0)-(keys.has("left")?1:0);const touchZ=(keys.has("down")?1:0)-(keys.has("up")?1:0);const inputX=Math.abs(jc.x)>.15?jc.x:(Math.abs(pad.x)>.15?pad.x:touchX);const inputZ=Math.abs(jc.z)>.15?jc.z:(Math.abs(pad.z)>.15?pad.z:touchZ);const inputLen=Math.hypot(inputX,inputZ);
-if(debugMode){arenaRing.material.opacity=.38;}else{arenaRing.material.opacity=.24;}
+
 const lookCamera=renderer.xr.isPresenting?renderer.xr.getCamera():camera;
 const lookForward=new THREE.Vector3(0,0,-1).applyQuaternion(lookCamera.quaternion);
 lookForward.y=0;
