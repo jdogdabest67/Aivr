@@ -511,7 +511,7 @@ lookForward.y=0;
 if(lookForward.lengthSq()>.0001){
   lookForward.normalize();
   const desiredYaw=Math.atan2(lookForward.x,lookForward.z);
-  player.rotation.y=THREE.MathUtils.damp(player.rotation.y,desiredYaw,9,dt);
+  playerBody.rotation.y=THREE.MathUtils.damp(playerBody.rotation.y,desiredYaw,9,dt);
 }
 const armInput=getArmTestInput();updateTestArms(armInput.x,armInput.z);let targetVX=0,targetVZ=0;if(inputLen>.01){
   targetVX=inputX/inputLen;
