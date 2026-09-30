@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Ink Arena VR</title>
+<title>SPLATVR // Inkbound</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 INK ARENA VR</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // INKBOUND</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -63,6 +63,9 @@ updateCameraTrackingSupport();
 setCameraTrackingUI();
 
 const armTestToggle=document.getElementById("armTestToggle");
+const debugToggle=document.getElementById("debugToggle");
+let debugMode=false;
+debugToggle.addEventListener("click",()=>{debugMode=!debugMode;debugToggle.classList.toggle("on",debugMode);debugToggle.setAttribute("aria-pressed",String(debugMode));debugToggle.textContent=debugMode?"🧪 DEBUG: ON":"🧪 DEBUG: OFF";document.getElementById("status").textContent=debugMode?"DEBUG ON • Targets + motion":"Ready";});
 let armTestMode=false;
 armTestToggle.addEventListener("click",()=>{
   armTestMode=!armTestMode;
@@ -159,7 +162,10 @@ renderCube.castShadow=true;
 scene.add(renderCube);
 const targets=[];const targetHomes=[[-4,-5],[0,-5],[4,-5],[-4,0],[4,0]];for(const [x,z] of targetHomes){const t=new THREE.Mesh(new THREE.CylinderGeometry(.55,.55,.15,24),new THREE.MeshStandardMaterial({color:0xf472b6,emissive:0x4a102d,emissiveIntensity:.5}));t.rotation.x=Math.PI/2;t.position.set(x,1.3,z);scene.add(t);targets.push(t)}
 const targetMotion=targets.map((t,i)=>({t,homeX:t.position.x,homeZ:t.position.z,phase:i*1.7}));
-const inkGroup=new THREE.Group();scene.add(inkGroup);const inkMat=new THREE.MeshStandardMaterial({color:0x22d3ee,emissive:0x064e5b,emissiveIntensity:.45,transparent:true,opacity:.9,roughness:.7});
+const inkGroup=new THREE.Group();scene.add(inkGroup);
+const inkParticleGroup=new THREE.Group();scene.add(inkParticleGroup);
+const inkParticleMat=new THREE.MeshBasicMaterial({color:0x67e8f9,transparent:true,opacity:.95});
+const inkMat=new THREE.MeshStandardMaterial({color:0x22d3ee,emissive:0x064e5b,emissiveIntensity:.45,transparent:true,opacity:.9,roughness:.7});
 let inkCount=0,targetCount=0,booyahCount=0;let inkArea=0,shotCooldown=0;
 
 // Squid form: calibrate the headset height after entering VR, then detect a deliberate crouch.
@@ -189,12 +195,41 @@ function updateSquidForm(){
   }
 }
 function updateStats(){document.getElementById("stats").textContent="Ink: "+inkCount+" • Targets: "+targetCount+"/5 • Paint: "+inkArea+"% • Booyah: "+booyahCount}
+function spawnInkTrail(start,end){
+  const steps=7;
+  for(let i=1;i<steps;i++){
+    const t=i/steps;
+    const p=start.clone().lerp(end,t);
+    p.x+=(Math.random()-.5)*.08;
+    p.y+=(Math.random()-.5)*.08;
+    p.z+=(Math.random()-.5)*.08;
+    const s=.035+Math.random()*.045;
+    const drop=new THREE.Mesh(new THREE.SphereGeometry(s,7,5),inkParticleMat);
+    drop.position.copy(p);
+    drop.userData.life=.28+Math.random()*.18;
+    drop.userData.maxLife=drop.userData.life;
+    drop.userData.velocity=new THREE.Vector3((Math.random()-.5)*.7,.35+Math.random()*.65,(Math.random()-.5)*.7);
+    inkParticleGroup.add(drop);
+  }
+}
 function makeInk(point){const size=.35+Math.random()*.65;inkArea=Math.min(100,Math.round(inkGroup.children.length/1.8));const m=new THREE.Mesh(new THREE.CircleGeometry(size,20),inkMat);m.rotation.x=-Math.PI/2;m.position.set(point.x,.012,point.z);m.scale.x=.7+Math.random()*.6;m.scale.y=.7+Math.random()*.6;inkGroup.add(m);inkCount++;if(inkGroup.children.length>180)inkGroup.remove(inkGroup.children[0]);updateStats()}
 const raycaster=new THREE.Raycaster();
-function shoot(){if(shotCooldown>0)return;shotCooldown=.18;raycaster.setFromCamera(new THREE.Vector2(0,0),camera);const hits=raycaster.intersectObjects([floor,...targets],false);if(!hits.length)return;const hit=hits[0];if(hit.object!==floor&&hit.object.material.color.getHex()!==0x22d3ee){hit.object.material.color.set(0x22d3ee);hit.object.material.emissive.set(0x064e5b);hit.object.material.emissiveIntensity=.9;targetCount++}makeInk(hit.point);document.getElementById("status").textContent="INK!";setTimeout(()=>document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE":"Ready",180);updateStats();if(targetCount===targets.length)document.getElementById("status").textContent="ALL TARGETS INKED! 🎯"}
+function shoot(){
+  if(shotCooldown>0)return;
+  shotCooldown=.18;
+  raycaster.setFromCamera(new THREE.Vector2(0,0),renderer.xr.isPresenting?renderer.xr.getCamera():camera);
+  const origin=new THREE.Vector3();
+  const dir=new THREE.Vector3();
+  const shootCamera=renderer.xr.isPresenting?renderer.xr.getCamera():camera;
+  shootCamera.getWorldPosition(origin);
+  shootCamera.getWorldDirection(dir);
+  const hits=raycaster.intersectObjects([floor,...targets],false);
+  if(!hits.length)return;
+  const hit=hits[0];
+  spawnInkTrail(origin,hit.point);if(hit.object!==floor&&hit.object.material.color.getHex()!==0x22d3ee){hit.object.material.color.set(0x22d3ee);hit.object.material.emissive.set(0x064e5b);hit.object.material.emissiveIntensity=.9;targetCount++}makeInk(hit.point);document.getElementById("status").textContent="INK!";setTimeout(()=>document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE":"Ready",180);updateStats();if(targetCount===targets.length)document.getElementById("status").textContent="ALL TARGETS INKED! 🎯"}
 function booyah(){booyahCount++;updateStats();const f=document.getElementById("booyahFlash");f.classList.remove("show");void f.offsetWidth;f.classList.add("show");document.getElementById("status").textContent="BOOYAH!";setTimeout(()=>document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE":"Ready",650)}
 document.getElementById("fire").addEventListener("click",shoot);document.getElementById("booyah").addEventListener("click",booyah);
-function resetGame(){targetCount=0;inkCount=0;inkArea=0;booyahCount=0;shotCooldown=0;for(const {t,homeX,homeZ} of targetMotion){t.position.x=homeX;t.position.z=homeZ;t.material.color.set(0xf472b6);t.material.emissive.set(0x4a102d);t.material.emissiveIntensity=.5}while(inkGroup.children.length)inkGroup.remove(inkGroup.children[0]);player.position.set(0,0,4);squidForm=false;updateStats();document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready"}
+function resetGame(){targetCount=0;inkCount=0;inkArea=0;booyahCount=0;shotCooldown=0;for(const {t,homeX,homeZ} of targetMotion){t.position.x=homeX;t.position.z=homeZ;t.material.color.set(0xf472b6);t.material.emissive.set(0x4a102d);t.material.emissiveIntensity=.5}while(inkGroup.children.length)inkGroup.remove(inkGroup.children[0]);while(inkParticleGroup.children.length)inkParticleGroup.remove(inkParticleGroup.children[0]);player.position.set(0,0,4);squidForm=false;updateStats();document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready"}
 document.getElementById("reset").addEventListener("click",resetGame);
 renderer.xr.addEventListener("sessionstart",()=>{squidForm=false;squidHeightReady=false;squidBaselineSamples=0;squidBaselineSum=0;squidEnterY=1.6;if(xrCameraTracking.mode==="immersive-ar"){document.getElementById("status").textContent="CAMERA TRACKING ACTIVE 📷 • Calibrating...";}else{document.getElementById("status").textContent="VR ACTIVE • Calibrating...";}});
 renderer.xr.addEventListener("sessionend",()=>{
@@ -467,7 +502,18 @@ function getArmTestInput(){
   return {x:0,z:0};
 }
 
-function animate(){renderCube.rotation.x+=.012;renderCube.rotation.y+=.018;const dt=Math.min(clock.getDelta(),.05);shotCooldown=Math.max(0,shotCooldown-dt);updateSquidForm();for(const m of targetMotion){if(m.t.material.color.getHex()!==0x22d3ee){m.t.position.x=m.homeX+Math.sin(performance.now()*.0012+m.phase)*.65;m.t.position.y=1.3+Math.sin(performance.now()*.0017+m.phase)*.18}}updateGamepadStatus();const pad=controllerInput();const jc=joyconInput();const touchX=(keys.has("right")?1:0)-(keys.has("left")?1:0);const touchZ=(keys.has("down")?1:0)-(keys.has("up")?1:0);const inputX=Math.abs(jc.x)>.15?jc.x:(Math.abs(pad.x)>.15?pad.x:touchX);const inputZ=Math.abs(jc.z)>.15?jc.z:(Math.abs(pad.z)>.15?pad.z:touchZ);const inputLen=Math.hypot(inputX,inputZ);const armInput=getArmTestInput();updateTestArms(armInput.x,armInput.z);let targetVX=0,targetVZ=0;if(inputLen>.01){
+function animate(){
+renderCube.rotation.x+=.012;renderCube.rotation.y+=.018;
+const dt=Math.min(clock.getDelta(),.05);shotCooldown=Math.max(0,shotCooldown-dt);updateSquidForm();for(let i=inkParticleGroup.children.length-1;i>=0;i--){const p=inkParticleGroup.children[i];p.userData.life-=dt;p.position.addScaledVector(p.userData.velocity,dt);p.userData.velocity.y-=1.8*dt;p.scale.setScalar(Math.max(.15,p.userData.life/p.userData.maxLife));if(p.userData.life<=0)inkParticleGroup.remove(p);}for(const m of targetMotion){if(m.t.material.color.getHex()!==0x22d3ee){m.t.position.x=m.homeX+Math.sin(performance.now()*.0012+m.phase)*.65;m.t.position.y=1.3+Math.sin(performance.now()*.0017+m.phase)*.18}}updateGamepadStatus();if(debugMode){for(const m of targetMotion)m.t.scale.setScalar(1.05+Math.sin(performance.now()*.004+m.phase)*.08);}const pad=controllerInput();const jc=joyconInput();const touchX=(keys.has("right")?1:0)-(keys.has("left")?1:0);const touchZ=(keys.has("down")?1:0)-(keys.has("up")?1:0);const inputX=Math.abs(jc.x)>.15?jc.x:(Math.abs(pad.x)>.15?pad.x:touchX);const inputZ=Math.abs(jc.z)>.15?jc.z:(Math.abs(pad.z)>.15?pad.z:touchZ);const inputLen=Math.hypot(inputX,inputZ);
+const lookCamera=renderer.xr.isPresenting?renderer.xr.getCamera():camera;
+const lookForward=new THREE.Vector3(0,0,-1).applyQuaternion(lookCamera.quaternion);
+lookForward.y=0;
+if(lookForward.lengthSq()>.0001){
+  lookForward.normalize();
+  const desiredYaw=Math.atan2(lookForward.x,lookForward.z);
+  player.rotation.y=THREE.MathUtils.damp(player.rotation.y,desiredYaw,9,dt);
+}
+const armInput=getArmTestInput();updateTestArms(armInput.x,armInput.z);let targetVX=0,targetVZ=0;if(inputLen>.01){
   targetVX=inputX/inputLen;
   targetVZ=inputZ/inputLen;
   const speed=squidForm?4.2:2.4;
