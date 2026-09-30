@@ -41,20 +41,129 @@ document.getElementById("reset").addEventListener("click",resetGame);
 renderer.xr.addEventListener("sessionstart",()=>{squidForm=false;squidHeightReady=false;squidBaselineSamples=0;squidBaselineSum=0;squidEnterY=1.6;document.getElementById("status").textContent="VR ACTIVE • Look + ink"});
 renderer.xr.addEventListener("sessionend",()=>document.getElementById("status").textContent="Ready");
 const keys=new Set();const moveButtons={up:"up",down:"down",left:"left",right:"right"};document.querySelectorAll("[data-move]").forEach(b=>{const k=moveButtons[b.dataset.move];const down=e=>{e.preventDefault();keys.add(k)};const up=e=>{e.preventDefault();keys.delete(k)};b.addEventListener("pointerdown",down);b.addEventListener("pointerup",up);b.addEventListener("pointercancel",up);b.addEventListener("pointerleave",up)});
-let controllerIndex=null,booyahLatch=false;const joycons=new Map();const JOYCON_VENDOR=0x057e;const JOYCON_PRODUCTS=new Set([0x2006,0x2007]);const joyconState={x:0,z:0,fire:false,booyah:false};
-function joyconStick(data,offset){const x=data.getUint8(offset)|((data.getUint8(offset+1)&0x0f)<<8);const y=(data.getUint8(offset+1)>>4)|(data.getUint8(offset+2)<<4);return{x:THREE.MathUtils.clamp((x-2048)/2048,-1,1),y:THREE.MathUtils.clamp((2048-y)/2048,-1,1)}}
-function handleJoyconReport(event){const d=event.data;if(event.reportId!==0x30||d.byteLength<12)return;const bR=d.getUint8(3),bL=d.getUint8(5);const device=event.device;const isLeft=device.productId===0x2006;const stick=joyconStick(d,isLeft?6:9);if(isLeft){joyconState.x=stick.x;joyconState.z=-stick.y}else if(Math.abs(joyconState.x)<.15&&Math.abs(joyconState.z)<.15){joyconState.x=stick.x;joyconState.z=-stick.y}joyconState.fire=!!(bR&0x08)||!!(bR&0x40)||!!(bR&0x80)||!!(bL&0x40)||!!(bL&0x80);joyconState.booyah=!!(bL&0x01)}
-async function setupJoyCon(device){if(!device)return;if(!device.opened)await device.open();device.addEventListener("inputreport",handleJoyconReport);try{await device.sendReport(0x01,new Uint8Array([1,0,1,64,64,0,1,64,64,0x40,0x01]));await new Promise(r=>setTimeout(r,500));await device.sendReport(0x01,new Uint8Array([1,0,64,64,0,1,64,64,0x03,0x30]))}catch(err){console.warn("Joy-Con setup command failed",err)}joycons.set(device.productId,device);document.getElementById("joycon").textContent=joycons.size>1?"JOY-CONS CONNECTED":"JOY-CON CONNECTED";document.getElementById("status").textContent="JOY-CON READY 🕹️"}
-async function connectJoyCon(){const status=document.getElementById("status");const button=document.getElementById("joycon");if(!("hid" in navigator)){status.textContent="WebHID unavailable in this browser";return}button.disabled=true;button.textContent="REQUESTING PERMISSION…";status.textContent="WAITING FOR JOY-CON PERMISSION…";try{const devices=await navigator.hid.requestDevice({filters:[]});if(devices.length){status.textContent="JOY-CON SELECTED • CONNECTING…";await setupJoyCon(devices[0])}else{status.textContent="NO JOY-CON SELECTED";button.textContent="CONNECT JOY-CON";button.disabled=false}}catch(err){status.textContent=err.name==="NotAllowedError"?"JOY-CON PERMISSION CANCELED":("Joy-Con connection failed: "+(err.message||err.name));button.textContent="CONNECT JOY-CON";button.disabled=false}}
-document.getElementById("joycon").addEventListener("click",connectJoyCon);
-if("hid" in navigator){navigator.hid.addEventListener("disconnect",e=>{joycons.delete(e.device.productId);if(!joycons.size){joyconState.x=0;joyconState.z=0;document.getElementById("joycon").textContent="CONNECT JOY-CON";document.getElementById("joycon").disabled=false}});navigator.hid.getDevices().then(devices=>devices.filter(d=>d.vendorId===JOYCON_VENDOR&&JOYCON_PRODUCTS.has(d.productId)).forEach(setupJoyCon)).catch(()=>{})}
-let squidForm=false,squidEnterY=1.6,squidHeightReady=false,squidBaselineSamples=0,squidBaselineSum=0;const SQUID_ENTER_DROP=.28,SQUID_EXIT_DROP=.12;
-function updateSquidForm(){if(!renderer.xr.isPresenting)return;const xrCamera=renderer.xr.getCamera(camera);const headY=xrCamera.position.y;if(!squidHeightReady){squidBaselineSum+=headY;squidBaselineSamples++;if(squidBaselineSamples>=20){squidEnterY=squidBaselineSum/squidBaselineSamples;squidHeightReady=true}return}if(!squidForm&&headY<squidEnterY-SQUID_ENTER_DROP){squidForm=true;document.getElementById("status").textContent="SQUID FORM! 🦑"}else if(squidForm&&headY>squidEnterY-SQUID_EXIT_DROP){squidForm=false;document.getElementById("status").textContent="VR ACTIVE • Look + ink"}}
-function getControllers(){return navigator.getGamepads?navigator.getGamepads():[]}function getController(){const pads=getControllers();if(controllerIndex!==null&&pads[controllerIndex]?.connected)return pads[controllerIndex];for(const gp of pads)if(gp?.connected){controllerIndex=gp.index;return gp}controllerIndex=null;return null}function updateGamepadStatus(){const pads=getControllers().filter(g=>g?.connected);const status=document.getElementById("status");if(pads.length){const names=pads.map(g=>g.id||"GAMEPAD").join(" + ");if(!joycons.size)status.textContent=`GAMEPAD: ${names}`}else if(!joycons.size&&status.textContent.startsWith("GAMEPAD:"))status.textContent="VR ACTIVE • Look + ink"}
-addEventListener("gamepadconnected",e=>{controllerIndex=e.gamepad.index;updateGamepadStatus()});addEventListener("gamepaddisconnected",e=>{if(controllerIndex===e.gamepad.index)controllerIndex=null;updateGamepadStatus()});
-let joyconFireLatch=false,joyconBooyahLatch=false;
-function joyconInput(){const fire=joyconState.fire,down=joyconState.booyah;if(fire&&!joyconFireLatch)shoot();if(down&&!joyconBooyahLatch)booyah();joyconFireLatch=fire;joyconBooyahLatch=down;return{x:joyconState.x,z:joyconState.z}}
-function controllerInput(){const gp=getController();if(!gp)return{x:0,z:0};let x=gp.axes[0]||0,z=gp.axes[1]||0;if(Math.abs(x)<.15&&Math.abs(z)<.15){if(gp.buttons[14]?.pressed)x=-1;if(gp.buttons[15]?.pressed)x=1;if(gp.buttons[12]?.pressed)z=-1;if(gp.buttons[13]?.pressed)z=1}const down=!!gp.buttons[13]?.pressed;if(down&&!booyahLatch)booyah();booyahLatch=down;return{x,z}}
+let controllerIndex = null;
+let booyahLatch = false;
+
+// Standard Gamepad API mapping constants for standard controllers/Joy-Cons
+const BUTTON_BOOYAH = 11;
+const DPAD_UP = 12;
+const DPAD_DOWN = 13;
+const DPAD_LEFT = 14;
+const DPAD_RIGHT = 15;
+const AXIS_DEADZONE = 0.15;
+
+function getControllers() {
+  return navigator.getGamepads ? Array.from(navigator.getGamepads()) : [];
+}
+
+function getController() {
+  const pads = getControllers();
+
+  if (controllerIndex !== null && pads[controllerIndex]?.connected) {
+    return pads[controllerIndex];
+  }
+
+  for (const gp of pads) {
+    if (gp?.connected) {
+      controllerIndex = gp.index;
+      return gp;
+    }
+  }
+
+  controllerIndex = null;
+  return null;
+}
+
+function updateGamepadStatus() {
+  const pads = getControllers().filter(g => g?.connected);
+  const status = document.getElementById("status");
+  if (!status) return;
+
+  if (pads.length) {
+    const names = pads.map(g => g.id || "GAMEPAD").join(" + ");
+    if (typeof joycons === "undefined" || !joycons.size) {
+      status.textContent = `GAMEPAD: ${names}`;
+    }
+  } else if (
+    (typeof joycons === "undefined" || !joycons.size) &&
+    status.textContent.startsWith("GAMEPAD:")
+  ) {
+    status.textContent = "VR ACTIVE • Look + ink";
+  }
+}
+
+window.addEventListener("gamepadconnected", e => {
+  controllerIndex = e.gamepad.index;
+  updateGamepadStatus();
+});
+
+window.addEventListener("gamepaddisconnected", e => {
+  if (controllerIndex === e.gamepad.index) {
+    controllerIndex = null;
+  }
+  updateGamepadStatus();
+});
+
+let joyconFireLatch = false;
+let joyconBooyahLatch = false;
+
+function joyconInput() {
+  if (typeof joyconState === "undefined") {
+    return { x: 0, z: 0 };
+  }
+
+  const fire = !!joyconState.fire;
+  const booyahPressed = !!joyconState.booyah;
+
+  if (fire && !joyconFireLatch && typeof shoot === "function") {
+    shoot();
+  }
+  if (booyahPressed && !joyconBooyahLatch && typeof booyah === "function") {
+    booyah();
+  }
+
+  joyconFireLatch = fire;
+  joyconBooyahLatch = booyahPressed;
+
+  let x = joyconState.x || 0;
+  let z = joyconState.z || 0;
+
+  if (Math.abs(x) < AXIS_DEADZONE) x = 0;
+  if (Math.abs(z) < AXIS_DEADZONE) z = 0;
+
+  return { x, z };
+}
+
+function controllerInput() {
+  const gp = getController();
+
+  if (!gp) {
+    return { x: 0, z: 0 };
+  }
+
+  let x = gp.axes[0] || 0;
+  let z = gp.axes[1] || 0;
+
+  if (Math.abs(x) < AXIS_DEADZONE) x = 0;
+  if (Math.abs(z) < AXIS_DEADZONE) z = 0;
+
+  if (x === 0 && z === 0) {
+    if (gp.buttons[DPAD_LEFT]?.pressed) x = -1;
+    if (gp.buttons[DPAD_RIGHT]?.pressed) x = 1;
+    if (gp.buttons[DPAD_UP]?.pressed) z = -1;
+    if (gp.buttons[DPAD_DOWN]?.pressed) z = 1;
+  }
+
+  const booyahPressed = !!gp.buttons[BUTTON_BOOYAH]?.pressed;
+
+  if (booyahPressed && !booyahLatch && typeof booyah === "function") {
+    booyah();
+  }
+
+  booyahLatch = booyahPressed;
+
+  return { x, z };
+}
 const clock=new THREE.Clock();const moveVelocity=new THREE.Vector3();
 function animate(){const dt=Math.min(clock.getDelta(),.05);shotCooldown=Math.max(0,shotCooldown-dt);updateSquidForm();for(const m of targetMotion){if(m.t.material.color.getHex()!==0x22d3ee){m.t.position.x=m.homeX+Math.sin(performance.now()*.0012+m.phase)*.65;m.t.position.y=1.3+Math.sin(performance.now()*.0017+m.phase)*.18}}updateGamepadStatus();const pad=controllerInput();const jc=joyconInput();const touchX=(keys.has("right")?1:0)-(keys.has("left")?1:0);const touchZ=(keys.has("down")?1:0)-(keys.has("up")?1:0);const inputX=Math.abs(jc.x)>.15?jc.x:(Math.abs(pad.x)>.15?pad.x:touchX);const inputZ=Math.abs(jc.z)>.15?jc.z:(Math.abs(pad.z)>.15?pad.z:touchZ);const inputLen=Math.hypot(inputX,inputZ);let targetVX=0,targetVZ=0;if(inputLen>.01){targetVX=inputX/inputLen;targetVZ=inputZ/inputLen;const speed=squidForm?4.2:2.4;const dir=new THREE.Vector3(targetVX,0,targetVZ);dir.applyQuaternion(player.quaternion);targetVX=dir.x*speed;targetVZ=dir.z*speed}const response=inputLen>.01?10:14;moveVelocity.x=THREE.MathUtils.damp(moveVelocity.x,targetVX,response,dt);moveVelocity.z=THREE.MathUtils.damp(moveVelocity.z,targetVZ,response,dt);player.position.x+=moveVelocity.x*dt;player.position.z+=moveVelocity.z*dt;player.position.x=THREE.MathUtils.clamp(player.position.x,-6.2,6.2);player.position.z=THREE.MathUtils.clamp(player.position.z,-6.2,6.2);renderer.render(scene,camera)}
 renderer.setAnimationLoop(animate);addEventListener("resize",()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
