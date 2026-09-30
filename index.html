@@ -439,16 +439,11 @@ function joyconInput() {
 }
 
 function getBallTriggerState() {
-  let leftTrigger = false;
-  let rightTrigger = false;
+  let leftTrigger = !!joyconState.leftTrigger;
   for (const gp of getControllers().filter(g => g?.connected)) {
     leftTrigger ||= !!gp.buttons?.[6]?.pressed;
-    rightTrigger ||= !!gp.buttons?.[7]?.pressed;
   }
-  // Joy-Con ZL / ZR are shoulder triggers, not face buttons.
-  leftTrigger ||= !!joyconState.leftTrigger;
-  rightTrigger ||= !!joyconState.fire;
-  return {leftTrigger,rightTrigger};
+  return {leftTrigger};
 }
 
 function updateBall(leftTrigger, dt) {
