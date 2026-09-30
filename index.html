@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // Cube • build 2026-09-30c</title>
+<title>SPLATVR // Cube • build 2026-09-30d</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -170,10 +170,10 @@ function makePatchNotesCubeNote(){
   ctx.fillStyle="#ffffff";
   ctx.font="600 38px system-ui, sans-serif";
   const lines=[
-    "• Repo update test patch",
-    "• INKBOUND renamed to CUBE",
-    "• Patch notes stay on a normal cube",
-    "• Magenta cube remains untouched"
+    "• Fixed Joy-Con trigger report setup",
+    "• ZL now uses the real 0x80 bit",
+    "• Patch notes moved to paper",
+    "• Paper sits in front of the magenta cube"
   ];
   lines.forEach((line,i)=>ctx.fillText(line,72,305+i*100));
   ctx.fillStyle="#94a3b8";
@@ -182,11 +182,13 @@ function makePatchNotesCubeNote(){
   const tex=new THREE.CanvasTexture(canvas);
   tex.colorSpace=THREE.SRGBColorSpace;
   const note=new THREE.Mesh(
-    new THREE.PlaneGeometry(1.04,1.04),
+    new THREE.PlaneGeometry(.92,1.08),
     new THREE.MeshBasicMaterial({map:tex,transparent:true})
   );
-  note.position.set(0,.6,-3.395);
-  note.renderOrder=3;
+  // A physical-looking sheet of paper standing in front of the magenta cube.
+  note.position.set(0,.72,-3.48);
+  note.rotation.y=0.035;
+  note.renderOrder=4;
   scene.add(note);
 }
 
@@ -350,11 +352,15 @@ async function setupJoyCon(device) {
   device.addEventListener("inputreport", handleJoyconReport);
 
   try {
-    await device.sendReport(0x01, new Uint8Array([1,0,1,64,64,0,1,64,64,0x40,0x01]));
-    await new Promise(r => setTimeout(r, 500));
-    await device.sendReport(0x01, new Uint8Array([1,0,64,64,0,1,64,64,0x03,0x30]));
+    // Put the Joy-Con into standard full-report mode (0x30).
+    // The old setup packet was malformed, so ZL could exist physically
+    // without ever reaching inputreport.
+    await device.sendReport(0x01, new Uint8Array([
+      0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x03,0x30
+    ]));
+    await new Promise(r => setTimeout(r, 150));
   } catch (err) {
-    console.warn("Joy-Con setup command failed", err);
+    console.warn("Joy-Con report-mode setup failed", err);
   }
 
   joycons.set(device.productId, device);
@@ -480,7 +486,11 @@ function joyconInput() {
 function getBallTriggerState() {
   let leftTrigger = !!joyconState.leftTrigger;
   for (const gp of getControllers().filter(g => g?.connected)) {
+    // Support the common Gamepad layouts for L2/ZL.
     leftTrigger ||= !!gp.buttons?.[6]?.pressed;
+    leftTrigger ||= !!gp.buttons?.[7]?.pressed;
+    leftTrigger ||= (typeof gp.buttons?.[6]?.value === "number" && gp.buttons[6].value > .5);
+    leftTrigger ||= (typeof gp.buttons?.[7]?.value === "number" && gp.buttons[7].value > .5);
   }
   return {leftTrigger};
 }
@@ -490,7 +500,7 @@ function updateBall(leftTrigger, dt) {
   const nearPoint=new THREE.Vector3();
   xrCam.getWorldPosition(nearPoint);
 
-  if (!ballHeld && leftTrigger && !ballGrabLatch && ball.position.distanceTo(nearPoint)<1.15) {
+  if (!ballHeld && leftTrigger && !ballGrabLatch && ball.position.distanceTo(nearPoint)<2.8) {
     ballHeld=true;
     ballVelocity.set(0,0,0);
   }
