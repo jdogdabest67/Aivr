@@ -34,13 +34,31 @@ const raycaster=new THREE.Raycaster();
 function shoot(){raycaster.setFromCamera(new THREE.Vector2(0,0),camera);const hits=raycaster.intersectObjects([floor,...targets],false);if(!hits.length)return;const hit=hits[0];if(hit.object!==floor&&hit.object.material.color.getHex()!==0x22d3ee){hit.object.material.color.set(0x22d3ee);hit.object.material.emissive.set(0x064e5b);hit.object.material.emissiveIntensity=.9;targetCount++}makeInk(hit.point);document.getElementById("status").textContent="INK!";setTimeout(()=>document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE":"Ready",180);updateStats();if(targetCount===targets.length)document.getElementById("status").textContent="ALL TARGETS INKED! 🎯"}
 function booyah(){booyahCount++;updateStats();const f=document.getElementById("booyahFlash");f.classList.remove("show");void f.offsetWidth;f.classList.add("show");document.getElementById("status").textContent="BOOYAH!";setTimeout(()=>document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE":"Ready",650)}
 document.getElementById("fire").addEventListener("click",shoot);document.getElementById("booyah").addEventListener("click",booyah);
-renderer.xr.addEventListener("sessionstart",()=>document.getElementById("status").textContent="VR ACTIVE • Look + ink");renderer.xr.addEventListener("sessionend",()=>document.getElementById("status").textContent="Ready");
+renderer.xr.addEventListener("sessionstart",()=>{
+ squidForm=false;
+ squidEnterY=camera.position.y;
+ document.getElementById("status").textContent="VR ACTIVE • Look + ink";
+});
+renderer.xr.addEventListener("sessionend",()=>document.getElementById("status").textContent="Ready");
 
 const keys=new Set();
 const moveButtons={up:"up",down:"down",left:"left",right:"right"};
 document.querySelectorAll("[data-move]").forEach(b=>{const k=moveButtons[b.dataset.move];const down=e=>{e.preventDefault();keys.add(k)};const up=e=>{e.preventDefault();keys.delete(k)};b.addEventListener("pointerdown",down);b.addEventListener("pointerup",up);b.addEventListener("pointercancel",up);b.addEventListener("pointerleave",up)});
 
 let controllerIndex=null,booyahLatch=false;
+let squidForm=false,squidEnterY=1.6;
+const SQUID_ENTER_DROP=.32,SQUID_EXIT_DROP=.16;
+function updateSquidForm(){
+ if(!renderer.xr.isPresenting)return;
+ const headY=camera.position.y;
+ if(!squidForm&&headY<squidEnterY-SQUID_ENTER_DROP){
+  squidForm=true;
+  document.getElementById("status").textContent="SQUID FORM! 🦑";
+ }else if(squidForm&&headY>squidEnterY-SQUID_EXIT_DROP){
+  squidForm=false;
+  document.getElementById("status").textContent="VR ACTIVE • Look + ink";
+ }
+}
 function getController(){const pads=navigator.getGamepads?navigator.getGamepads():[];if(controllerIndex!==null&&pads[controllerIndex]?.connected)return pads[controllerIndex];for(const gp of pads)if(gp?.connected){controllerIndex=gp.index;return gp}controllerIndex=null;return null}
 addEventListener("gamepadconnected",e=>controllerIndex=e.gamepad.index);addEventListener("gamepaddisconnected",e=>{if(controllerIndex===e.gamepad.index)controllerIndex=null});
 function controllerInput(){
@@ -53,6 +71,6 @@ function controllerInput(){
  return {x,z};
 }
 const clock=new THREE.Clock();
-function animate(){const dt=Math.min(clock.getDelta(),.05);const pad=controllerInput();const touchX=(keys.has("right")?1:0)-(keys.has("left")?1:0);const touchZ=(keys.has("down")?1:0)-(keys.has("up")?1:0);const x=Math.abs(pad.x)>.15?pad.x:touchX;const z=Math.abs(pad.z)>.15?pad.z:touchZ;if(x||z){const len=Math.hypot(x,z);const dir=new THREE.Vector3(x/len,0,z/len);dir.applyQuaternion(player.quaternion);player.position.addScaledVector(dir,2.4*dt);player.position.x=THREE.MathUtils.clamp(player.position.x,-6.2,6.2);player.position.z=THREE.MathUtils.clamp(player.position.z,-6.2,6.2)}renderer.render(scene,camera)}
+function animate(){const dt=Math.min(clock.getDelta(),.05);updateSquidForm();const pad=controllerInput();const touchX=(keys.has("right")?1:0)-(keys.has("left")?1:0);const touchZ=(keys.has("down")?1:0)-(keys.has("up")?1:0);const x=Math.abs(pad.x)>.15?pad.x:touchX;const z=Math.abs(pad.z)>.15?pad.z:touchZ;if(x||z){const len=Math.hypot(x,z);const dir=new THREE.Vector3(x/len,0,z/len);dir.applyQuaternion(player.quaternion);player.position.addScaledVector(dir,(squidForm?4.2:2.4)*dt);player.position.x=THREE.MathUtils.clamp(player.position.x,-6.2,6.2);player.position.z=THREE.MathUtils.clamp(player.position.z,-6.2,6.2)}renderer.render(scene,camera)}
 renderer.setAnimationLoop(animate);addEventListener("resize",()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
 </script></body></html>
