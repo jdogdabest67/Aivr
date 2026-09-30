@@ -78,6 +78,15 @@ document.body.appendChild(vrButton);
 scene.add(new THREE.HemisphereLight(0xffffff,0x172033,1.5));const sun=new THREE.DirectionalLight(0xffffff,2);sun.position.set(3,8,2);scene.add(sun);
 const player=new THREE.Group();player.position.set(0,0,4);player.add(camera);scene.add(player);
 
+// VR crosshair: the HTML crosshair is not visible inside immersive WebXR.
+// This reticle lives in front of the headset camera, so it renders in VR.
+const vrReticle=new THREE.Mesh(
+  new THREE.RingGeometry(.018,.027,24),
+  new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.9,side:THREE.DoubleSide})
+);
+vrReticle.position.set(0,0,-1);
+camera.add(vrReticle);
+
 // Generic first-person test body. Visual only, no gameplay/input changes.
 const playerBody=new THREE.Group();
 const bodyMat=new THREE.MeshStandardMaterial({color:0x64748b,roughness:.9});
