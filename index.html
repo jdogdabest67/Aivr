@@ -41,6 +41,128 @@ document.getElementById("reset").addEventListener("click",resetGame);
 renderer.xr.addEventListener("sessionstart",()=>{squidForm=false;squidHeightReady=false;squidBaselineSamples=0;squidBaselineSum=0;squidEnterY=1.6;document.getElementById("status").textContent="VR ACTIVE • Look + ink"});
 renderer.xr.addEventListener("sessionend",()=>document.getElementById("status").textContent="Ready");
 const keys=new Set();const moveButtons={up:"up",down:"down",left:"left",right:"right"};document.querySelectorAll("[data-move]").forEach(b=>{const k=moveButtons[b.dataset.move];const down=e=>{e.preventDefault();keys.add(k)};const up=e=>{e.preventDefault();keys.delete(k)};b.addEventListener("pointerdown",down);b.addEventListener("pointerup",up);b.addEventListener("pointercancel",up);b.addEventListener("pointerleave",up)});
+const joycons = new Map();
+const JOYCON_VENDOR = 0x057e;
+const JOYCON_PRODUCTS = new Set([0x2006, 0x2007]);
+const joyconState = {x:0,z:0,fire:false,booyah:false};
+
+function joyconStick(data, offset) {
+  if (data.byteLength < offset + 3) return {x:0,y:0};
+  const x = data.getUint8(offset) | ((data.getUint8(offset+1) & 0x0f) << 8);
+  const y = (data.getUint8(offset+1) >> 4) | (data.getUint8(offset+2) << 4);
+  return {
+    x: THREE.MathUtils.clamp((x-2048)/2048,-1,1),
+    y: THREE.MathUtils.clamp((2048-y)/2048,-1,1)
+  };
+}
+
+function handleJoyconReport(event) {
+  const d = event.data;
+  if (event.reportId !== 0x30 || d.byteLength < 12) return;
+  const device = event.device;
+  const isLeft = device.productId === 0x2006;
+  const stick = joyconStick(d, isLeft ? 6 : 9);
+
+  if (isLeft) {
+    joyconState.x = stick.x;
+    joyconState.z = -stick.y;
+  } else if (Math.abs(joyconState.x) < 0.15 && Math.abs(joyconState.z) < 0.15) {
+    joyconState.x = stick.x;
+    joyconState.z = -stick.y;
+  }
+
+  const bR = d.getUint8(3);
+  const bL = d.getUint8(5);
+  joyconState.fire = !!(bR & 0x08) || !!(bR & 0x40) || !!(bR & 0x80) || !!(bL & 0x40) || !!(bL & 0x80);
+  joyconState.booyah = !!(bL & 0x01);
+}
+
+async function setupJoyCon(device) {
+  if (!device) return;
+  if (!device.opened) await device.open();
+  device.removeEventListener("inputreport", handleJoyconReport);
+  device.addEventListener("inputreport", handleJoyconReport);
+
+  try {
+    await device.sendReport(0x01, new Uint8Array([1,0,1,64,64,0,1,64,64,0x40,0x01]));
+    await new Promise(r => setTimeout(r, 500));
+    await device.sendReport(0x01, new Uint8Array([1,0,64,64,0,1,64,64,0x03,0x30]));
+  } catch (err) {
+    console.warn("Joy-Con setup command failed", err);
+  }
+
+  joycons.set(device.productId, device);
+  const button = document.getElementById("joycon");
+  const status = document.getElementById("status");
+  button.textContent = joycons.size > 1 ? "JOY-CONS CONNECTED" : "JOY-CON CONNECTED";
+  status.textContent = `JOY-CON READY • ${device.productName || "Nintendo controller"} • ${device.vendorId.toString(16)}:${device.productId.toString(16)}`;
+}
+
+async function connectJoyCon() {
+  const status = document.getElementById("status");
+  const button = document.getElementById("joycon");
+
+  if (!("hid" in navigator)) {
+    status.textContent = "WebHID unavailable in this browser";
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = "REQUESTING JOY-CON…";
+  status.textContent = "WAITING FOR JOY-CON PERMISSION…";
+
+  try {
+    const devices = await navigator.hid.requestDevice({
+      filters: [
+        {vendorId: JOYCON_VENDOR, productId: 0x2006},
+        {vendorId: JOYCON_VENDOR, productId: 0x2007}
+      ]
+    });
+
+    if (!devices.length) {
+      status.textContent = "NO JOY-CON EXPOSED TO WEBHID";
+      button.textContent = "CONNECT JOY-CON";
+      button.disabled = false;
+      return;
+    }
+
+    for (const device of devices) {
+      await setupJoyCon(device);
+    }
+    button.disabled = false;
+  } catch (err) {
+    console.error("Joy-Con WebHID error", err);
+    status.textContent = err.name === "NotAllowedError"
+      ? "JOY-CON PERMISSION CANCELED"
+      : `WEBHID ERROR: ${err.message || err.name}`;
+    button.textContent = "CONNECT JOY-CON";
+    button.disabled = false;
+  }
+}
+
+document.getElementById("joycon").addEventListener("click", connectJoyCon);
+
+if ("hid" in navigator) {
+  navigator.hid.addEventListener("disconnect", event => {
+    joycons.delete(event.device.productId);
+    if (!joycons.size) {
+      joyconState.x = 0;
+      joyconState.z = 0;
+      joyconState.fire = false;
+      joyconState.booyah = false;
+      document.getElementById("joycon").textContent = "CONNECT JOY-CON";
+      document.getElementById("joycon").disabled = false;
+      document.getElementById("status").textContent = "JOY-CON DISCONNECTED";
+    }
+  });
+
+  navigator.hid.getDevices()
+    .then(devices => devices
+      .filter(d => d.vendorId === JOYCON_VENDOR && JOYCON_PRODUCTS.has(d.productId))
+      .forEach(setupJoyCon))
+    .catch(() => {});
+}
+
 let controllerIndex = null;
 let booyahLatch = false;
 
