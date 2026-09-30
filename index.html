@@ -96,7 +96,7 @@ camera.add(vrReticle);
 
 // Generic first-person test body. Visual only, no gameplay/input changes.
 const playerBody=new THREE.Group();
-const bodyMat=new THREE.MeshStandardMaterial({color:0x64748b,roughness:.72,metalness:.08});
+const bodyMat=new THREE.MeshStandardMaterial({color:0x64748b,roughness:.68,metalness:.1});
 const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.18,.62,6,12),bodyMat);
 torso.scale.set(.82,1,.68);
 torso.position.set(0,.78,0);
@@ -164,7 +164,7 @@ const targets=[];const targetHomes=[[-4,-5],[0,-5],[4,-5],[-4,0],[4,0]];for(cons
 const targetMotion=targets.map((t,i)=>({t,homeX:t.position.x,homeZ:t.position.z,phase:i*1.7}));
 const inkGroup=new THREE.Group();scene.add(inkGroup);
 const inkParticleGroup=new THREE.Group();scene.add(inkParticleGroup);
-const inkParticleMat=new THREE.MeshBasicMaterial({color:0x67e8f9,transparent:true,opacity:.95});
+const inkParticleMat=new THREE.MeshBasicMaterial({color:0x67e8f9,transparent:true,opacity:.92});
 const inkMat=new THREE.MeshStandardMaterial({color:0x22d3ee,emissive:0x064e5b,emissiveIntensity:.45,transparent:true,opacity:.9,roughness:.7});
 let inkCount=0,targetCount=0,booyahCount=0;let inkArea=0,shotCooldown=0;
 
@@ -212,7 +212,10 @@ function spawnInkTrail(start,end){
     inkParticleGroup.add(drop);
   }
 }
-function makeInk(point){const size=.35+Math.random()*.65;inkArea=Math.min(100,Math.round(inkGroup.children.length/1.8));const m=new THREE.Mesh(new THREE.CircleGeometry(size,20),inkMat);m.rotation.x=-Math.PI/2;m.position.set(point.x,.012,point.z);m.scale.x=.7+Math.random()*.6;m.scale.y=.7+Math.random()*.6;inkGroup.add(m);inkCount++;if(inkGroup.children.length>180)inkGroup.remove(inkGroup.children[0]);updateStats()}
+function makeInk(point){
+  const pulse=new THREE.Mesh(new THREE.CircleGeometry(.12,16),new THREE.MeshBasicMaterial({color:0x67e8f9,transparent:true,opacity:.65,side:THREE.DoubleSide}));
+  pulse.rotation.x=-Math.PI/2;pulse.position.set(point.x,.016,point.z);pulse.userData.life=.35;pulse.userData.maxLife=.35;inkParticleGroup.add(pulse);
+  const size=.35+Math.random()*.65;inkArea=Math.min(100,Math.round(inkGroup.children.length/1.8));const m=new THREE.Mesh(new THREE.CircleGeometry(size,20),inkMat);m.rotation.x=-Math.PI/2;m.position.set(point.x,.012,point.z);m.scale.x=.7+Math.random()*.6;m.scale.y=.7+Math.random()*.6;inkGroup.add(m);inkCount++;if(inkGroup.children.length>180)inkGroup.remove(inkGroup.children[0]);updateStats()}
 const raycaster=new THREE.Raycaster();
 function shoot(){
   if(shotCooldown>0)return;
@@ -504,14 +507,15 @@ function getArmTestInput(){
 
 function animate(){
 renderCube.rotation.x+=.012;renderCube.rotation.y+=.018;
-const dt=Math.min(clock.getDelta(),.05);shotCooldown=Math.max(0,shotCooldown-dt);updateSquidForm();for(let i=inkParticleGroup.children.length-1;i>=0;i--){const p=inkParticleGroup.children[i];p.userData.life-=dt;p.position.addScaledVector(p.userData.velocity,dt);p.userData.velocity.y-=1.8*dt;p.scale.setScalar(Math.max(.15,p.userData.life/p.userData.maxLife));if(p.userData.life<=0)inkParticleGroup.remove(p);}for(const m of targetMotion){if(m.t.material.color.getHex()!==0x22d3ee){m.t.position.x=m.homeX+Math.sin(performance.now()*.0012+m.phase)*.65;m.t.position.y=1.3+Math.sin(performance.now()*.0017+m.phase)*.18}}updateGamepadStatus();if(debugMode){for(const m of targetMotion)m.t.scale.setScalar(1.05+Math.sin(performance.now()*.004+m.phase)*.08);}const pad=controllerInput();const jc=joyconInput();const touchX=(keys.has("right")?1:0)-(keys.has("left")?1:0);const touchZ=(keys.has("down")?1:0)-(keys.has("up")?1:0);const inputX=Math.abs(jc.x)>.15?jc.x:(Math.abs(pad.x)>.15?pad.x:touchX);const inputZ=Math.abs(jc.z)>.15?jc.z:(Math.abs(pad.z)>.15?pad.z:touchZ);const inputLen=Math.hypot(inputX,inputZ);
+const dt=Math.min(clock.getDelta(),.05);shotCooldown=Math.max(0,shotCooldown-dt);updateSquidForm();for(let i=inkParticleGroup.children.length-1;i>=0;i--){const p=inkParticleGroup.children[i];p.userData.life-=dt;p.position.addScaledVector(p.userData.velocity,dt);p.userData.velocity.y-=1.8*dt;p.scale.setScalar(Math.max(.15,p.userData.life/p.userData.maxLife));if(p.geometry.type==="CircleGeometry"){const q=1-p.userData.life/p.userData.maxLife;p.scale.setScalar(1+q*3);p.material.opacity=Math.max(0,p.userData.life/p.userData.maxLife)*.65;}if(p.userData.life<=0)inkParticleGroup.remove(p);}for(const m of targetMotion){if(m.t.material.color.getHex()!==0x22d3ee){m.t.position.x=m.homeX+Math.sin(performance.now()*.0012+m.phase)*.65;m.t.position.y=1.3+Math.sin(performance.now()*.0017+m.phase)*.18}}updateGamepadStatus();if(debugMode){for(const m of targetMotion)m.t.scale.setScalar(1.05+Math.sin(performance.now()*.004+m.phase)*.08);}const pad=controllerInput();const jc=joyconInput();const touchX=(keys.has("right")?1:0)-(keys.has("left")?1:0);const touchZ=(keys.has("down")?1:0)-(keys.has("up")?1:0);const inputX=Math.abs(jc.x)>.15?jc.x:(Math.abs(pad.x)>.15?pad.x:touchX);const inputZ=Math.abs(jc.z)>.15?jc.z:(Math.abs(pad.z)>.15?pad.z:touchZ);const inputLen=Math.hypot(inputX,inputZ);
+if(debugMode){arenaRing.material.opacity=.38;}else{arenaRing.material.opacity=.24;}
 const lookCamera=renderer.xr.isPresenting?renderer.xr.getCamera():camera;
 const lookForward=new THREE.Vector3(0,0,-1).applyQuaternion(lookCamera.quaternion);
 lookForward.y=0;
 if(lookForward.lengthSq()>.0001){
   lookForward.normalize();
   const desiredYaw=Math.atan2(lookForward.x,lookForward.z);
-  playerBody.rotation.y=THREE.MathUtils.damp(playerBody.rotation.y,desiredYaw,9,dt);
+  playerBody.rotation.y=THREE.MathUtils.damp(playerBody.rotation.y,desiredYaw,3.2,dt);
 }
 const armInput=getArmTestInput();updateTestArms(armInput.x,armInput.z);let targetVX=0,targetVZ=0;if(inputLen>.01){
   targetVX=inputX/inputLen;
