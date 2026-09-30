@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 INK ARENA VR</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="xrButton" class="xrButton">ENTER VR</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
+<div id="ui"><div class="card"><b>🦑 INK ARENA VR</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -20,37 +20,36 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.m
 
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x11152b);scene.fog=new THREE.Fog(0x11152b,8,32);
 const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.03,100);camera.position.y=1.6;
-const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.xr.enabled=true;document.body.appendChild(renderer.domElement);document.body.appendChild(VRButton.createButton(renderer));
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.xr.enabled=true;document.body.appendChild(renderer.domElement);document.body.appendChild(VRButton.createButton(renderer));
 const xrCameraTracking={enabled:false,mode:"vr"};
 const cameraToggle=document.getElementById("cameraToggle");
-const xrButton=document.getElementById("xrButton");
 async function updateCameraTrackingSupport(){
-  if(!navigator.xr){cameraToggle.disabled=true;cameraToggle.textContent="📷 CAMERA TRACKING: UNSUPPORTED";return}
-  try{const ar=await navigator.xr.isSessionSupported("immersive-ar");cameraToggle.disabled=false;cameraToggle.title=ar?"Uses WebXR camera-based tracking when AR XR is available.":"This device/browser does not expose immersive AR tracking.";}
-  catch{cameraToggle.disabled=false;}
-}
-function setCameraTrackingUI(){cameraToggle.classList.toggle("on",xrCameraTracking.enabled);cameraToggle.setAttribute("aria-pressed",String(xrCameraTracking.enabled));cameraToggle.textContent=xrCameraTracking.enabled?"📷 CAMERA TRACKING: ON":"📷 CAMERA TRACKING: OFF";}
-cameraToggle.addEventListener("click",()=>{if(renderer.xr.isPresenting){document.getElementById("status").textContent="EXIT XR FIRST TO CHANGE CAMERA TRACKING";return}xrCameraTracking.enabled=!xrCameraTracking.enabled;setCameraTrackingUI();document.getElementById("status").textContent=xrCameraTracking.enabled?"CAMERA TRACKING ENABLED • Enter XR":"CAMERA TRACKING OFF • Enter VR"});
-async function startXR(){
-  if(renderer.xr.isPresenting){const s=renderer.xr.getSession();if(s)s.end();return}
-  if(!navigator.xr){document.getElementById("status").textContent="WebXR unavailable in this browser";return}
-  xrButton.disabled=true;xrButton.textContent="STARTING XR…";
+  if(!navigator.xr){cameraToggle.disabled=true;cameraToggle.textContent="📷 CAMERA TRACKING: UNSUPPORTED";return;}
   try{
-    let mode="immersive-vr";
-    if(xrCameraTracking.enabled){
-      try{if(await navigator.xr.isSessionSupported("immersive-ar"))mode="immersive-ar";else throw new Error("AR unavailable");}
-      catch{xrCameraTracking.mode="vr";document.getElementById("status").textContent="CAMERA TRACKING UNAVAILABLE • Using VR";}
-    }
-    const session=await navigator.xr.requestSession(mode,{optionalFeatures:["local-floor","bounded-floor","viewer","dom-overlay"],domOverlay:{root:document.body}});
-    xrCameraTracking.mode=mode;
-    await renderer.xr.setSession(session);
-  }catch(err){console.error("XR start failed",err);document.getElementById("status").textContent=`XR ERROR: ${err.message||err.name}`;}
-  finally{xrButton.disabled=false;}
+    const arSupported=await navigator.xr.isSessionSupported("immersive-ar");
+    cameraToggle.disabled=!arSupported;
+    cameraToggle.title=arSupported?"Optional camera-based XR tracking.":"Camera-based XR tracking is unavailable on this device/browser.";
+    if(!arSupported)cameraToggle.textContent="📷 CAMERA TRACKING: UNSUPPORTED";
+  }catch{
+    cameraToggle.disabled=true;
+    cameraToggle.textContent="📷 CAMERA TRACKING: UNSUPPORTED";
+  }
 }
-xrButton.addEventListener("click",startXR);
-renderer.xr.addEventListener("sessionstart",()=>{xrButton.textContent="EXIT XR";const ar=xrCameraTracking.mode==="immersive-ar";if(ar){scene.background=null;renderer.setClearAlpha(0);document.getElementById("status").textContent="CAMERA TRACKING ACTIVE 📷";}else{scene.background=new THREE.Color(0x11152b);renderer.setClearAlpha(1);document.getElementById("status").textContent="VR ACTIVE • Look + ink";}});
-renderer.xr.addEventListener("sessionend",()=>{xrButton.textContent="ENTER VR";scene.background=new THREE.Color(0x11152b);renderer.setClearAlpha(1);xrCameraTracking.mode="vr";document.getElementById("status").textContent=xrCameraTracking.enabled?"CAMERA TRACKING READY":"Ready";});
-setCameraTrackingUI();updateCameraTrackingSupport();
+function setCameraTrackingUI(){
+  cameraToggle.classList.toggle("on",xrCameraTracking.enabled);
+  cameraToggle.setAttribute("aria-pressed",String(xrCameraTracking.enabled));
+  cameraToggle.textContent=xrCameraTracking.enabled?"📷 CAMERA TRACKING: ON":"📷 CAMERA TRACKING: OFF";
+}
+cameraToggle.addEventListener("click",()=>{
+  if(renderer.xr.isPresenting)return;
+  xrCameraTracking.enabled=!xrCameraTracking.enabled;
+  setCameraTrackingUI();
+  document.getElementById("status").textContent=xrCameraTracking.enabled?"CAMERA TRACKING ON • Enter VR":"CAMERA TRACKING OFF • Enter VR";
+});
+updateCameraTrackingSupport();
+setCameraTrackingUI();
+const vrButton=VRButton.createButton(renderer);
+document.body.appendChild(vrButton);
 scene.add(new THREE.HemisphereLight(0xffffff,0x172033,1.5));const sun=new THREE.DirectionalLight(0xffffff,2);sun.position.set(3,8,2);scene.add(sun);
 const player=new THREE.Group();player.position.set(0,0,4);player.add(camera);scene.add(player);
 const floor=new THREE.Mesh(new THREE.BoxGeometry(14,.12,14),new THREE.MeshStandardMaterial({color:0x28304a,roughness:.85}));floor.position.y=-.06;scene.add(floor);
