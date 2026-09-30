@@ -21,7 +21,7 @@ import {VRButton} from "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/
 
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x11152b);scene.fog=new THREE.Fog(0x11152b,8,32);
 const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.03,100);camera.position.y=1.6;
-const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.xr.enabled=true;document.body.appendChild(renderer.domElement);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.xr.enabled=true;document.body.appendChild(renderer.domElement);document.body.appendChild(VRButton.createButton(renderer));
 const xrCameraTracking={enabled:false,mode:"vr"};
 const cameraToggle=document.getElementById("cameraToggle");
 async function updateCameraTrackingSupport(){
@@ -49,7 +49,6 @@ cameraToggle.addEventListener("click",()=>{
 });
 updateCameraTrackingSupport();
 setCameraTrackingUI();
-document.body.appendChild(VRButton.createButton(renderer));
 scene.add(new THREE.HemisphereLight(0xffffff,0x172033,1.5));const sun=new THREE.DirectionalLight(0xffffff,2);sun.position.set(3,8,2);scene.add(sun);
 const player=new THREE.Group();player.position.set(0,0,4);player.add(camera);scene.add(player);
 const floor=new THREE.Mesh(new THREE.BoxGeometry(14,.12,14),new THREE.MeshStandardMaterial({color:0x28304a,roughness:.85}));floor.position.y=-.06;scene.add(floor);
