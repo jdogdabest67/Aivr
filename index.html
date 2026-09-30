@@ -1,91 +1,185 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Tiny WebXR Room</title>
-  <style>
-    html,body{margin:0;height:100%;overflow:hidden;background:#111827;font-family:system-ui;color:white}
-    #help{position:fixed;z-index:2;top:12px;left:12px;padding:10px 12px;border-radius:12px;background:#0009}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ink Arena VR</title>
+<style>
+html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
+#ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}
+.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}
+#status{color:#a7f3d0}
+#controls{position:fixed;z-index:6;bottom:14px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:end;pointer-events:none}
+.pad{display:grid;grid-template-columns:48px 48px 48px;gap:6px;pointer-events:auto}
+.pad button,.fire{width:48px;height:48px;border:0;border-radius:14px;background:#ffffff25;color:white;font-size:20px}
+.pad button:nth-child(1){grid-column:2}.pad button:nth-child(2){grid-column:1}.pad button:nth-child(3){grid-column:2}.pad button:nth-child(4){grid-column:3}
+.fire{width:72px;height:72px;border-radius:50%;background:#f97316;font-size:14px;font-weight:800;pointer-events:auto}
+#cross{position:fixed;z-index:4;left:50%;top:50%;width:10px;height:10px;margin:-5px;border:2px solid white;border-radius:50%;pointer-events:none}
+</style>
 </head>
 <body>
-<div id="help">🥽 Tap ENTER VR, then look around. Arrow keys / WASD move.</div>
+<div id="ui"><div class="card"><b>🦑 INK ARENA VR</b><br><span id="status">Press ENTER VR</span></div></div>
+<div id="cross"></div>
+<div id="controls">
+  <div class="pad">
+    <button data-k="up">▲</button>
+    <button data-k="left">◀</button>
+    <button data-k="down">▼</button>
+    <button data-k="right">▶</button>
+  </div>
+  <button class="fire" id="fire">INK!</button>
+</div>
 
 <script type="module">
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
-import { VRButton } from "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/webxr/VRButton.js";
+import {VRButton} from "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/webxr/VRButton.js";
 
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x101827);
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x11152b);
+scene.fog=new THREE.Fog(0x11152b,8,32);
 
-const camera = new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.05,100);
+const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.03,100);
 camera.position.y=1.6;
 
-const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(innerWidth,innerHeight);
+const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
 renderer.xr.enabled=true;
 document.body.appendChild(renderer.domElement);
 
-const button=VRButton.createButton(renderer);
-document.body.appendChild(button);
+const vr=VRButton.createButton(renderer);
+document.body.appendChild(vr);
 
-scene.add(new THREE.HemisphereLight(0xffffff,0x334155,1.5));
+scene.add(new THREE.HemisphereLight(0xffffff,0x172033,1.5));
+const sun=new THREE.DirectionalLight(0xffffff,2);
+sun.position.set(3,8,2);
+scene.add(sun);
 
 const player=new THREE.Group();
 player.position.set(0,0,4);
 player.add(camera);
 scene.add(player);
 
-const floor=new THREE.Mesh(
-  new THREE.BoxGeometry(10,.1,10),
-  new THREE.MeshStandardMaterial({color:0x334155})
-);
-floor.position.y=-.05;
+// Arena
+const floorMat=new THREE.MeshStandardMaterial({color:0x28304a,roughness:.85});
+const floor=new THREE.Mesh(new THREE.BoxGeometry(14,.12,14),floorMat);
+floor.position.y=-.06;
 scene.add(floor);
 
-function box(x,y,z,color){
-  const b=new THREE.Mesh(
-    new THREE.BoxGeometry(1,1,1),
-    new THREE.MeshStandardMaterial({color})
-  );
-  b.position.set(x,y,z);
-  scene.add(b);
-}
-
-box(-2,.5,-2,0xef4444);
-box(0,.5,-3,0x22c55e);
-box(2,.5,-2,0x3b82f6);
-
-const wallMat=new THREE.MeshStandardMaterial({color:0x475569});
-for(const [x,z,sx,sz] of [
-  [0,-5,10,.1],[-5,0,.1,10],[5,0,.1,10]
-]){
+const wallMat=new THREE.MeshStandardMaterial({color:0x3d4660});
+for(const [x,z,sx,sz] of [[0,-7,14,.15],[-7,0,.15,14],[7,0,.15,14],[0,7,14,.15]]){
   const w=new THREE.Mesh(new THREE.BoxGeometry(sx,3,sz),wallMat);
   w.position.set(x,1.5,z);
   scene.add(w);
 }
 
-const keys={};
-addEventListener("keydown",e=>keys[e.key.toLowerCase()]=true);
-addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
+// Cover objects
+for(const [x,z] of [[-3,-2],[3,-2],[-2,1],[2,2],[0,-4]]){
+  const o=new THREE.Mesh(
+    new THREE.BoxGeometry(1.2,1.2,1.2),
+    new THREE.MeshStandardMaterial({color:0x64748b})
+  );
+  o.position.set(x,.6,z);
+  scene.add(o);
+}
+
+// Targets
+const targets=[];
+for(const [x,z] of [[-4,-5],[0,-5],[4,-5],[-4,0],[4,0]]){
+  const t=new THREE.Mesh(
+    new THREE.CylinderGeometry(.55,.55,.15,24),
+    new THREE.MeshStandardMaterial({color:0xf472b6,emissive:0x4a102d,emissiveIntensity:.5})
+  );
+  t.rotation.x=Math.PI/2;
+  t.position.set(x,1.3,z);
+  scene.add(t);
+  targets.push(t);
+}
+
+// Ink splats are flattened circles placed on the arena floor.
+const inkGroup=new THREE.Group();
+scene.add(inkGroup);
+const inkMat=new THREE.MeshStandardMaterial({
+  color:0x22d3ee,
+  emissive:0x064e5b,
+  emissiveIntensity:.45,
+  transparent:true,
+  opacity:.9,
+  roughness:.7
+});
+
+function makeInk(point){
+  const size=.35+Math.random()*.55;
+  const g=new THREE.CircleGeometry(size,20);
+  const m=new THREE.Mesh(g,inkMat);
+  m.rotation.x=-Math.PI/2;
+  m.position.set(point.x,.012,point.z);
+  m.scale.x=.7+Math.random()*.6;
+  m.scale.y=.7+Math.random()*.6;
+  inkGroup.add(m);
+  if(inkGroup.children.length>180) inkGroup.remove(inkGroup.children[0]);
+}
+
+// Raycast from where the player is looking.
+const raycaster=new THREE.Raycaster();
+const groundTargets=[floor,...targets];
+
+function shoot(){
+  raycaster.setFromCamera(new THREE.Vector2(0,0),camera);
+  const hits=raycaster.intersectObjects([floor,...targets],false);
+  if(!hits.length)return;
+  const hit=hits[0];
+  if(hit.object!==floor){
+    hit.object.material.color.set(0x22d3ee);
+    hit.object.material.emissive.set(0x064e5b);
+    hit.object.material.emissiveIntensity=.9;
+  }
+  makeInk(hit.point);
+  document.getElementById("status").textContent="INK!";
+  setTimeout(()=>{document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE":"Ready";},180);
+}
+
+document.getElementById("fire").addEventListener("click",shoot);
+addEventListener("keydown",e=>{
+  if(e.code==="Space"){e.preventDefault();shoot();}
+});
+
+// XR controllers, when one exists later.
+renderer.xr.addEventListener("sessionstart",()=>{
+  document.getElementById("status").textContent="VR ACTIVE • Look + ink";
+});
+renderer.xr.addEventListener("sessionend",()=>{
+  document.getElementById("status").textContent="Ready";
+});
+
+const keys=new Set();
+addEventListener("keydown",e=>keys.add(e.key.toLowerCase()));
+addEventListener("keyup",e=>keys.delete(e.key.toLowerCase()));
+
+const moveButtons={up:"w",down:"s",left:"a",right:"d"};
+document.querySelectorAll("[data-k]").forEach(b=>{
+  const k=moveButtons[b.dataset.k];
+  const down=e=>{e.preventDefault();keys.add(k)};
+  const up=e=>{e.preventDefault();keys.delete(k)};
+  b.addEventListener("pointerdown",down);
+  b.addEventListener("pointerup",up);
+  b.addEventListener("pointercancel",up);
+  b.addEventListener("pointerleave",up);
+});
 
 const clock=new THREE.Clock();
-
 function animate(){
   const dt=Math.min(clock.getDelta(),.05);
-  let x=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0);
-  let z=(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0);
+  const x=(keys.has("d")?1:0)-(keys.has("a")?1:0);
+  const z=(keys.has("s")?1:0)-(keys.has("w")?1:0);
   if(x||z){
     const len=Math.hypot(x,z);
-    x/=len; z/=len;
-    const speed=2*dt;
-    const dir=new THREE.Vector3(x,0,z);
+    const dir=new THREE.Vector3(x/len,0,z/len);
+    // Movement follows the player's current facing direction.
     dir.applyQuaternion(player.quaternion);
-    player.position.addScaledVector(dir,speed);
-    player.position.x=THREE.MathUtils.clamp(player.position.x,-4.4,4.4);
-    player.position.z=THREE.MathUtils.clamp(player.position.z,-4.4,4.4);
+    player.position.addScaledVector(dir,2.4*dt);
+    player.position.x=THREE.MathUtils.clamp(player.position.x,-6.2,6.2);
+    player.position.z=THREE.MathUtils.clamp(player.position.z,-6.2,6.2);
   }
   renderer.render(scene,camera);
 }
