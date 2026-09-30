@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // Cube • build 2026-09-30d</title>
+<title>SPLATVR // Cube • build 2026-09-30e</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -94,50 +94,7 @@ const vrReticle=new THREE.Mesh(
 vrReticle.position.set(0,0,-1);
 camera.add(vrReticle);
 
-// Generic first-person test body. Visual only, no gameplay/input changes.
-const playerBody=new THREE.Group();
-const bodyMat=new THREE.MeshStandardMaterial({color:0x64748b,roughness:.68,metalness:.1});
-const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.18,.62,6,12),bodyMat);
-torso.scale.set(.82,1,.68);
-torso.position.set(0,.78,0);
-playerBody.add(torso);
-
-const armUpperGeo=new THREE.CapsuleGeometry(.052,.31,5,8);
-const armLowerGeo=new THREE.CapsuleGeometry(.045,.28,5,8);
-const handGeo=new THREE.SphereGeometry(.065,10,8);
-
-for(const side of [-1,1]){
-  const armRoot=new THREE.Group();
-  armRoot.position.set(side*.25,1.01,0);
-  armRoot.rotation.z=side*.12;
-  const upper=new THREE.Mesh(armUpperGeo,bodyMat);
-  upper.position.y=-.16;
-  armRoot.add(upper);
-
-  const elbow=new THREE.Group();
-  elbow.position.set(0,-.32,0);
-  armRoot.add(elbow);
-
-  const lower=new THREE.Mesh(armLowerGeo,bodyMat);
-  lower.position.y=-.15;
-  elbow.add(lower);
-
-  const hand=new THREE.Mesh(handGeo,bodyMat);
-  hand.position.y=-.30;
-  elbow.add(hand);
-
-  playerBody.add(armRoot);
-  playerBody.userData[side<0?"leftArm":"rightArm"]=armRoot;
-  playerBody.userData[side<0?"leftElbow":"rightElbow"]=elbow;
-}
-const legGeo=new THREE.CapsuleGeometry(.065,.58,5,8);
-for(const side of [-1,1]){
-  const leg=new THREE.Mesh(legGeo,bodyMat);
-  leg.position.set(side*.095,.25,0);
-  playerBody.add(leg);
-}
-player.add(playerBody);
-const floorMat=new THREE.MeshStandardMaterial({color:0x202946,roughness:.78,metalness:.05});
+// Simple blocky R6-style test body. Visual only.\nconst playerBody=new THREE.Group();\nconst bodyMat=new THREE.MeshStandardMaterial({color:0x64748b,roughness:.68,metalness:.1});\nconst limbMat=new THREE.MeshStandardMaterial({color:0x94a3b8,roughness:.72,metalness:.05});\nconst torso=new THREE.Mesh(new THREE.BoxGeometry(.42,.58,.26),bodyMat);torso.position.set(0,.78,0);playerBody.add(torso);\nconst head=new THREE.Mesh(new THREE.BoxGeometry(.34,.34,.34),limbMat);head.position.set(0,1.24,0);playerBody.add(head);\nfor(const side of [-1,1]){const arm=new THREE.Group();arm.position.set(side*.29,.94,0);const mesh=new THREE.Mesh(new THREE.BoxGeometry(.12,.52,.12),limbMat);mesh.position.y=-.24;arm.add(mesh);playerBody.add(arm);playerBody.userData[side<0?"leftArm":"rightArm"]=arm;}\nfor(const side of [-1,1]){const leg=new THREE.Group();leg.position.set(side*.11,.49,0);const mesh=new THREE.Mesh(new THREE.BoxGeometry(.12,.48,.12),limbMat);mesh.position.y=-.24;leg.add(mesh);playerBody.add(leg);playerBody.userData[side<0?"leftLeg":"rightLeg"]=leg;}\nplayer.add(playerBody);\nconst floorMat=new THREE.MeshStandardMaterial({color:0x202946,roughness:.78,metalness:.05});
 const floor=new THREE.Mesh(new THREE.BoxGeometry(14,.12,14),floorMat);
 floor.position.y=-.06;
 floor.receiveShadow=true;
@@ -163,17 +120,17 @@ function makePatchNotesCubeNote(){
   ctx.strokeRect(24,24,976,976);
   ctx.fillStyle="#ffffff";
   ctx.font="900 76px system-ui, sans-serif";
-  ctx.fillText("BUILD 64",72,130);
+  ctx.fillText("BUILD 66",72,130);
   ctx.font="800 52px system-ui, sans-serif";
   ctx.fillStyle="#67e8f9";
   ctx.fillText("PATCH NOTES",72,205);
   ctx.fillStyle="#ffffff";
   ctx.font="600 38px system-ui, sans-serif";
   const lines=[
-    "• Fixed Joy-Con trigger report setup",
-    "• ZL now uses the real 0x80 bit",
-    "• Patch notes moved to paper",
-    "• Paper sits in front of the magenta cube"
+    "• Controls cleaned up + keyboard support",
+    "• Ball can now be kicked around",
+    "• Added blocky R6-style walk animation",
+    "• Magenta cube remains untouched"
   ];
   lines.forEach((line,i)=>ctx.fillText(line,72,305+i*100));
   ctx.fillStyle="#94a3b8";
@@ -217,7 +174,7 @@ ball.castShadow=true;
 scene.add(ball);
 let ballHeld=false;
 let ballVelocity=new THREE.Vector3();
-let ballGrabLatch=false;
+let ballGrabLatch=false;let ballKickCooldown=0;
 
 const targets=[];const targetHomes=[[-4,-5],[0,-5],[4,-5],[-4,0],[4,0]];for(const [x,z] of targetHomes){const t=new THREE.Mesh(new THREE.CylinderGeometry(.55,.55,.15,24),new THREE.MeshStandardMaterial({color:0xf472b6,emissive:0x4a102d,emissiveIntensity:.5}));t.rotation.x=Math.PI/2;t.position.set(x,1.3,z);scene.add(t);targets.push(t)}
 const targetMotion=targets.map((t,i)=>({t,homeX:t.position.x,homeZ:t.position.z,phase:i*1.7}));
@@ -287,7 +244,7 @@ function shoot(){
   spawnInkTrail(origin,hit.point);if(hit.object!==floor&&hit.object.material.color.getHex()!==0x22d3ee){hit.object.material.color.set(0x22d3ee);hit.object.material.emissive.set(0x064e5b);hit.object.material.emissiveIntensity=.9;targetCount++}document.getElementById("status").textContent="INK!";setTimeout(()=>document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE":"Ready",180);updateStats();if(targetCount===targets.length)document.getElementById("status").textContent="ALL TARGETS INKED! 🎯"}
 function booyah(){booyahCount++;updateStats();const f=document.getElementById("booyahFlash");f.classList.remove("show");void f.offsetWidth;f.classList.add("show");document.getElementById("status").textContent="BOOYAH!";setTimeout(()=>document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE":"Ready",650)}
 document.getElementById("fire").addEventListener("click",shoot);document.getElementById("booyah").addEventListener("click",booyah);
-function resetGame(){targetCount=0;inkCount=0;inkArea=0;booyahCount=0;shotCooldown=0;ballHeld=false;ballGrabLatch=false;ballVelocity.set(0,0,0);ball.position.set(0,.16,1.8);for(const {t,homeX,homeZ} of targetMotion){t.position.x=homeX;t.position.z=homeZ;t.material.color.set(0xf472b6);t.material.emissive.set(0x4a102d);t.material.emissiveIntensity=.5}while(inkGroup.children.length)inkGroup.remove(inkGroup.children[0]);while(inkParticleGroup.children.length)inkParticleGroup.remove(inkParticleGroup.children[0]);player.position.set(0,0,4);squidForm=false;updateStats();document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready"}
+function resetGame(){targetCount=0;inkCount=0;inkArea=0;booyahCount=0;shotCooldown=0;ballHeld=false;ballGrabLatch=false;ballKickCooldown=0;ballVelocity.set(0,0,0);ball.position.set(0,.16,1.8);for(const {t,homeX,homeZ} of targetMotion){t.position.x=homeX;t.position.z=homeZ;t.material.color.set(0xf472b6);t.material.emissive.set(0x4a102d);t.material.emissiveIntensity=.5}while(inkGroup.children.length)inkGroup.remove(inkGroup.children[0]);while(inkParticleGroup.children.length)inkParticleGroup.remove(inkParticleGroup.children[0]);player.position.set(0,0,4);moveVelocity.set(0,0,0);squidForm=false;updateStats();document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready"}
 document.getElementById("reset").addEventListener("click",resetGame);
 renderer.xr.addEventListener("sessionstart",()=>{squidForm=false;squidHeightReady=false;squidBaselineSamples=0;squidBaselineSum=0;squidEnterY=1.6;if(xrCameraTracking.mode==="immersive-ar"){document.getElementById("status").textContent="CAMERA TRACKING ACTIVE 📷 • Calibrating...";}else{document.getElementById("status").textContent="VR ACTIVE • Calibrating...";}});
 renderer.xr.addEventListener("sessionend",()=>{
@@ -298,7 +255,7 @@ renderer.xr.addEventListener("sessionend",()=>{
   squidEnterY=1.6;
   document.getElementById("status").textContent="Ready";
 });
-const keys=new Set();const moveButtons={up:"up",down:"down",left:"left",right:"right"};document.querySelectorAll("[data-move]").forEach(b=>{const k=moveButtons[b.dataset.move];const down=e=>{e.preventDefault();keys.add(k)};const up=e=>{e.preventDefault();keys.delete(k)};b.addEventListener("pointerdown",down);b.addEventListener("pointerup",up);b.addEventListener("pointercancel",up);b.addEventListener("pointerleave",up)});
+const keys=new Set();\nwindow.addEventListener("keydown",e=>{const k=e.key.toLowerCase();const map={w:"up",s:"down",a:"left",d:"right",arrowup:"up",arrowdown:"down",arrowleft:"left",arrowright:"right"};if(map[k]){keys.add(map[k]);e.preventDefault();}if(k===" "&&!e.repeat)shoot();});\nwindow.addEventListener("keyup",e=>{const k=e.key.toLowerCase();const map={w:"up",s:"down",a:"left",d:"right",arrowup:"up",arrowdown:"down",arrowleft:"left",arrowright:"right"};if(map[k])keys.delete(map[k]);});window.addEventListener("blur",()=>keys.clear());\nconst moveButtons={up:"up",down:"down",left:"left",right:"right"};document.querySelectorAll("[data-move]").forEach(b=>{const k=moveButtons[b.dataset.move];const down=e=>{e.preventDefault();keys.add(k)};const up=e=>{e.preventDefault();keys.delete(k)};b.addEventListener("pointerdown",down);b.addEventListener("pointerup",up);b.addEventListener("pointercancel",up);b.addEventListener("pointerleave",up);b.addEventListener("pointerout",up)});
 // Joy-Con / Gamepad input
 // The game polls controller state directly every frame. Browser/Android still owns
 // the underlying HID connection, but this keeps gameplay input responsive.
@@ -495,48 +452,7 @@ function getBallTriggerState() {
   return {leftTrigger};
 }
 
-function updateBall(leftTrigger, dt) {
-  const xrCam=renderer.xr.isPresenting?renderer.xr.getCamera():camera;
-  const nearPoint=new THREE.Vector3();
-  xrCam.getWorldPosition(nearPoint);
-
-  if (!ballHeld && leftTrigger && !ballGrabLatch && ball.position.distanceTo(nearPoint)<2.8) {
-    ballHeld=true;
-    ballVelocity.set(0,0,0);
-  }
-
-  if (ballHeld) {
-    const holdPoint=new THREE.Vector3(0.28,-0.12,-0.48);
-    holdPoint.applyMatrix4(xrCam.matrixWorld);
-    ball.position.lerp(holdPoint,.45);
-    ballVelocity.set(0,0,0);
-    ball.rotation.x+=dt*4;
-    ball.rotation.y+=dt*5;
-  } else {
-    ballVelocity.y-=9.8*dt;
-    ball.position.addScaledVector(ballVelocity,dt);
-    if(ball.position.y<.16){
-      ball.position.y=.16;
-      if(Math.abs(ballVelocity.y)>.8)ballVelocity.y*=-.45;
-      else ballVelocity.y=0;
-    }
-    ballVelocity.x*=Math.pow(.985,dt*60);
-    ballVelocity.z*=Math.pow(.985,dt*60);
-    if(Math.abs(ballVelocity.x)+Math.abs(ballVelocity.z)>.01)ball.rotation.x+=dt*5;
-  }
-
-  if(ballGrabLatch && !leftTrigger && ballHeld){
-    const dir=new THREE.Vector3(0,0,-1).applyQuaternion(xrCam.quaternion);
-    dir.y+=.08;
-    dir.normalize();
-    ballHeld=false;
-    ballVelocity.copy(dir.multiplyScalar(7.2));
-  }
-
-  ballGrabLatch=leftTrigger;
-}
-
-function controllerInput() {
+function updateBall(leftTrigger,dt){const xrCam=renderer.xr.isPresenting?renderer.xr.getCamera():camera;const near=new THREE.Vector3();xrCam.getWorldPosition(near);ballKickCooldown=Math.max(0,ballKickCooldown-dt);if(!ballHeld&&leftTrigger&&!ballGrabLatch&&ball.position.distanceTo(near)<1.05){ballHeld=true;ballVelocity.set(0,0,0);}if(ballHeld){const hold=new THREE.Vector3(.28,-.12,-.48);hold.applyMatrix4(xrCam.matrixWorld);ball.position.lerp(hold,.45);ballVelocity.set(0,0,0);}else{ballVelocity.y-=9.8*dt;ball.position.addScaledVector(ballVelocity,dt);if(ball.position.y<.16){ball.position.y=.16;if(Math.abs(ballVelocity.y)>.8)ballVelocity.y*=-.45;else ballVelocity.y=0;}ballVelocity.x*=Math.pow(.985,dt*60);ballVelocity.z*=Math.pow(.985,dt*60);if(ballVelocity.lengthSq()>.01){ball.rotation.x+=dt*5;ball.rotation.y+=dt*3;}}if(ballGrabLatch&&!leftTrigger&&ballHeld){const dir=new THREE.Vector3(0,0,-1).applyQuaternion(xrCam.quaternion);dir.y+=.08;dir.normalize();ballHeld=false;ballVelocity.copy(dir.multiplyScalar(7.2));}if(!ballHeld&&ballKickCooldown<=0){const dx=ball.position.x-player.position.x,dz=ball.position.z-player.position.z,dist=Math.hypot(dx,dz);if(dist<.62&&moveVelocity.lengthSq()>.18){const kick=new THREE.Vector3(moveVelocity.x,0,moveVelocity.z).normalize();ballVelocity.set(kick.x*6.5,1.8,kick.z*6.5);ballKickCooldown=.22;}}ballGrabLatch=leftTrigger;}\nfunction controllerInput() {
   // Poll directly every frame. This does not override Chrome/Android ownership,
   // but avoids waiting for browser events before gameplay sees the current state.
   const pads = getControllers().filter(gp => gp?.connected);
@@ -580,31 +496,7 @@ function controllerInput() {
 }
 
 camera.lookAt(0,1.2,-3);const clock=new THREE.Clock();const moveVelocity=new THREE.Vector3();
-function updateTestArms(x,z){
-  if(!armTestMode)return;
-  const amount=Math.max(Math.abs(x),Math.abs(z));
-  const leanX=THREE.MathUtils.clamp(x,-1,1)*.85;
-  const lift=THREE.MathUtils.clamp(-z,-1,1)*.8;
-  const restLeft=0.12;
-  const restRight=-0.12;
-  if(amount<.15){
-    playerBody.userData.leftArm.rotation.z=restLeft;
-    playerBody.userData.rightArm.rotation.z=restRight;
-    playerBody.userData.leftArm.rotation.x=0;
-    playerBody.userData.rightArm.rotation.x=0;
-    playerBody.userData.leftElbow.rotation.z=0;
-    playerBody.userData.rightElbow.rotation.z=0;
-    return;
-  }
-  playerBody.userData.leftArm.rotation.z=restLeft-leanX;
-  playerBody.userData.rightArm.rotation.z=restRight+leanX;
-  playerBody.userData.leftArm.rotation.x=lift;
-  playerBody.userData.rightArm.rotation.x=lift;
-  const elbowBend=Math.max(0,Math.abs(lift)+Math.abs(leanX)-.15)*.7;
-  playerBody.userData.leftElbow.rotation.z=-elbowBend;
-  playerBody.userData.rightElbow.rotation.z=elbowBend;
-}
-function getArmTestInput(){
+function updateWalkAnimation(speed){const moving=speed>.12;const swing=moving?Math.sin(performance.now()*.012)*Math.min(.62,speed*.22):0;playerBody.userData.leftLeg.rotation.x=swing;playerBody.userData.rightLeg.rotation.x=-swing;playerBody.userData.leftArm.rotation.x=-swing*.7;playerBody.userData.rightArm.rotation.x=swing*.7;playerBody.position.y=moving?Math.abs(Math.sin(performance.now()*.012))*.012:0;}\nfunction updateTestArms(x,z){if(!armTestMode)return;const lean=THREE.MathUtils.clamp(x,-1,1)*.85,lift=THREE.MathUtils.clamp(-z,-1,1)*.8;playerBody.userData.leftArm.rotation.z=.12-lean;playerBody.userData.rightArm.rotation.z=-.12+lean;playerBody.userData.leftArm.rotation.x=lift;playerBody.userData.rightArm.rotation.x=lift;}\nfunction getArmTestInput(){
   if(!armTestMode)return {x:0,z:0};
   const pads=getControllers().filter(gp=>gp?.connected);
   for(const gp of pads){
@@ -686,6 +578,6 @@ let targetVX=0,targetVZ=0;if(inputLen>.01){
   dir.normalize();
   targetVX=dir.x*speed;
   targetVZ=dir.z*speed;
-}const response=inputLen>.01?10:14;moveVelocity.x=THREE.MathUtils.damp(moveVelocity.x,targetVX,response,dt);moveVelocity.z=THREE.MathUtils.damp(moveVelocity.z,targetVZ,response,dt);player.position.x+=moveVelocity.x*dt;player.position.z+=moveVelocity.z*dt;player.position.x=THREE.MathUtils.clamp(player.position.x,-6.2,6.2);player.position.z=THREE.MathUtils.clamp(player.position.z,-6.2,6.2);resolveObstacleCollisions();renderer.render(scene,camera)}
+}const response=inputLen>.01?10:14;moveVelocity.x=THREE.MathUtils.damp(moveVelocity.x,targetVX,response,dt);moveVelocity.z=THREE.MathUtils.damp(moveVelocity.z,targetVZ,response,dt);player.position.x+=moveVelocity.x*dt;player.position.z+=moveVelocity.z*dt;player.position.x=THREE.MathUtils.clamp(player.position.x,-6.2,6.2);player.position.z=THREE.MathUtils.clamp(player.position.z,-6.2,6.2);resolveObstacleCollisions();updateWalkAnimation(Math.hypot(moveVelocity.x,moveVelocity.z));renderer.render(scene,camera)}
 renderer.setAnimationLoop(animate);bootStatus.textContent="3D READY • Enter VR";addEventListener("resize",()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
 </script></body></html>
