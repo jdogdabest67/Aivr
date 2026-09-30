@@ -82,9 +82,6 @@ const skinMat=new THREE.MeshStandardMaterial({color:0xd6a77a,roughness:.9});
 const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.32,.7,6,12),bodyMat);
 torso.position.set(0,.78,0);
 playerBody.add(torso);
-const head=new THREE.Mesh(new THREE.SphereGeometry(.22,16,12),skinMat);
-head.position.set(0,1.48,0);
-playerBody.add(head);
 const armGeo=new THREE.CapsuleGeometry(.09,.5,5,8);
 for(const side of [-1,1]){
   const arm=new THREE.Mesh(armGeo,bodyMat);
