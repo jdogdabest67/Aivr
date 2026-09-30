@@ -36,7 +36,8 @@ function booyah(){booyahCount++;updateStats();const f=document.getElementById("b
 document.getElementById("fire").addEventListener("click",shoot);document.getElementById("booyah").addEventListener("click",booyah);
 renderer.xr.addEventListener("sessionstart",()=>{
  squidForm=false;
- squidEnterY=camera.position.y;
+ squidHeightReady=false;
+ squidEnterY=1.6;
  document.getElementById("status").textContent="VR ACTIVE • Look + ink";
 });
 renderer.xr.addEventListener("sessionend",()=>document.getElementById("status").textContent="Ready");
@@ -46,11 +47,17 @@ const moveButtons={up:"up",down:"down",left:"left",right:"right"};
 document.querySelectorAll("[data-move]").forEach(b=>{const k=moveButtons[b.dataset.move];const down=e=>{e.preventDefault();keys.add(k)};const up=e=>{e.preventDefault();keys.delete(k)};b.addEventListener("pointerdown",down);b.addEventListener("pointerup",up);b.addEventListener("pointercancel",up);b.addEventListener("pointerleave",up)});
 
 let controllerIndex=null,booyahLatch=false;
-let squidForm=false,squidEnterY=1.6;
+let squidForm=false,squidEnterY=1.6,squidHeightReady=false;
 const SQUID_ENTER_DROP=.32,SQUID_EXIT_DROP=.16;
 function updateSquidForm(){
  if(!renderer.xr.isPresenting)return;
- const headY=camera.position.y;
+ const xrCamera=renderer.xr.getCamera(camera);
+ const headY=xrCamera.position.y;
+ if(!squidHeightReady){
+  squidEnterY=headY;
+  squidHeightReady=true;
+  return;
+ }
  if(!squidForm&&headY<squidEnterY-SQUID_ENTER_DROP){
   squidForm=true;
   document.getElementById("status").textContent="SQUID FORM! 🦑";
