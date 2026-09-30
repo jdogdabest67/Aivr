@@ -81,21 +81,42 @@ const player=new THREE.Group();player.position.set(0,0,4);player.add(camera);sce
 // Generic first-person test body. Visual only, no gameplay/input changes.
 const playerBody=new THREE.Group();
 const bodyMat=new THREE.MeshStandardMaterial({color:0x64748b,roughness:.9});
-const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.32,.7,6,12),bodyMat);
+const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.27,.72,6,12),bodyMat);
 torso.position.set(0,.78,0);
 playerBody.add(torso);
-const armGeo=new THREE.CapsuleGeometry(.09,.5,5,8);
+
+const armUpperGeo=new THREE.CapsuleGeometry(.075,.32,5,8);
+const armLowerGeo=new THREE.CapsuleGeometry(.065,.30,5,8);
+const handGeo=new THREE.SphereGeometry(.09,10,8);
+
 for(const side of [-1,1]){
-  const arm=new THREE.Mesh(armGeo,bodyMat);
-  arm.position.set(side*.4,.92,0);
-  arm.rotation.z=side*.18;
-  playerBody.add(arm);
-  playerBody.userData[side<0?"leftArm":"rightArm"]=arm;
+  const armRoot=new THREE.Group();
+  armRoot.position.set(side*.34,1.02,0);
+  armRoot.rotation.z=side*.12;
+  const upper=new THREE.Mesh(armUpperGeo,bodyMat);
+  upper.position.y=-.16;
+  armRoot.add(upper);
+
+  const elbow=new THREE.Group();
+  elbow.position.set(0,-.34,0);
+  armRoot.add(elbow);
+
+  const lower=new THREE.Mesh(armLowerGeo,bodyMat);
+  lower.position.y=-.15;
+  elbow.add(lower);
+
+  const hand=new THREE.Mesh(handGeo,bodyMat);
+  hand.position.y=-.33;
+  elbow.add(hand);
+
+  playerBody.add(armRoot);
+  playerBody.userData[side<0?"leftArm":"rightArm"]=armRoot;
+  playerBody.userData[side<0?"leftElbow":"rightElbow"]=elbow;
 }
-const legGeo=new THREE.CapsuleGeometry(.11,.55,5,8);
+const legGeo=new THREE.CapsuleGeometry(.09,.58,5,8);
 for(const side of [-1,1]){
   const leg=new THREE.Mesh(legGeo,bodyMat);
-  leg.position.set(side*.16,.25,0);
+  leg.position.set(side*.14,.25,0);
   playerBody.add(leg);
 }
 player.add(playerBody);
@@ -380,19 +401,26 @@ camera.lookAt(0,1.2,-3);const clock=new THREE.Clock();const moveVelocity=new THR
 function updateTestArms(x,z){
   if(!armTestMode)return;
   const amount=Math.max(Math.abs(x),Math.abs(z));
+  const leanX=THREE.MathUtils.clamp(x,-1,1)*.85;
+  const lift=THREE.MathUtils.clamp(-z,-1,1)*.8;
+  const restLeft=0.12;
+  const restRight=-0.12;
   if(amount<.15){
-    playerBody.userData.leftArm.rotation.z=0.18;
-    playerBody.userData.rightArm.rotation.z=-0.18;
+    playerBody.userData.leftArm.rotation.z=restLeft;
+    playerBody.userData.rightArm.rotation.z=restRight;
     playerBody.userData.leftArm.rotation.x=0;
     playerBody.userData.rightArm.rotation.x=0;
+    playerBody.userData.leftElbow.rotation.z=0;
+    playerBody.userData.rightElbow.rotation.z=0;
     return;
   }
-  const leanX=THREE.MathUtils.clamp(x,-1,1)*.9;
-  const lift=THREE.MathUtils.clamp(-z,-1,1)*.9;
-  playerBody.userData.leftArm.rotation.z=0.18-leanX;
-  playerBody.userData.rightArm.rotation.z=-0.18+leanX;
+  playerBody.userData.leftArm.rotation.z=restLeft-leanX;
+  playerBody.userData.rightArm.rotation.z=restRight+leanX;
   playerBody.userData.leftArm.rotation.x=lift;
   playerBody.userData.rightArm.rotation.x=lift;
+  const elbowBend=Math.max(0,Math.abs(lift)+Math.abs(leanX)-.15)*.7;
+  playerBody.userData.leftElbow.rotation.z=-elbowBend;
+  playerBody.userData.rightElbow.rotation.z=elbowBend;
 }
 function getArmTestInput(){
   if(!armTestMode)return {x:0,z:0};
@@ -405,6 +433,23 @@ function getArmTestInput(){
   return {x:0,z:0};
 }
 
-function animate(){const dt=Math.min(clock.getDelta(),.05);shotCooldown=Math.max(0,shotCooldown-dt);updateSquidForm();for(const m of targetMotion){if(m.t.material.color.getHex()!==0x22d3ee){m.t.position.x=m.homeX+Math.sin(performance.now()*.0012+m.phase)*.65;m.t.position.y=1.3+Math.sin(performance.now()*.0017+m.phase)*.18}}updateGamepadStatus();const pad=controllerInput();const jc=joyconInput();const touchX=(keys.has("right")?1:0)-(keys.has("left")?1:0);const touchZ=(keys.has("down")?1:0)-(keys.has("up")?1:0);const inputX=Math.abs(jc.x)>.15?jc.x:(Math.abs(pad.x)>.15?pad.x:touchX);const inputZ=Math.abs(jc.z)>.15?jc.z:(Math.abs(pad.z)>.15?pad.z:touchZ);const inputLen=Math.hypot(inputX,inputZ);const armInput=getArmTestInput();updateTestArms(armInput.x,armInput.z);let targetVX=0,targetVZ=0;if(inputLen>.01){targetVX=inputX/inputLen;targetVZ=inputZ/inputLen;const speed=squidForm?4.2:2.4;const dir=new THREE.Vector3(targetVX,0,targetVZ);dir.applyQuaternion(player.quaternion);targetVX=dir.x*speed;targetVZ=dir.z*speed}const response=inputLen>.01?10:14;moveVelocity.x=THREE.MathUtils.damp(moveVelocity.x,targetVX,response,dt);moveVelocity.z=THREE.MathUtils.damp(moveVelocity.z,targetVZ,response,dt);player.position.x+=moveVelocity.x*dt;player.position.z+=moveVelocity.z*dt;player.position.x=THREE.MathUtils.clamp(player.position.x,-6.2,6.2);player.position.z=THREE.MathUtils.clamp(player.position.z,-6.2,6.2);renderer.render(scene,camera)}
+function animate(){const dt=Math.min(clock.getDelta(),.05);shotCooldown=Math.max(0,shotCooldown-dt);updateSquidForm();for(const m of targetMotion){if(m.t.material.color.getHex()!==0x22d3ee){m.t.position.x=m.homeX+Math.sin(performance.now()*.0012+m.phase)*.65;m.t.position.y=1.3+Math.sin(performance.now()*.0017+m.phase)*.18}}updateGamepadStatus();const pad=controllerInput();const jc=joyconInput();const touchX=(keys.has("right")?1:0)-(keys.has("left")?1:0);const touchZ=(keys.has("down")?1:0)-(keys.has("up")?1:0);const inputX=Math.abs(jc.x)>.15?jc.x:(Math.abs(pad.x)>.15?pad.x:touchX);const inputZ=Math.abs(jc.z)>.15?jc.z:(Math.abs(pad.z)>.15?pad.z:touchZ);const inputLen=Math.hypot(inputX,inputZ);const armInput=getArmTestInput();updateTestArms(armInput.x,armInput.z);let targetVX=0,targetVZ=0;if(inputLen>.01){
+  targetVX=inputX/inputLen;
+  targetVZ=inputZ/inputLen;
+  const speed=squidForm?4.2:2.4;
+  const xrCam=renderer.xr.isPresenting?renderer.xr.getCamera():camera;
+  const forward=new THREE.Vector3(0,0,-1).applyQuaternion(xrCam.quaternion);
+  forward.y=0;
+  if(forward.lengthSq()<.0001)forward.set(0,0,-1);
+  forward.normalize();
+  const right=new THREE.Vector3(1,0,0).applyQuaternion(xrCam.quaternion);
+  right.y=0;
+  right.normalize();
+  const dir=new THREE.Vector3().addScaledVector(right,targetVX).addScaledVector(forward,-targetVZ);
+  if(dir.lengthSq()<.0001)dir.set(0,0,-1);
+  dir.normalize();
+  targetVX=dir.x*speed;
+  targetVZ=dir.z*speed;
+}const response=inputLen>.01?10:14;moveVelocity.x=THREE.MathUtils.damp(moveVelocity.x,targetVX,response,dt);moveVelocity.z=THREE.MathUtils.damp(moveVelocity.z,targetVZ,response,dt);player.position.x+=moveVelocity.x*dt;player.position.z+=moveVelocity.z*dt;player.position.x=THREE.MathUtils.clamp(player.position.x,-6.2,6.2);player.position.z=THREE.MathUtils.clamp(player.position.z,-6.2,6.2);renderer.render(scene,camera)}
 renderer.setAnimationLoop(animate);bootStatus.textContent="3D READY • Enter VR";addEventListener("resize",()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
 </script></body></html>
