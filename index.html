@@ -146,12 +146,14 @@ const grid=new THREE.GridHelper(14,28,0x46506f,0x303954);
 grid.position.y=.005;
 scene.add(grid);
 const wallMat=new THREE.MeshStandardMaterial({color:0x3d4660});for(const [x,z,sx,sz] of [[0,-7,14,.15],[-7,0,.15,14],[7,0,.15,14],[0,7,14,.15]]){const w=new THREE.Mesh(new THREE.BoxGeometry(sx,3,sz),wallMat);w.position.set(x,1.5,z);scene.add(w)}
+const solidObstacles=[];
 for(const [x,z] of [[-3,-2],[3,-2],[-2,1],[2,2],[0,-4]]){
   const o=new THREE.Mesh(new THREE.BoxGeometry(1.2,1.2,1.2),new THREE.MeshStandardMaterial({color:0x56627f,roughness:.68,metalness:.12}));
   o.position.set(x,.6,z);
   o.castShadow=true;
   o.receiveShadow=true;
   scene.add(o);
+  solidObstacles.push(o);
 }
 const renderCube=new THREE.Mesh(
   new THREE.BoxGeometry(.7,.7,.7),
@@ -165,7 +167,7 @@ const ball=new THREE.Mesh(
   new THREE.SphereGeometry(.16,18,14),
   new THREE.MeshStandardMaterial({color:0xf8fafc,roughness:.35,metalness:.05})
 );
-ball.position.set(0,.16,-1.1);
+ball.position.set(0,.16,1.8);
 ball.castShadow=true;
 scene.add(ball);
 let ballHeld=false;
@@ -240,7 +242,7 @@ function shoot(){
   spawnInkTrail(origin,hit.point);if(hit.object!==floor&&hit.object.material.color.getHex()!==0x22d3ee){hit.object.material.color.set(0x22d3ee);hit.object.material.emissive.set(0x064e5b);hit.object.material.emissiveIntensity=.9;targetCount++}makeInk(hit.point);document.getElementById("status").textContent="INK!";setTimeout(()=>document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE":"Ready",180);updateStats();if(targetCount===targets.length)document.getElementById("status").textContent="ALL TARGETS INKED! 🎯"}
 function booyah(){booyahCount++;updateStats();const f=document.getElementById("booyahFlash");f.classList.remove("show");void f.offsetWidth;f.classList.add("show");document.getElementById("status").textContent="BOOYAH!";setTimeout(()=>document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE":"Ready",650)}
 document.getElementById("fire").addEventListener("click",shoot);document.getElementById("booyah").addEventListener("click",booyah);
-function resetGame(){targetCount=0;inkCount=0;inkArea=0;booyahCount=0;shotCooldown=0;ballHeld=false;ballGrabLatch=false;ballVelocity.set(0,0,0);ball.position.set(0,.16,-1.1);for(const {t,homeX,homeZ} of targetMotion){t.position.x=homeX;t.position.z=homeZ;t.material.color.set(0xf472b6);t.material.emissive.set(0x4a102d);t.material.emissiveIntensity=.5}while(inkGroup.children.length)inkGroup.remove(inkGroup.children[0]);while(inkParticleGroup.children.length)inkParticleGroup.remove(inkParticleGroup.children[0]);player.position.set(0,0,4);squidForm=false;updateStats();document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready"}
+function resetGame(){targetCount=0;inkCount=0;inkArea=0;booyahCount=0;shotCooldown=0;ballHeld=false;ballGrabLatch=false;ballVelocity.set(0,0,0);ball.position.set(0,.16,1.8);for(const {t,homeX,homeZ} of targetMotion){t.position.x=homeX;t.position.z=homeZ;t.material.color.set(0xf472b6);t.material.emissive.set(0x4a102d);t.material.emissiveIntensity=.5}while(inkGroup.children.length)inkGroup.remove(inkGroup.children[0]);while(inkParticleGroup.children.length)inkParticleGroup.remove(inkParticleGroup.children[0]);player.position.set(0,0,4);squidForm=false;updateStats();document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready"}
 document.getElementById("reset").addEventListener("click",resetGame);
 renderer.xr.addEventListener("sessionstart",()=>{squidForm=false;squidHeightReady=false;squidBaselineSamples=0;squidBaselineSum=0;squidEnterY=1.6;if(xrCameraTracking.mode==="immersive-ar"){document.getElementById("status").textContent="CAMERA TRACKING ACTIVE 📷 • Calibrating...";}else{document.getElementById("status").textContent="VR ACTIVE • Calibrating...";}});
 renderer.xr.addEventListener("sessionend",()=>{
@@ -416,10 +418,10 @@ window.addEventListener("gamepaddisconnected", e => {
 });
 
 function joyconInput() {
-  const fire = !!joyconState.fire;
+  const fire = false;
   const booyahPressed = !!joyconState.booyah;
 
-  if (fire && !joyconFireLatch && typeof shoot === "function") shoot();
+  // Left trigger is reserved for squidbomb pickup.
   if (booyahPressed && !joyconBooyahLatch && typeof booyah === "function") booyah();
 
   joyconFireLatch = fire;
@@ -513,9 +515,7 @@ function controllerInput() {
     }
 
     // Shooting is trigger-only. Face buttons never fire.
-    if (gp.buttons[7]?.pressed) {
-      firePressed = true;
-    }
+    // Controller face buttons and triggers do not fire ink.
 
     if (gp.buttons[8]?.pressed || gp.buttons[9]?.pressed ||
         gp.buttons[10]?.pressed || gp.buttons[11]?.pressed) {
@@ -523,10 +523,10 @@ function controllerInput() {
     }
   }
 
-  if (firePressed && !joyconFireLatch && typeof shoot === "function") shoot();
+  // Ink firing is not bound to controller face buttons or triggers.
   if (booyahPressed && !booyahLatch && typeof booyah === "function") booyah();
 
-  joyconFireLatch = firePressed;
+  joyconFireLatch = false;
   booyahLatch = booyahPressed;
   return { x, z };
 }
@@ -567,6 +567,25 @@ function getArmTestInput(){
   return {x:0,z:0};
 }
 
+
+function resolveObstacleCollisions(){
+  const radius=.28;
+  for(const obstacle of solidObstacles){
+    const minX=obstacle.position.x-.6-radius,maxX=obstacle.position.x+.6+radius;
+    const minZ=obstacle.position.z-.6-radius,maxZ=obstacle.position.z+.6+radius;
+    if(player.position.x>minX&&player.position.x<maxX&&player.position.z>minZ&&player.position.z<maxZ){
+      const dx=Math.min(Math.abs(player.position.x-(obstacle.position.x-.6)),Math.abs(player.position.x-(obstacle.position.x+.6)));
+      const dz=Math.min(Math.abs(player.position.z-(obstacle.position.z-.6)),Math.abs(player.position.z-(obstacle.position.z+.6)));
+      if(dx<dz){
+        player.position.x=player.position.x<obstacle.position.x?obstacle.position.x-.6-radius:obstacle.position.x+.6+radius;
+        moveVelocity.x=0;
+      }else{
+        player.position.z=player.position.z<obstacle.position.z?obstacle.position.z-.6-radius:obstacle.position.z+.6+radius;
+        moveVelocity.z=0;
+      }
+    }
+  }
+}
 function animate(){
 renderCube.rotation.x+=.012;renderCube.rotation.y+=.018;
 const dt=Math.min(clock.getDelta(),.05);shotCooldown=Math.max(0,shotCooldown-dt);updateSquidForm();for(let i=inkParticleGroup.children.length-1;i>=0;i--){
@@ -619,6 +638,6 @@ let targetVX=0,targetVZ=0;if(inputLen>.01){
   dir.normalize();
   targetVX=dir.x*speed;
   targetVZ=dir.z*speed;
-}const response=inputLen>.01?10:14;moveVelocity.x=THREE.MathUtils.damp(moveVelocity.x,targetVX,response,dt);moveVelocity.z=THREE.MathUtils.damp(moveVelocity.z,targetVZ,response,dt);player.position.x+=moveVelocity.x*dt;player.position.z+=moveVelocity.z*dt;player.position.x=THREE.MathUtils.clamp(player.position.x,-6.2,6.2);player.position.z=THREE.MathUtils.clamp(player.position.z,-6.2,6.2);renderer.render(scene,camera)}
+}const response=inputLen>.01?10:14;moveVelocity.x=THREE.MathUtils.damp(moveVelocity.x,targetVX,response,dt);moveVelocity.z=THREE.MathUtils.damp(moveVelocity.z,targetVZ,response,dt);player.position.x+=moveVelocity.x*dt;player.position.z+=moveVelocity.z*dt;player.position.x=THREE.MathUtils.clamp(player.position.x,-6.2,6.2);player.position.z=THREE.MathUtils.clamp(player.position.z,-6.2,6.2);resolveObstacleCollisions();renderer.render(scene,camera)}
 renderer.setAnimationLoop(animate);bootStatus.textContent="3D READY • Enter VR";addEventListener("resize",()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
 </script></body></html>
