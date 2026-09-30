@@ -30,6 +30,33 @@ const targets=[];const targetHomes=[[-4,-5],[0,-5],[4,-5],[-4,0],[4,0]];for(cons
 const targetMotion=targets.map((t,i)=>({t,homeX:t.position.x,homeZ:t.position.z,phase:i*1.7}));
 const inkGroup=new THREE.Group();scene.add(inkGroup);const inkMat=new THREE.MeshStandardMaterial({color:0x22d3ee,emissive:0x064e5b,emissiveIntensity:.45,transparent:true,opacity:.9,roughness:.7});
 let inkCount=0,targetCount=0,booyahCount=0;let inkArea=0,shotCooldown=0;
+
+// Squid form: calibrate the headset height after entering VR, then detect a deliberate crouch.
+let squidForm=false;
+let squidHeightReady=false;
+let squidBaselineSamples=0;
+let squidBaselineSum=0;
+let squidEnterY=1.6;
+
+function updateSquidForm(){
+  if(!renderer.xr.isPresenting)return;
+  const xrCam=renderer.xr.getCamera();
+  const currentY=xrCam.position.y;
+  if(!squidHeightReady){
+    squidBaselineSum+=currentY;
+    squidBaselineSamples++;
+    if(squidBaselineSamples>30){
+      squidEnterY=squidBaselineSum/squidBaselineSamples;
+      squidHeightReady=true;
+    }
+    return;
+  }
+  const wasSquid=squidForm;
+  squidForm=currentY<squidEnterY-.35;
+  if(squidForm!==wasSquid){
+    document.getElementById("status").textContent=squidForm?"SQUID FORM! 🦑":"VR ACTIVE • Look + ink";
+  }
+}
 function updateStats(){document.getElementById("stats").textContent="Ink: "+inkCount+" • Targets: "+targetCount+"/5 • Paint: "+inkArea+"% • Booyah: "+booyahCount}
 function makeInk(point){const size=.35+Math.random()*.65;inkArea=Math.min(100,Math.round(inkGroup.children.length/1.8));const m=new THREE.Mesh(new THREE.CircleGeometry(size,20),inkMat);m.rotation.x=-Math.PI/2;m.position.set(point.x,.012,point.z);m.scale.x=.7+Math.random()*.6;m.scale.y=.7+Math.random()*.6;inkGroup.add(m);inkCount++;if(inkGroup.children.length>180)inkGroup.remove(inkGroup.children[0]);updateStats()}
 const raycaster=new THREE.Raycaster();
@@ -38,7 +65,7 @@ function booyah(){booyahCount++;updateStats();const f=document.getElementById("b
 document.getElementById("fire").addEventListener("click",shoot);document.getElementById("booyah").addEventListener("click",booyah);
 function resetGame(){targetCount=0;inkCount=0;inkArea=0;booyahCount=0;shotCooldown=0;for(const {t,homeX,homeZ} of targetMotion){t.position.x=homeX;t.position.z=homeZ;t.material.color.set(0xf472b6);t.material.emissive.set(0x4a102d);t.material.emissiveIntensity=.5}while(inkGroup.children.length)inkGroup.remove(inkGroup.children[0]);player.position.set(0,0,4);squidForm=false;updateStats();document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready"}
 document.getElementById("reset").addEventListener("click",resetGame);
-renderer.xr.addEventListener("sessionstart",()=>{squidForm=false;squidHeightReady=false;squidBaselineSamples=0;squidBaselineSum=0;squidEnterY=1.6;document.getElementById("status").textContent="VR ACTIVE • Look + ink"});
+renderer.xr.addEventListener("sessionstart",()=>{squidForm=false;squidHeightReady=false;squidBaselineSamples=0;squidBaselineSum=0;squidEnterY=1.6;document.getElementById("status").textContent="VR ACTIVE • Calibrating..."});
 renderer.xr.addEventListener("sessionend",()=>document.getElementById("status").textContent="Ready");
 const keys=new Set();const moveButtons={up:"up",down:"down",left:"left",right:"right"};document.querySelectorAll("[data-move]").forEach(b=>{const k=moveButtons[b.dataset.move];const down=e=>{e.preventDefault();keys.add(k)};const up=e=>{e.preventDefault();keys.delete(k)};b.addEventListener("pointerdown",down);b.addEventListener("pointerup",up);b.addEventListener("pointercancel",up);b.addEventListener("pointerleave",up)});
 const joycons = new Map();
