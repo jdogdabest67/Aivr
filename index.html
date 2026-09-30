@@ -59,6 +59,16 @@ cameraToggle.addEventListener("click",()=>{
 updateCameraTrackingSupport();
 setCameraTrackingUI();
 
+const armTestToggle=document.getElementById("armTestToggle");
+let armTestMode=false;
+armTestToggle.addEventListener("click",()=>{
+  armTestMode=!armTestMode;
+  armTestToggle.classList.toggle("on",armTestMode);
+  armTestToggle.setAttribute("aria-pressed",String(armTestMode));
+  armTestToggle.textContent=armTestMode?"🦾 ARM TEST: ON":"🦾 ARM TEST: OFF";
+  document.getElementById("status").textContent=armTestMode?"ARM TEST MODE • Sticks move arms":(renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready");
+});
+
 // Three.js VR entry button. Keep this as the single VR button creation point.
 const vrButton=VRButton.createButton(renderer);
 document.body.appendChild(vrButton);
