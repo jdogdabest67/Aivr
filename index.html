@@ -8,19 +8,49 @@
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
 #controls{position:fixed;z-index:6;bottom:14px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:end;pointer-events:none}.pad{display:grid;grid-template-columns:48px 48px 48px;gap:6px;pointer-events:auto}.pad button,.action{width:48px;height:48px;border:0;border-radius:14px;background:#ffffff25;color:white;font-size:20px}.pad button:nth-child(1){grid-column:2}.pad button:nth-child(2){grid-column:1}.pad button:nth-child(3){grid-column:2}.pad button:nth-child(4){grid-column:3}.actions{display:flex;gap:8px;align-items:end;pointer-events:auto}.fire{width:72px;height:72px;border-radius:50%;background:#f97316;font-size:14px;font-weight:800}.booyah{width:72px;height:56px;border-radius:16px;background:#22d3ee;font-size:12px;font-weight:900}
-.topJoycon{margin-top:8px;padding:9px 12px;border:0;border-radius:10px;background:#ffffff25;color:white;font-weight:800;font-size:12px;pointer-events:auto}.topJoycon:active{transform:scale(.97)}#cross{position:fixed;z-index:4;left:50%;top:50%;width:10px;height:10px;margin:-5px;border:2px solid white;border-radius:50%;pointer-events:none}#booyahFlash{position:fixed;inset:0;z-index:3;display:grid;place-items:center;pointer-events:none;font-size:42px;font-weight:1000;opacity:0;transform:scale(.8)}#booyahFlash.show{animation:booyah .65s ease-out}@keyframes booyah{0%{opacity:0;transform:scale(.7) rotate(-5deg)}20%{opacity:1;transform:scale(1.15) rotate(3deg)}100%{opacity:0;transform:scale(1.5)}}
+.cameraToggle{margin-top:8px;margin-right:6px;padding:9px 12px;border:0;border-radius:10px;background:#ffffff25;color:white;font-weight:800;font-size:12px;pointer-events:auto}.cameraToggle.on{background:#22d3ee;color:#06252b}.xrButton{margin-top:8px;padding:9px 12px;border:0;border-radius:10px;background:#ffffff25;color:white;font-weight:800;font-size:12px;pointer-events:auto}.xrButton:disabled{opacity:.55}.topJoycon{margin-top:8px;padding:9px 12px;border:0;border-radius:10px;background:#ffffff25;color:white;font-weight:800;font-size:12px;pointer-events:auto}.topJoycon:active{transform:scale(.97)}#cross{position:fixed;z-index:4;left:50%;top:50%;width:10px;height:10px;margin:-5px;border:2px solid white;border-radius:50%;pointer-events:none}#booyahFlash{position:fixed;inset:0;z-index:3;display:grid;place-items:center;pointer-events:none;font-size:42px;font-weight:1000;opacity:0;transform:scale(.8)}#booyahFlash.show{animation:booyah .65s ease-out}@keyframes booyah{0%{opacity:0;transform:scale(.7) rotate(-5deg)}20%{opacity:1;transform:scale(1.15) rotate(3deg)}100%{opacity:0;transform:scale(1.5)}}
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 INK ARENA VR</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
+<div id="ui"><div class="card"><b>🦑 INK ARENA VR</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="xrButton" class="xrButton">ENTER VR</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
-import {VRButton} from "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/webxr/VRButton.js";
+
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x11152b);scene.fog=new THREE.Fog(0x11152b,8,32);
 const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.03,100);camera.position.y=1.6;
-const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.xr.enabled=true;document.body.appendChild(renderer.domElement);document.body.appendChild(VRButton.createButton(renderer));
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.xr.enabled=true;document.body.appendChild(renderer.domElement);document.body.appendChild(VRButton.createButton(renderer));
+const xrCameraTracking={enabled:false,mode:"vr"};
+const cameraToggle=document.getElementById("cameraToggle");
+const xrButton=document.getElementById("xrButton");
+async function updateCameraTrackingSupport(){
+  if(!navigator.xr){cameraToggle.disabled=true;cameraToggle.textContent="📷 CAMERA TRACKING: UNSUPPORTED";return}
+  try{const ar=await navigator.xr.isSessionSupported("immersive-ar");cameraToggle.disabled=false;cameraToggle.title=ar?"Uses WebXR camera-based tracking when AR XR is available.":"This device/browser does not expose immersive AR tracking.";}
+  catch{cameraToggle.disabled=false;}
+}
+function setCameraTrackingUI(){cameraToggle.classList.toggle("on",xrCameraTracking.enabled);cameraToggle.setAttribute("aria-pressed",String(xrCameraTracking.enabled));cameraToggle.textContent=xrCameraTracking.enabled?"📷 CAMERA TRACKING: ON":"📷 CAMERA TRACKING: OFF";}
+cameraToggle.addEventListener("click",()=>{if(renderer.xr.isPresenting){document.getElementById("status").textContent="EXIT XR FIRST TO CHANGE CAMERA TRACKING";return}xrCameraTracking.enabled=!xrCameraTracking.enabled;setCameraTrackingUI();document.getElementById("status").textContent=xrCameraTracking.enabled?"CAMERA TRACKING ENABLED • Enter XR":"CAMERA TRACKING OFF • Enter VR"});
+async function startXR(){
+  if(renderer.xr.isPresenting){const s=renderer.xr.getSession();if(s)s.end();return}
+  if(!navigator.xr){document.getElementById("status").textContent="WebXR unavailable in this browser";return}
+  xrButton.disabled=true;xrButton.textContent="STARTING XR…";
+  try{
+    let mode="immersive-vr";
+    if(xrCameraTracking.enabled){
+      try{if(await navigator.xr.isSessionSupported("immersive-ar"))mode="immersive-ar";else throw new Error("AR unavailable");}
+      catch{xrCameraTracking.mode="vr";document.getElementById("status").textContent="CAMERA TRACKING UNAVAILABLE • Using VR";}
+    }
+    const session=await navigator.xr.requestSession(mode,{optionalFeatures:["local-floor","bounded-floor","viewer","dom-overlay"],domOverlay:{root:document.body}});
+    xrCameraTracking.mode=mode;
+    await renderer.xr.setSession(session);
+  }catch(err){console.error("XR start failed",err);document.getElementById("status").textContent=`XR ERROR: ${err.message||err.name}`;}
+  finally{xrButton.disabled=false;}
+}
+xrButton.addEventListener("click",startXR);
+renderer.xr.addEventListener("sessionstart",()=>{xrButton.textContent="EXIT XR";const ar=xrCameraTracking.mode==="immersive-ar";if(ar){scene.background=null;renderer.setClearAlpha(0);document.getElementById("status").textContent="CAMERA TRACKING ACTIVE 📷";}else{scene.background=new THREE.Color(0x11152b);renderer.setClearAlpha(1);document.getElementById("status").textContent="VR ACTIVE • Look + ink";}});
+renderer.xr.addEventListener("sessionend",()=>{xrButton.textContent="ENTER VR";scene.background=new THREE.Color(0x11152b);renderer.setClearAlpha(1);xrCameraTracking.mode="vr";document.getElementById("status").textContent=xrCameraTracking.enabled?"CAMERA TRACKING READY":"Ready";});
+setCameraTrackingUI();updateCameraTrackingSupport();
 scene.add(new THREE.HemisphereLight(0xffffff,0x172033,1.5));const sun=new THREE.DirectionalLight(0xffffff,2);sun.position.set(3,8,2);scene.add(sun);
 const player=new THREE.Group();player.position.set(0,0,4);player.add(camera);scene.add(player);
 const floor=new THREE.Mesh(new THREE.BoxGeometry(14,.12,14),new THREE.MeshStandardMaterial({color:0x28304a,roughness:.85}));floor.position.y=-.06;scene.add(floor);
