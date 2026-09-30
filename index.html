@@ -145,6 +145,10 @@ scene.add(floor);
 const grid=new THREE.GridHelper(14,28,0x46506f,0x303954);
 grid.position.y=.005;
 scene.add(grid);
+const arenaRing=new THREE.Mesh(new THREE.RingGeometry(4.7,4.76,64),new THREE.MeshBasicMaterial({color:0x22d3ee,transparent:true,opacity:.24,side:THREE.DoubleSide}));
+arenaRing.rotation.x=-Math.PI/2;
+arenaRing.position.y=.008;
+scene.add(arenaRing);
 const wallMat=new THREE.MeshStandardMaterial({color:0x3d4660});for(const [x,z,sx,sz] of [[0,-7,14,.15],[-7,0,.15,14],[7,0,.15,14],[0,7,14,.15]]){const w=new THREE.Mesh(new THREE.BoxGeometry(sx,3,sz),wallMat);w.position.set(x,1.5,z);scene.add(w)}
 const solidObstacles=[];
 for(const [x,z] of [[-3,-2],[3,-2],[-2,1],[2,2],[0,-4]]){
