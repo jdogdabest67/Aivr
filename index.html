@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // Inkbound • build 2026-09-30a</title>
+<title>SPLATVR // Inkbound • build 2026-09-30b</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -151,6 +151,45 @@ arenaRing.position.y=.008;
 scene.add(arenaRing);
 const wallMat=new THREE.MeshStandardMaterial({color:0x3d4660});for(const [x,z,sx,sz] of [[0,-7,14,.15],[-7,0,.15,14],[7,0,.15,14],[0,7,14,.15]]){const w=new THREE.Mesh(new THREE.BoxGeometry(sx,3,sz),wallMat);w.position.set(x,1.5,z);scene.add(w)}
 const solidObstacles=[];
+// Patch notes live on a normal arena cube so the magenta cube stays sacred.
+function makePatchNotesCubeNote(){
+  const canvas=document.createElement("canvas");
+  canvas.width=1024; canvas.height=1024;
+  const ctx=canvas.getContext("2d");
+  ctx.fillStyle="#101827";
+  ctx.fillRect(0,0,1024,1024);
+  ctx.strokeStyle="#22d3ee";
+  ctx.lineWidth=18;
+  ctx.strokeRect(24,24,976,976);
+  ctx.fillStyle="#ffffff";
+  ctx.font="900 76px system-ui, sans-serif";
+  ctx.fillText("BUILD 63",72,130);
+  ctx.font="800 52px system-ui, sans-serif";
+  ctx.fillStyle="#67e8f9";
+  ctx.fillText("PATCH NOTES",72,205);
+  ctx.fillStyle="#ffffff";
+  ctx.font="600 38px system-ui, sans-serif";
+  const lines=[
+    "• Fixed Joy-Con ZL pickup input",
+    "• 0x04 no longer grabs the ball",
+    "• Patch notes now live on arena cubes",
+    "• Magenta cube remains untouched"
+  ];
+  lines.forEach((line,i)=>ctx.fillText(line,72,305+i*100));
+  ctx.fillStyle="#94a3b8";
+  ctx.font="500 30px system-ui, sans-serif";
+  ctx.fillText("SPLATVR // INKBOUND",72,900);
+  const tex=new THREE.CanvasTexture(canvas);
+  tex.colorSpace=THREE.SRGBColorSpace;
+  const note=new THREE.Mesh(
+    new THREE.PlaneGeometry(1.04,1.04),
+    new THREE.MeshBasicMaterial({map:tex,transparent:true})
+  );
+  note.position.set(0,.6,-3.395);
+  note.renderOrder=3;
+  scene.add(note);
+}
+
 for(const [x,z] of [[-3,-2],[3,-2],[-2,1],[2,2],[0,-4]]){
   const o=new THREE.Mesh(new THREE.BoxGeometry(1.2,1.2,1.2),new THREE.MeshStandardMaterial({color:0x56627f,roughness:.68,metalness:.12}));
   o.position.set(x,.6,z);
@@ -243,7 +282,7 @@ function shoot(){
   const hits=raycaster.intersectObjects([floor,...targets],false);
   if(!hits.length)return;
   const hit=hits[0];
-  spawnInkTrail(origin,hit.point);if(hit.object!==floor&&hit.object.material.color.getHex()!==0x22d3ee){hit.object.material.color.set(0x22d3ee);hit.object.material.emissive.set(0x064e5b);hit.object.material.emissiveIntensity=.9;targetCount++}makeInk(hit.point);document.getElementById("status").textContent="INK!";setTimeout(()=>document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE":"Ready",180);updateStats();if(targetCount===targets.length)document.getElementById("status").textContent="ALL TARGETS INKED! 🎯"}
+  spawnInkTrail(origin,hit.point);if(hit.object!==floor&&hit.object.material.color.getHex()!==0x22d3ee){hit.object.material.color.set(0x22d3ee);hit.object.material.emissive.set(0x064e5b);hit.object.material.emissiveIntensity=.9;targetCount++}document.getElementById("status").textContent="INK!";setTimeout(()=>document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE":"Ready",180);updateStats();if(targetCount===targets.length)document.getElementById("status").textContent="ALL TARGETS INKED! 🎯"}
 function booyah(){booyahCount++;updateStats();const f=document.getElementById("booyahFlash");f.classList.remove("show");void f.offsetWidth;f.classList.add("show");document.getElementById("status").textContent="BOOYAH!";setTimeout(()=>document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE":"Ready",650)}
 document.getElementById("fire").addEventListener("click",shoot);document.getElementById("booyah").addEventListener("click",booyah);
 function resetGame(){targetCount=0;inkCount=0;inkArea=0;booyahCount=0;shotCooldown=0;ballHeld=false;ballGrabLatch=false;ballVelocity.set(0,0,0);ball.position.set(0,.16,1.8);for(const {t,homeX,homeZ} of targetMotion){t.position.x=homeX;t.position.z=homeZ;t.material.color.set(0xf472b6);t.material.emissive.set(0x4a102d);t.material.emissiveIntensity=.5}while(inkGroup.children.length)inkGroup.remove(inkGroup.children[0]);while(inkParticleGroup.children.length)inkParticleGroup.remove(inkParticleGroup.children[0]);player.position.set(0,0,4);squidForm=false;updateStats();document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready"}
@@ -295,7 +334,7 @@ function handleJoyconReport(event) {
   const bL = d.getUint8(5);
   joyconState.fire = !!(bR & 0x08) || !!(bR & 0x40) || !!(bR & 0x80) || !!(bL & 0x40) || !!(bL & 0x80);
   joyconState.booyah = !!(bL & 0x01);
-  joyconState.leftTrigger = !!(bL & 0x04);
+  // Joy-Con ZL is 0x80 in the left-controller button byte.\n  // 0x04 is a D-pad bit and must not trigger Squidbomb pickup.\n  joyconState.leftTrigger = !!(bL & 0x80);
 }
 
 async function setupJoyCon(device) {
