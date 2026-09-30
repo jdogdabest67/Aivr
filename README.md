@@ -1,2 +1,0 @@
-# Aivr
-AI VR TEST
