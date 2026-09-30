@@ -21,17 +21,26 @@ import {VRButton} from "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/
 
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x11152b);scene.fog=new THREE.Fog(0x11152b,8,32);
 const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.03,100);camera.position.y=1.6;
-const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.xr.enabled=true;document.body.appendChild(renderer.domElement);document.body.appendChild(VRButton.createButton(renderer));
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.xr.enabled=true;
+document.body.appendChild(renderer.domElement);
 const xrCameraTracking={enabled:false,mode:"vr"};
 const cameraToggle=document.getElementById("cameraToggle");
 async function updateCameraTrackingSupport(){
-  if(!navigator.xr){cameraToggle.disabled=true;cameraToggle.textContent="📷 CAMERA TRACKING: UNSUPPORTED";return;}
+  if(!navigator.xr){
+    cameraToggle.disabled=true;
+    cameraToggle.textContent="📷 CAMERA TRACKING: UNSUPPORTED";
+    return;
+  }
   try{
     const arSupported=await navigator.xr.isSessionSupported("immersive-ar");
     cameraToggle.disabled=!arSupported;
     cameraToggle.title=arSupported?"Optional camera-based XR tracking.":"Camera-based XR tracking is unavailable on this device/browser.";
     if(!arSupported)cameraToggle.textContent="📷 CAMERA TRACKING: UNSUPPORTED";
-  }catch{
+  }catch(err){
+    console.warn("Camera tracking support check failed",err);
     cameraToggle.disabled=true;
     cameraToggle.textContent="📷 CAMERA TRACKING: UNSUPPORTED";
   }
@@ -49,6 +58,10 @@ cameraToggle.addEventListener("click",()=>{
 });
 updateCameraTrackingSupport();
 setCameraTrackingUI();
+
+// Three.js VR entry button. Keep this as the single VR button creation point.
+const vrButton=VRButton.createButton(renderer);
+document.body.appendChild(vrButton);
 scene.add(new THREE.HemisphereLight(0xffffff,0x172033,1.5));const sun=new THREE.DirectionalLight(0xffffff,2);sun.position.set(3,8,2);scene.add(sun);
 const player=new THREE.Group();player.position.set(0,0,4);player.add(camera);scene.add(player);
 const floor=new THREE.Mesh(new THREE.BoxGeometry(14,.12,14),new THREE.MeshStandardMaterial({color:0x28304a,roughness:.85}));floor.position.y=-.06;scene.add(floor);
@@ -94,7 +107,14 @@ document.getElementById("fire").addEventListener("click",shoot);document.getElem
 function resetGame(){targetCount=0;inkCount=0;inkArea=0;booyahCount=0;shotCooldown=0;for(const {t,homeX,homeZ} of targetMotion){t.position.x=homeX;t.position.z=homeZ;t.material.color.set(0xf472b6);t.material.emissive.set(0x4a102d);t.material.emissiveIntensity=.5}while(inkGroup.children.length)inkGroup.remove(inkGroup.children[0]);player.position.set(0,0,4);squidForm=false;updateStats();document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready"}
 document.getElementById("reset").addEventListener("click",resetGame);
 renderer.xr.addEventListener("sessionstart",()=>{squidForm=false;squidHeightReady=false;squidBaselineSamples=0;squidBaselineSum=0;squidEnterY=1.6;if(xrCameraTracking.mode==="immersive-ar"){document.getElementById("status").textContent="CAMERA TRACKING ACTIVE 📷 • Calibrating...";}else{document.getElementById("status").textContent="VR ACTIVE • Calibrating...";}});
-renderer.xr.addEventListener("sessionend",()=>document.getElementById("status").textContent="Ready");
+renderer.xr.addEventListener("sessionend",()=>{
+  squidForm=false;
+  squidHeightReady=false;
+  squidBaselineSamples=0;
+  squidBaselineSum=0;
+  squidEnterY=1.6;
+  document.getElementById("status").textContent="Ready";
+});
 const keys=new Set();const moveButtons={up:"up",down:"down",left:"left",right:"right"};document.querySelectorAll("[data-move]").forEach(b=>{const k=moveButtons[b.dataset.move];const down=e=>{e.preventDefault();keys.add(k)};const up=e=>{e.preventDefault();keys.delete(k)};b.addEventListener("pointerdown",down);b.addEventListener("pointerup",up);b.addEventListener("pointercancel",up);b.addEventListener("pointerleave",up)});
 const joycons = new Map();
 const JOYCON_VENDOR = 0x057e;
