@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // Cube • build 2026-09-30e</title>
+<title>SPLATVR // CUBE PROTOTYPE 67 • INK RAY FIX</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 67</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -94,7 +94,16 @@ const vrReticle=new THREE.Mesh(
 vrReticle.position.set(0,0,-1);
 camera.add(vrReticle);
 
-// Simple blocky R6-style test body. Visual only.\nconst playerBody=new THREE.Group();\nconst bodyMat=new THREE.MeshStandardMaterial({color:0x64748b,roughness:.68,metalness:.1});\nconst limbMat=new THREE.MeshStandardMaterial({color:0x94a3b8,roughness:.72,metalness:.05});\nconst torso=new THREE.Mesh(new THREE.BoxGeometry(.42,.58,.26),bodyMat);torso.position.set(0,.78,0);playerBody.add(torso);\nconst head=new THREE.Mesh(new THREE.BoxGeometry(.34,.34,.34),limbMat);head.position.set(0,1.24,0);playerBody.add(head);\nfor(const side of [-1,1]){const arm=new THREE.Group();arm.position.set(side*.29,.94,0);const mesh=new THREE.Mesh(new THREE.BoxGeometry(.12,.52,.12),limbMat);mesh.position.y=-.24;arm.add(mesh);playerBody.add(arm);playerBody.userData[side<0?"leftArm":"rightArm"]=arm;}\nfor(const side of [-1,1]){const leg=new THREE.Group();leg.position.set(side*.11,.49,0);const mesh=new THREE.Mesh(new THREE.BoxGeometry(.12,.48,.12),limbMat);mesh.position.y=-.24;leg.add(mesh);playerBody.add(leg);playerBody.userData[side<0?"leftLeg":"rightLeg"]=leg;}\nplayer.add(playerBody);\nconst floorMat=new THREE.MeshStandardMaterial({color:0x202946,roughness:.78,metalness:.05});
+// Simple blocky R6-style test body. Visual only.
+const playerBody=new THREE.Group();
+const bodyMat=new THREE.MeshStandardMaterial({color:0x64748b,roughness:.68,metalness:.1});
+const limbMat=new THREE.MeshStandardMaterial({color:0x94a3b8,roughness:.72,metalness:.05});
+const torso=new THREE.Mesh(new THREE.BoxGeometry(.42,.58,.26),bodyMat);torso.position.set(0,.78,0);playerBody.add(torso);
+const head=new THREE.Mesh(new THREE.BoxGeometry(.34,.34,.34),limbMat);head.position.set(0,1.24,0);playerBody.add(head);
+for(const side of [-1,1]){const arm=new THREE.Group();arm.position.set(side*.29,.94,0);const mesh=new THREE.Mesh(new THREE.BoxGeometry(.12,.52,.12),limbMat);mesh.position.y=-.24;arm.add(mesh);playerBody.add(arm);playerBody.userData[side<0?"leftArm":"rightArm"]=arm;}
+for(const side of [-1,1]){const leg=new THREE.Group();leg.position.set(side*.11,.49,0);const mesh=new THREE.Mesh(new THREE.BoxGeometry(.12,.48,.12),limbMat);mesh.position.y=-.24;leg.add(mesh);playerBody.add(leg);playerBody.userData[side<0?"leftLeg":"rightLeg"]=leg;}
+player.add(playerBody);
+const floorMat=new THREE.MeshStandardMaterial({color:0x202946,roughness:.78,metalness:.05});
 const floor=new THREE.Mesh(new THREE.BoxGeometry(14,.12,14),floorMat);
 floor.position.y=-.06;
 floor.receiveShadow=true;
@@ -127,6 +136,7 @@ function makePatchNotesCubeNote(){
   ctx.fillStyle="#ffffff";
   ctx.font="600 38px system-ui, sans-serif";
   const lines=[
+    "• Prototype 67: ink ray fixed",
     "• Controls cleaned up + keyboard support",
     "• Ball can now be kicked around",
     "• Added blocky R6-style walk animation",
@@ -232,12 +242,15 @@ const raycaster=new THREE.Raycaster();
 function shoot(){
   if(shotCooldown>0)return;
   shotCooldown=.18;
-  raycaster.setFromCamera(new THREE.Vector2(0,0),renderer.xr.isPresenting?renderer.xr.getCamera():camera);
   const origin=new THREE.Vector3();
   const dir=new THREE.Vector3();
   const shootCamera=renderer.xr.isPresenting?renderer.xr.getCamera():camera;
   shootCamera.getWorldPosition(origin);
   shootCamera.getWorldDirection(dir);
+  // Use the headset's actual world-space ray. This avoids WebXR ArrayCamera
+  // projection issues that can make setFromCamera() miss every target/floor.
+  raycaster.ray.origin.copy(origin);
+  raycaster.ray.direction.copy(dir);
   const hits=raycaster.intersectObjects([floor,...targets],false);
   if(!hits.length)return;
   const hit=hits[0];
@@ -255,7 +268,10 @@ renderer.xr.addEventListener("sessionend",()=>{
   squidEnterY=1.6;
   document.getElementById("status").textContent="Ready";
 });
-const keys=new Set();\nwindow.addEventListener("keydown",e=>{const k=e.key.toLowerCase();const map={w:"up",s:"down",a:"left",d:"right",arrowup:"up",arrowdown:"down",arrowleft:"left",arrowright:"right"};if(map[k]){keys.add(map[k]);e.preventDefault();}if(k===" "&&!e.repeat)shoot();});\nwindow.addEventListener("keyup",e=>{const k=e.key.toLowerCase();const map={w:"up",s:"down",a:"left",d:"right",arrowup:"up",arrowdown:"down",arrowleft:"left",arrowright:"right"};if(map[k])keys.delete(map[k]);});window.addEventListener("blur",()=>keys.clear());\nconst moveButtons={up:"up",down:"down",left:"left",right:"right"};document.querySelectorAll("[data-move]").forEach(b=>{const k=moveButtons[b.dataset.move];const down=e=>{e.preventDefault();keys.add(k)};const up=e=>{e.preventDefault();keys.delete(k)};b.addEventListener("pointerdown",down);b.addEventListener("pointerup",up);b.addEventListener("pointercancel",up);b.addEventListener("pointerleave",up);b.addEventListener("pointerout",up)});
+const keys=new Set();
+window.addEventListener("keydown",e=>{const k=e.key.toLowerCase();const map={w:"up",s:"down",a:"left",d:"right",arrowup:"up",arrowdown:"down",arrowleft:"left",arrowright:"right"};if(map[k]){keys.add(map[k]);e.preventDefault();}if(k===" "&&!e.repeat)shoot();});
+window.addEventListener("keyup",e=>{const k=e.key.toLowerCase();const map={w:"up",s:"down",a:"left",d:"right",arrowup:"up",arrowdown:"down",arrowleft:"left",arrowright:"right"};if(map[k])keys.delete(map[k]);});window.addEventListener("blur",()=>keys.clear());
+const moveButtons={up:"up",down:"down",left:"left",right:"right"};document.querySelectorAll("[data-move]").forEach(b=>{const k=moveButtons[b.dataset.move];const down=e=>{e.preventDefault();keys.add(k)};const up=e=>{e.preventDefault();keys.delete(k)};b.addEventListener("pointerdown",down);b.addEventListener("pointerup",up);b.addEventListener("pointercancel",up);b.addEventListener("pointerleave",up);b.addEventListener("pointerout",up)});
 // Joy-Con / Gamepad input
 // The game polls controller state directly every frame. Browser/Android still owns
 // the underlying HID connection, but this keeps gameplay input responsive.
@@ -293,7 +309,9 @@ function handleJoyconReport(event) {
   const bL = d.getUint8(5);
   joyconState.fire = !!(bR & 0x08) || !!(bR & 0x40) || !!(bR & 0x80) || !!(bL & 0x40) || !!(bL & 0x80);
   joyconState.booyah = !!(bL & 0x01);
-  // Joy-Con ZL is 0x80 in the left-controller button byte.\n  // 0x04 is a D-pad bit and must not trigger Squidbomb pickup.\n  joyconState.leftTrigger = !!(bL & 0x80);
+  // Joy-Con ZL is 0x80 in the left-controller button byte.
+  // 0x04 is a D-pad bit and must not trigger Squidbomb pickup.
+  joyconState.leftTrigger = !!(bL & 0x80);
 }
 
 async function setupJoyCon(device) {
@@ -452,7 +470,8 @@ function getBallTriggerState() {
   return {leftTrigger};
 }
 
-function updateBall(leftTrigger,dt){const xrCam=renderer.xr.isPresenting?renderer.xr.getCamera():camera;const near=new THREE.Vector3();xrCam.getWorldPosition(near);ballKickCooldown=Math.max(0,ballKickCooldown-dt);if(!ballHeld&&leftTrigger&&!ballGrabLatch&&ball.position.distanceTo(near)<1.05){ballHeld=true;ballVelocity.set(0,0,0);}if(ballHeld){const hold=new THREE.Vector3(.28,-.12,-.48);hold.applyMatrix4(xrCam.matrixWorld);ball.position.lerp(hold,.45);ballVelocity.set(0,0,0);}else{ballVelocity.y-=9.8*dt;ball.position.addScaledVector(ballVelocity,dt);if(ball.position.y<.16){ball.position.y=.16;if(Math.abs(ballVelocity.y)>.8)ballVelocity.y*=-.45;else ballVelocity.y=0;}ballVelocity.x*=Math.pow(.985,dt*60);ballVelocity.z*=Math.pow(.985,dt*60);if(ballVelocity.lengthSq()>.01){ball.rotation.x+=dt*5;ball.rotation.y+=dt*3;}}if(ballGrabLatch&&!leftTrigger&&ballHeld){const dir=new THREE.Vector3(0,0,-1).applyQuaternion(xrCam.quaternion);dir.y+=.08;dir.normalize();ballHeld=false;ballVelocity.copy(dir.multiplyScalar(7.2));}if(!ballHeld&&ballKickCooldown<=0){const dx=ball.position.x-player.position.x,dz=ball.position.z-player.position.z,dist=Math.hypot(dx,dz);if(dist<.62&&moveVelocity.lengthSq()>.18){const kick=new THREE.Vector3(moveVelocity.x,0,moveVelocity.z).normalize();ballVelocity.set(kick.x*6.5,1.8,kick.z*6.5);ballKickCooldown=.22;}}ballGrabLatch=leftTrigger;}\nfunction controllerInput() {
+function updateBall(leftTrigger,dt){const xrCam=renderer.xr.isPresenting?renderer.xr.getCamera():camera;const near=new THREE.Vector3();xrCam.getWorldPosition(near);ballKickCooldown=Math.max(0,ballKickCooldown-dt);if(!ballHeld&&leftTrigger&&!ballGrabLatch&&ball.position.distanceTo(near)<1.05){ballHeld=true;ballVelocity.set(0,0,0);}if(ballHeld){const hold=new THREE.Vector3(.28,-.12,-.48);hold.applyMatrix4(xrCam.matrixWorld);ball.position.lerp(hold,.45);ballVelocity.set(0,0,0);}else{ballVelocity.y-=9.8*dt;ball.position.addScaledVector(ballVelocity,dt);if(ball.position.y<.16){ball.position.y=.16;if(Math.abs(ballVelocity.y)>.8)ballVelocity.y*=-.45;else ballVelocity.y=0;}ballVelocity.x*=Math.pow(.985,dt*60);ballVelocity.z*=Math.pow(.985,dt*60);if(ballVelocity.lengthSq()>.01){ball.rotation.x+=dt*5;ball.rotation.y+=dt*3;}}if(ballGrabLatch&&!leftTrigger&&ballHeld){const dir=new THREE.Vector3(0,0,-1).applyQuaternion(xrCam.quaternion);dir.y+=.08;dir.normalize();ballHeld=false;ballVelocity.copy(dir.multiplyScalar(7.2));}if(!ballHeld&&ballKickCooldown<=0){const dx=ball.position.x-player.position.x,dz=ball.position.z-player.position.z,dist=Math.hypot(dx,dz);if(dist<.62&&moveVelocity.lengthSq()>.18){const kick=new THREE.Vector3(moveVelocity.x,0,moveVelocity.z).normalize();ballVelocity.set(kick.x*6.5,1.8,kick.z*6.5);ballKickCooldown=.22;}}ballGrabLatch=leftTrigger;}
+function controllerInput() {
   // Poll directly every frame. This does not override Chrome/Android ownership,
   // but avoids waiting for browser events before gameplay sees the current state.
   const pads = getControllers().filter(gp => gp?.connected);
@@ -496,7 +515,9 @@ function updateBall(leftTrigger,dt){const xrCam=renderer.xr.isPresenting?rendere
 }
 
 camera.lookAt(0,1.2,-3);const clock=new THREE.Clock();const moveVelocity=new THREE.Vector3();
-function updateWalkAnimation(speed){const moving=speed>.12;const swing=moving?Math.sin(performance.now()*.012)*Math.min(.62,speed*.22):0;playerBody.userData.leftLeg.rotation.x=swing;playerBody.userData.rightLeg.rotation.x=-swing;playerBody.userData.leftArm.rotation.x=-swing*.7;playerBody.userData.rightArm.rotation.x=swing*.7;playerBody.position.y=moving?Math.abs(Math.sin(performance.now()*.012))*.012:0;}\nfunction updateTestArms(x,z){if(!armTestMode)return;const lean=THREE.MathUtils.clamp(x,-1,1)*.85,lift=THREE.MathUtils.clamp(-z,-1,1)*.8;playerBody.userData.leftArm.rotation.z=.12-lean;playerBody.userData.rightArm.rotation.z=-.12+lean;playerBody.userData.leftArm.rotation.x=lift;playerBody.userData.rightArm.rotation.x=lift;}\nfunction getArmTestInput(){
+function updateWalkAnimation(speed){const moving=speed>.12;const swing=moving?Math.sin(performance.now()*.012)*Math.min(.62,speed*.22):0;playerBody.userData.leftLeg.rotation.x=swing;playerBody.userData.rightLeg.rotation.x=-swing;playerBody.userData.leftArm.rotation.x=-swing*.7;playerBody.userData.rightArm.rotation.x=swing*.7;playerBody.position.y=moving?Math.abs(Math.sin(performance.now()*.012))*.012:0;}
+function updateTestArms(x,z){if(!armTestMode)return;const lean=THREE.MathUtils.clamp(x,-1,1)*.85,lift=THREE.MathUtils.clamp(-z,-1,1)*.8;playerBody.userData.leftArm.rotation.z=.12-lean;playerBody.userData.rightArm.rotation.z=-.12+lean;playerBody.userData.leftArm.rotation.x=lift;playerBody.userData.rightArm.rotation.x=lift;}
+function getArmTestInput(){
   if(!armTestMode)return {x:0,z:0};
   const pads=getControllers().filter(gp=>gp?.connected);
   for(const gp of pads){
