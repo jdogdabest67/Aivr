@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Tiny WebXR Room</title>
+  <style>
+    html,body{margin:0;height:100%;overflow:hidden;background:#111827;font-family:system-ui;color:white}
+    #help{position:fixed;z-index:2;top:12px;left:12px;padding:10px 12px;border-radius:12px;background:#0009}
+  </style>
+</head>
+<body>
+<div id="help">🥽 Tap ENTER VR, then look around. Arrow keys / WASD move.</div>
+
+<script type="module">
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+import { VRButton } from "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/webxr/VRButton.js";
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x101827);
+
+const camera = new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.05,100);
+camera.position.y=1.6;
+
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.xr.enabled=true;
+document.body.appendChild(renderer.domElement);
+
+const button=VRButton.createButton(renderer);
+document.body.appendChild(button);
+
+scene.add(new THREE.HemisphereLight(0xffffff,0x334155,1.5));
+
+const player=new THREE.Group();
+player.position.set(0,0,4);
+player.add(camera);
+scene.add(player);
+
+const floor=new THREE.Mesh(
+  new THREE.BoxGeometry(10,.1,10),
+  new THREE.MeshStandardMaterial({color:0x334155})
+);
+floor.position.y=-.05;
+scene.add(floor);
+
+function box(x,y,z,color){
+  const b=new THREE.Mesh(
+    new THREE.BoxGeometry(1,1,1),
+    new THREE.MeshStandardMaterial({color})
+  );
+  b.position.set(x,y,z);
+  scene.add(b);
+}
+
+box(-2,.5,-2,0xef4444);
+box(0,.5,-3,0x22c55e);
+box(2,.5,-2,0x3b82f6);
+
+const wallMat=new THREE.MeshStandardMaterial({color:0x475569});
+for(const [x,z,sx,sz] of [
+  [0,-5,10,.1],[-5,0,.1,10],[5,0,.1,10]
+]){
+  const w=new THREE.Mesh(new THREE.BoxGeometry(sx,3,sz),wallMat);
+  w.position.set(x,1.5,z);
+  scene.add(w);
+}
+
+const keys={};
+addEventListener("keydown",e=>keys[e.key.toLowerCase()]=true);
+addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
+
+const clock=new THREE.Clock();
+
+function animate(){
+  const dt=Math.min(clock.getDelta(),.05);
+  let x=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0);
+  let z=(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0);
+  if(x||z){
+    const len=Math.hypot(x,z);
+    x/=len; z/=len;
+    const speed=2*dt;
+    const dir=new THREE.Vector3(x,0,z);
+    dir.applyQuaternion(player.quaternion);
+    player.position.addScaledVector(dir,speed);
+    player.position.x=THREE.MathUtils.clamp(player.position.x,-4.4,4.4);
+    player.position.z=THREE.MathUtils.clamp(player.position.z,-4.4,4.4);
+  }
+  renderer.render(scene,camera);
+}
+renderer.setAnimationLoop(animate);
+
+addEventListener("resize",()=>{
+  camera.aspect=innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+});
+</script>
+</body>
+</html>
