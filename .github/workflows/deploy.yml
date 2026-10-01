@@ -1,6 +1,6 @@
-# Deploy Build 101 Pages trigger refresh
+# Deploy Build 102 Pages trigger refresh
 name: Deploy to GitHub Pages
-# Build 101 final sanity • motion sensor lab
+# Build 102 final sanity • VR-only IMU recenter
 
 on:
   push:
