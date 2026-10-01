@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 98 • WEBHID LAB</title>
+<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 99 • USB + WEBHID LAB</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 98</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button><button id="hidDevice" class="topJoycon">CONNECT ANY HID</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">VR INPUT: waiting</span></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 99</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button><button id="hidDevice" class="topJoycon">CONNECT ANY HID</button><button id="usbDevice" class="topJoycon">CONNECT USB</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">VR INPUT: waiting</span></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action squidButton" id="squidButton">🦑 SQUID</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -230,6 +230,7 @@ function makePatchNotesCubeNote(){
   ctx.fillStyle="#ffffff";
   ctx.font="600 38px system-ui, sans-serif";
   const lines=[
+    "• Prototype 99: USB + WebHID permission lab",
     "• Prototype 88: screen-mode squid proof transformation",
     "• Fixed-timestep movement + collision physics",
     "• Bounded ball substeps reduce wall/corner tunneling",
@@ -684,6 +685,82 @@ async function connectAnyHid(){
   }
 }
 hidDeviceButton.addEventListener("click",connectAnyHid);
+const usbDeviceButton=document.getElementById("usbDevice");
+const genericUsbDevices=new Map();
+function usbHex(value){return Number(value||0).toString(16).padStart(4,"0");}
+function usbDeviceLabel(device){return device.productName||device.manufacturerName||"USB DEVICE";}
+async function inspectUsbDevice(device){
+  if(!device)return;
+  try{
+    genericUsbDevices.set(device,device);
+    console.info("SPLATVR WebUSB connected",{
+      productName:device.productName||"",
+      manufacturerName:device.manufacturerName||"",
+      vendorId:"0x"+usbHex(device.vendorId),
+      productId:"0x"+usbHex(device.productId),
+      serialNumber:device.serialNumber||"",
+      opened:!!device.opened,
+      configurations:(device.configurations||[]).map(c=>({
+        configurationValue:c.configurationValue,
+        interfaces:(c.interfaces||[]).map(i=>({
+          interfaceNumber:i.interfaceNumber,
+          alternates:(i.alternates||[]).map(a=>({
+            alternateSetting:a.alternateSetting,
+            interfaceClass:a.interfaceClass,
+            interfaceSubclass:a.interfaceSubclass,
+            interfaceProtocol:a.interfaceProtocol,
+            endpoints:(a.endpoints||[]).map(e=>({endpointNumber:e.endpointNumber,direction:e.direction,type:e.type}))
+          }))
+        }))
+      }))
+    });
+    const status=document.getElementById("status");
+    if(status)status.textContent="WEBUSB READY • "+usbDeviceLabel(device)+" • 0x"+usbHex(device.vendorId)+"/0x"+usbHex(device.productId);
+    const input=document.getElementById("vrInputStatus");
+    if(input)input.textContent="WEBUSB: "+usbDeviceLabel(device)+" • USB permission granted";
+    usbDeviceButton.textContent=genericUsbDevices.size>1?"USB DEVICES CONNECTED":"USB CONNECTED";
+  }catch(err){
+    console.error("WebUSB inspection failed",err);
+    const status=document.getElementById("status");
+    if(status)status.textContent="WEBUSB ERROR • "+(err?.message||"could not inspect device");
+  }
+}
+async function connectAnyUsb(){
+  if(!("usb" in navigator)){
+    document.getElementById("status").textContent="WebUSB unavailable in this browser";
+    return;
+  }
+  usbDeviceButton.disabled=true;
+  usbDeviceButton.textContent="CHOOSE USB DEVICE…";
+  try{
+    const device=await navigator.usb.requestDevice({filters:[]});
+    if(!device){
+      document.getElementById("status").textContent="NO USB DEVICE SELECTED";
+      usbDeviceButton.textContent="CONNECT USB";
+      return;
+    }
+    await inspectUsbDevice(device);
+  }catch(err){
+    console.warn("Generic WebUSB request failed",err);
+    document.getElementById("status").textContent="WEBUSB REQUEST FAILED • "+(err?.message||"permission cancelled");
+  }finally{
+    usbDeviceButton.disabled=false;
+    if(usbDeviceButton.textContent==="CHOOSE USB DEVICE…")usbDeviceButton.textContent="CONNECT USB";
+  }
+}
+usbDeviceButton.addEventListener("click",connectAnyUsb);
+if("usb" in navigator){
+  navigator.usb.addEventListener("connect",event=>{if(event.device)inspectUsbDevice(event.device);});
+  navigator.usb.addEventListener("disconnect",event=>{
+    const device=event.device;
+    if(genericUsbDevices.has(device))genericUsbDevices.delete(device);
+    if(!genericUsbDevices.size&&document.getElementById("status")?.textContent.startsWith("WEBUSB")){
+      document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready";
+    }
+  });
+  navigator.usb.getDevices().then(devices=>devices.forEach(inspectUsbDevice)).catch(()=>{});
+}
+
 if("hid" in navigator){
   navigator.hid.addEventListener("connect",event=>{
     if(event.device?.opened)attachGenericHid(event.device);
