@@ -333,11 +333,20 @@ window.addEventListener("gamepaddisconnected", e => {
   updateGamepadStatus();
 });
 
+function pulseController(duration=45,strong=0.35){
+  const pads=getControllers().filter(g=>g?.connected);
+  for(const gp of pads){
+    const actuator=gp.vibrationActuator;
+    if(actuator?.playEffect){
+      actuator.playEffect("dual-rumble",{startDelay:0,duration,weakMagnitude:strong,strongMagnitude:strong}).catch(()=>{});
+    }
+  }
+}
 function joyconInput() {
   const fire = !!joyconState.fire;
   const booyahPressed = !!joyconState.booyah;
 
-  if (fire && !joyconFireLatch && typeof shoot === "function") shoot();
+  if (fire && !joyconFireLatch && typeof shoot === "function") { shoot(); pulseController(); }
   if (booyahPressed && !joyconBooyahLatch && typeof booyah === "function") booyah();
 
   joyconFireLatch = fire;
