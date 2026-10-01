@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // CUBE PROTOTYPE 69 • BIG SPLATS</title>
+<title>SPLATVR // CUBE PROTOTYPE 70 • INK WALLS</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 69</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 70</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -115,7 +115,7 @@ const arenaRing=new THREE.Mesh(new THREE.RingGeometry(4.7,4.76,64),new THREE.Mes
 arenaRing.rotation.x=-Math.PI/2;
 arenaRing.position.y=.008;
 scene.add(arenaRing);
-const wallMat=new THREE.MeshStandardMaterial({color:0x3d4660});for(const [x,z,sx,sz] of [[0,-7,14,.15],[-7,0,.15,14],[7,0,.15,14],[0,7,14,.15]]){const w=new THREE.Mesh(new THREE.BoxGeometry(sx,3,sz),wallMat);w.position.set(x,1.5,z);scene.add(w)}
+const wallMat=new THREE.MeshStandardMaterial({color:0x3d4660});const inkableWalls=[];for(const [x,z,sx,sz] of [[0,-7,14,.15],[-7,0,.15,14],[7,0,.15,14],[0,7,14,.15]]){const w=new THREE.Mesh(new THREE.BoxGeometry(sx,3,sz),wallMat.clone());w.position.set(x,1.5,z);w.receiveShadow=true;scene.add(w);inkableWalls.push(w)}
 const solidObstacles=[];
 // Patch notes live on a normal arena cube so the magenta cube stays sacred.
 function makePatchNotesCubeNote(){
@@ -129,23 +129,23 @@ function makePatchNotesCubeNote(){
   ctx.strokeRect(24,24,976,976);
   ctx.fillStyle="#ffffff";
   ctx.font="900 76px system-ui, sans-serif";
-  ctx.fillText("BUILD 69",72,130);
+  ctx.fillText("BUILD 70",72,130);
   ctx.font="800 52px system-ui, sans-serif";
   ctx.fillStyle="#67e8f9";
   ctx.fillText("PATCH NOTES",72,205);
   ctx.fillStyle="#ffffff";
   ctx.font="600 38px system-ui, sans-serif";
   const lines=[
-    "• Prototype 69: Bigger irregular ink splats",
+    "• Prototype 70: Walls can now be inked",
+    "• Bigger irregular ink splats remain",
     "• Magenta cube raised + rear cube removed",
     "• Player body is no longer a box",
-    "• Ink impact tuned for faster feedback",
     "• Ball + controls remain in prototype mode"
   ];
   lines.forEach((line,i)=>ctx.fillText(line,72,305+i*100));
   ctx.fillStyle="#94a3b8";
   ctx.font="500 30px system-ui, sans-serif";
-  ctx.fillText("SPLATVR // CUBE • PROTOTYPE 69",72,900);
+  ctx.fillText("SPLATVR // CUBE • PROTOTYPE 70",72,900);
   const tex=new THREE.CanvasTexture(canvas);
   tex.colorSpace=THREE.SRGBColorSpace;
   const note=new THREE.Mesh(
@@ -237,7 +237,7 @@ function spawnInkTrail(start,end){
   drop.userData.impactPoint=end.clone();
   inkParticleGroup.add(drop);
 }
-function makeInk(point){
+function makeWallInk(point,wall){const local=wall.worldToLocal(point.clone());const size=.34+Math.random()*.28;const shape=new THREE.Shape();const spikes=12;for(let i=0;i<spikes;i++){const a=i/spikes*Math.PI*2;const r=size*(.72+Math.random()*.5);const x=Math.cos(a)*r,y=Math.sin(a)*r;if(i===0)shape.moveTo(x,y);else shape.lineTo(x,y)}shape.closePath();const splat=new THREE.Mesh(new THREE.ShapeGeometry(shape),inkMat.clone());if(Math.abs(wall.geometry.parameters.sx||0)<1)splat.rotation.y=Math.PI/2;splat.position.copy(point).addScaledVector(new THREE.Vector3(Math.sign(wall.position.x)||0,0,Math.sign(wall.position.z)||0),.006);splat.position.y=point.y;inkGroup.add(splat);inkCount++;inkArea=Math.min(100,Math.round(inkGroup.children.length/2.2));while(inkGroup.children.length>180)inkGroup.remove(inkGroup.children[0]);updateStats()}\nfunction makeInk(point){
   const pulse=new THREE.Mesh(new THREE.CircleGeometry(.22,16),new THREE.MeshBasicMaterial({color:0x67e8f9,transparent:true,opacity:.5,side:THREE.DoubleSide}));
   pulse.rotation.x=-Math.PI/2;pulse.position.set(point.x,.016,point.z);pulse.userData.life=.22;pulse.userData.maxLife=.22;pulse.userData.kind="pulse";inkParticleGroup.add(pulse);
 
@@ -287,10 +287,10 @@ function shoot(){
   // projection issues that can make setFromCamera() miss every target/floor.
   raycaster.ray.origin.copy(origin);
   raycaster.ray.direction.copy(dir);
-  const hits=raycaster.intersectObjects([floor,...targets],false);
+  const hits=raycaster.intersectObjects([floor,...targets,...inkableWalls],false);
   if(!hits.length)return;
   const hit=hits[0];
-  spawnInkTrail(origin,hit.point);if(hit.object!==floor&&hit.object.material.color.getHex()!==0x22d3ee){hit.object.material.color.set(0x22d3ee);hit.object.material.emissive.set(0x064e5b);hit.object.material.emissiveIntensity=.9;targetCount++}document.getElementById("status").textContent="INK!";setTimeout(()=>document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE":"Ready",180);updateStats();if(targetCount===targets.length)document.getElementById("status").textContent="ALL TARGETS INKED! 🎯"}
+  spawnInkTrail(origin,hit.point);if(hit.object!==floor){const isTarget=targets.includes(hit.object);const alreadyInked=hit.object.material.color.getHex()===0x22d3ee;if(!alreadyInked){hit.object.material.color.set(0x22d3ee);hit.object.material.emissive.set(0x064e5b);hit.object.material.emissiveIntensity=.9;if(isTarget)targetCount++;else if(inkableWalls.includes(hit.object))makeWallInk(hit.point,hit.object)}}document.getElementById("status").textContent="INK!";setTimeout(()=>document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE":"Ready",180);updateStats();if(targetCount===targets.length)document.getElementById("status").textContent="ALL TARGETS INKED! 🎯"}
 function booyah(){booyahCount++;updateStats();const f=document.getElementById("booyahFlash");f.classList.remove("show");void f.offsetWidth;f.classList.add("show");document.getElementById("status").textContent="BOOYAH!";setTimeout(()=>document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE":"Ready",650)}
 document.getElementById("fire").addEventListener("click",shoot);document.getElementById("booyah").addEventListener("click",booyah);
 function resetGame(){targetCount=0;inkCount=0;inkArea=0;booyahCount=0;shotCooldown=0;ballHeld=false;ballGrabLatch=false;ballKickCooldown=0;ballVelocity.set(0,0,0);ball.position.set(0,.16,1.8);for(const {t,homeX,homeZ} of targetMotion){t.position.x=homeX;t.position.z=homeZ;t.material.color.set(0xf472b6);t.material.emissive.set(0x4a102d);t.material.emissiveIntensity=.5}while(inkGroup.children.length)inkGroup.remove(inkGroup.children[0]);while(inkParticleGroup.children.length)inkParticleGroup.remove(inkParticleGroup.children[0]);player.position.set(0,0,4);moveVelocity.set(0,0,0);squidForm=false;updateStats();document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready"}
