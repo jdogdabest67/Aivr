@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 115 • HEAD MODEL CAMERA LOCK</title>
+<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 116 • RUBBER BAND HEAD</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -411,7 +411,7 @@ const playerBody=new THREE.Group();
 const bodyMat=new THREE.MeshStandardMaterial({color:0x64748b,roughness:.68,metalness:.1});
 const limbMat=new THREE.MeshStandardMaterial({color:0x94a3b8,roughness:.72,metalness:.05});
 const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.075,.46,6,10),bodyMat);torso.position.set(0,.67,0);playerBody.add(torso);
-const head=new THREE.Mesh(new THREE.SphereGeometry(.10,14,10),limbMat);head.position.set(0,1.08,0);playerBody.add(head);
+const head=new THREE.Mesh(new THREE.SphereGeometry(.10,14,10),limbMat);head.visible=false;head.position.set(0,1.08,0);playerBody.add(head);
 for(const side of [-1,1]){
   const arm=new THREE.Group();
   arm.position.set(side*.13,.91,0);
@@ -1329,6 +1329,17 @@ function syncVrAvatarHead(){
   xrCam.getWorldPosition(worldPos);
   xrCam.getWorldQuaternion(worldQuat);
   player.worldToLocal(worldPos);
+  const anchorWorld=new THREE.Vector3();
+  vrMotionRig.getWorldPosition(anchorWorld);
+  player.worldToLocal(anchorWorld);
+  const headOffset=worldPos.clone().sub(anchorWorld);
+  const distance=headOffset.length();
+  const rubberBandRadius=.55;
+  if(distance>rubberBandRadius){
+    const excess=distance-rubberBandRadius;
+    headOffset.multiplyScalar((rubberBandRadius+(excess*.18))/distance);
+    worldPos.copy(anchorWorld).add(headOffset);
+  }
   head.position.copy(worldPos);
   const playerWorldQuat=new THREE.Quaternion();
   player.getWorldQuaternion(playerWorldQuat);
