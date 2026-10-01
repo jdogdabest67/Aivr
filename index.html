@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 95 • BALL PHYSICS + STICK PASS</title>
+<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 96 • ORIGINAL BALL PASS</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 92</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 96</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action squidButton" id="squidButton">🦑 SQUID</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -196,7 +196,7 @@ function makePatchNotesCubeNote(){
   lines.forEach((line,i)=>ctx.fillText(line,72,305+i*100));
   ctx.fillStyle="#94a3b8";
   ctx.font="500 30px system-ui, sans-serif";
-  ctx.fillText("SPLATVR // CUBE • PROTOTYPE 92",72,900);
+  ctx.fillText("SPLATVR // CUBE • PROTOTYPE 96",72,900);
   const tex=new THREE.CanvasTexture(canvas);
   tex.colorSpace=THREE.SRGBColorSpace;
   const note=new THREE.Mesh(
@@ -255,13 +255,9 @@ function updateHitboxes(){
   if(!hitboxGroup.visible)return;
   for(const h of obstacleHitboxes)h.update();
   ballHitbox.position.copy(ball.position);
-  for(let i=0;i<testBalls.length;i++){
-    ballLabHitboxes[i].visible=true;
-    ballLabHitboxes[i].position.copy(testBalls[i].mesh.position);
-  }
   playerHitboxBox.set(
     player.position.x-.28,0,
-    player.position.z-.28,
+    player.position.z-.28,1.5,
     player.position.x+.28,1.5,
     player.position.z+.28
   );
@@ -279,25 +275,9 @@ const ball=new THREE.Mesh(
   new THREE.SphereGeometry(.16,18,14),
   new THREE.MeshStandardMaterial({color:0xf8fafc,roughness:.35,metalness:.05})
 );
-ball.position.set(0,.16,7.4);
+ball.position.set(0,.16,9.5);
 ball.castShadow=true;
 scene.add(ball);
-const testBalls=[
-  {radius:.22,mass:1.5,label:"SMALL",color:0x60a5fa,pos:[-4,.22,9.5],velocity:new THREE.Vector3()},
-  {radius:.38,mass:3.5,label:"MEDIUM",color:0xfacc15,pos:[-1.3,.38,9.5],velocity:new THREE.Vector3()},
-  {radius:.58,mass:7,label:"LARGE",color:0xfb923c,pos:[2.2,.58,9.5],velocity:new THREE.Vector3()},
-  {radius:.82,mass:12,label:"HEAVY",color:0xef4444,pos:[5.5,.82,9.5],velocity:new THREE.Vector3()}
-].map(def=>{
-  const mesh=new THREE.Mesh(new THREE.SphereGeometry(def.radius,20,16),new THREE.MeshStandardMaterial({color:def.color,roughness:.45,metalness:.08}));
-  mesh.position.set(...def.pos);mesh.castShadow=true;scene.add(mesh);
-  mesh.userData.ballMass=def.mass;mesh.userData.ballLabel=def.label;
-  return {...def,mesh};
-});
-const ballLabHitboxes=[];
-for(const b of testBalls){
-  const h=new THREE.Mesh(new THREE.SphereGeometry(b.radius,14,10),new THREE.MeshBasicMaterial({color:0xfacc15,wireframe:true,transparent:true,opacity:.9}));
-  h.visible=false;scene.add(h);ballLabHitboxes.push(h);
-}
 let ballHeld=false;
 let ballVelocity=new THREE.Vector3();
 let ballGrabLatch=false;let ballKickCooldown=0;
@@ -439,7 +419,7 @@ function shoot(){
   spawnInkTrail(origin,hit.point);if(hit.object!==floor){const isTarget=targets.includes(hit.object);const isWall=inkableWalls.includes(hit.object);if(isWall){makeWallInk(hit.point,hit.object);}else{const alreadyInked=hit.object.material.color.getHex()===0x22d3ee;if(!alreadyInked){hit.object.material.color.set(0x22d3ee);hit.object.material.emissive.set(0x064e5b);hit.object.material.emissiveIntensity=.9;if(isTarget)targetCount++;}}}document.getElementById("status").textContent="INK!";setTimeout(()=>document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE":"Ready",180);updateStats();if(targetCount===targets.length)document.getElementById("status").textContent="ALL TARGETS INKED! 🎯"}
 function booyah(){booyahCount++;updateStats();const f=document.getElementById("booyahFlash");f.classList.remove("show");void f.offsetWidth;f.classList.add("show");document.getElementById("status").textContent="BOOYAH!";setTimeout(()=>document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE":"Ready",650)}
 document.getElementById("fire").addEventListener("click",shoot);document.getElementById("booyah").addEventListener("click",booyah);document.getElementById("squidButton").addEventListener("click",()=>{setSquidMode(!squidForm);});
-function resetGame(){targetCount=0;inkCount=0;inkArea=0;inkCoverage=0;booyahCount=0;shotCooldown=0;ballHeld=false;ballGrabLatch=false;ballKickCooldown=0;ballVelocity.set(0,0,0);ball.position.set(0,.16,7.4);for(const b of testBalls){b.velocity.set(0,0,0);b.mesh.position.set(...b.pos);}for(const {t,homeX,homeZ} of targetMotion){t.position.x=homeX;t.position.z=homeZ;t.material.color.set(0xf472b6);t.material.emissive.set(0x4a102d);t.material.emissiveIntensity=.5}while(inkGroup.children.length)inkGroup.remove(inkGroup.children[0]);
+function resetGame(){targetCount=0;inkCount=0;inkArea=0;inkCoverage=0;booyahCount=0;shotCooldown=0;ballHeld=false;ballGrabLatch=false;ballKickCooldown=0;ballVelocity.set(0,0,0);ball.position.set(0,.16,7.4);for(const b of originalBall){b.velocity.set(0,0,0);b.mesh.position.set(...b.pos);}for(const {t,homeX,homeZ} of targetMotion){t.position.x=homeX;t.position.z=homeZ;t.material.color.set(0xf472b6);t.material.emissive.set(0x4a102d);t.material.emissiveIntensity=.5}while(inkGroup.children.length)inkGroup.remove(inkGroup.children[0]);
 while(wallInkGroups.length){const g=wallInkGroups.pop();g.parent?.remove(g);}
 inkCoverage=0;refreshInkArea();while(inkParticleGroup.children.length)inkParticleGroup.remove(inkParticleGroup.children[0]);player.position.set(0,0,4);moveVelocity.set(0,0,0);physicsAccumulator=0;squidTriggerLatch=false;setSquidMode(false);updateStats();document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready"}
 document.getElementById("reset").addEventListener("click",resetGame);
@@ -688,80 +668,6 @@ function resolveBallAABB(obstacle){
   else if(minPen===rightPen){ball.position.x=obstacle.position.x+halfX+BALL_RADIUS;ballVelocity.x=Math.abs(ballVelocity.x)*BALL_RESTITUTION;}
   else if(minPen===backPen){ball.position.z=obstacle.position.z-halfZ-BALL_RADIUS;ballVelocity.z=-Math.abs(ballVelocity.z)*BALL_RESTITUTION;}
   else{ball.position.z=obstacle.position.z+halfZ+BALL_RADIUS;ballVelocity.z=Math.abs(ballVelocity.z)*BALL_RESTITUTION;}
-}
-function updateTestBalls(dt){
-  const steps=Math.max(1,Math.min(4,Math.ceil(dt/.012)));
-  const subDt=dt/steps;
-  for(let s=0;s<steps;s++){
-    for(const b of testBalls){
-      const m=b.mesh,r=b.radius,v=b.velocity;
-      v.y-=9.8*subDt;
-      m.position.addScaledVector(v,subDt);
-      if(m.position.y<r){
-        m.position.y=r;
-        if(v.y<-.35)v.y=-v.y*(BALL_RESTITUTION-.03);
-        else v.y=0;
-        v.x*=Math.pow(BALL_GROUND_FRICTION,subDt*60);
-        v.z*=Math.pow(BALL_GROUND_FRICTION,subDt*60);
-      }
-      for(const obstacle of solidObstacles){
-        resolveLabBallAABB(b,obstacle);
-      }
-      const arena=14.84-r;
-      if(m.position.x<-arena){m.position.x=-arena;v.x=Math.abs(v.x)*BALL_RESTITUTION;}
-      if(m.position.x>arena){m.position.x=arena;v.x=-Math.abs(v.x)*BALL_RESTITUTION;}
-      if(m.position.z<-arena){m.position.z=-arena;v.z=Math.abs(v.z)*BALL_RESTITUTION;}
-      if(m.position.z>arena){m.position.z=arena;v.z=-Math.abs(v.z)*BALL_RESTITUTION;}
-    }
-    for(let i=0;i<testBalls.length;i++){
-      for(let j=i+1;j<testBalls.length;j++)resolveLabBallBall(testBalls[i],testBalls[j]);
-    }
-    for(const b of testBalls)resolveLabBallPlayer(b);
-  }
-  for(const b of testBalls){
-    if(b.velocity.lengthSq()>.01){b.mesh.rotation.x+=dt*(5/b.mass);b.mesh.rotation.y+=dt*(3/b.mass);}
-  }
-}
-function resolveLabBallAABB(b,obstacle){
-  const m=b.mesh,r=b.radius,v=b.velocity;
-  const dx=m.position.x-obstacle.position.x,dz=m.position.z-obstacle.position.z;
-  const hx=.6+r,hz=.6+r;
-  if(Math.abs(dx)<hx&&Math.abs(dz)<hz){
-    if(hx-Math.abs(dx)<hz-Math.abs(dz)){m.position.x=obstacle.position.x+(dx<0?-hx:hx);v.x=-v.x*BALL_RESTITUTION;}
-    else{m.position.z=obstacle.position.z+(dz<0?-hz:hz);v.z=-v.z*BALL_RESTITUTION;}
-  }
-}
-function resolveLabBallBall(a,b){
-  const dx=a.mesh.position.x-b.mesh.position.x,dz=a.mesh.position.z-b.mesh.position.z;
-  const dist=Math.hypot(dx,dz),minDist=a.radius+b.radius;
-  if(dist>=minDist)return;
-  const nx=dist>.0001?dx/dist:1,nz=dist>.0001?dz/dist:0;
-  const push=(minDist-dist)*.5;
-  a.mesh.position.x+=nx*push;a.mesh.position.z+=nz*push;
-  b.mesh.position.x-=nx*push;b.mesh.position.z-=nz*push;
-  const rel=(a.velocity.x-b.velocity.x)*nx+(a.velocity.z-b.velocity.z)*nz;
-  if(rel<0){
-    const invA=1/Math.max(.01,a.mass),invB=1/Math.max(.01,b.mass);
-    const impulse=-(1+BALL_RESTITUTION)*rel/(invA+invB);
-    a.velocity.x+=nx*impulse*invA;a.velocity.z+=nz*impulse*invA;
-    b.velocity.x-=nx*impulse*invB;b.velocity.z-=nz*impulse*invB;
-  }
-}
-function resolveLabBallPlayer(b){
-  const m=b.mesh,r=b.radius;
-  const dx=m.position.x-player.position.x,dz=m.position.z-player.position.z;
-  const dist=Math.hypot(dx,dz),minDist=r+PLAYER_RADIUS;
-  if(dist>=minDist)return;
-  const nx=dist>.0001?dx/dist:1,nz=dist>.0001?dz/dist:0;
-  const push=minDist-dist;
-  m.position.x+=nx*push;m.position.z+=nz*push;
-  const toward=b.velocity.x*nx+b.velocity.z*nz;
-  if(toward<0){b.velocity.x-=nx*toward*1.35;b.velocity.z-=nz*toward*1.35;}
-  if(moveVelocity.lengthSq()>.18){
-    const kick=new THREE.Vector3(moveVelocity.x,0,moveVelocity.z).normalize();
-    const impulse=6.5/Math.max(1,b.mass);
-    b.velocity.set(kick.x*impulse,Math.min(3.2,1.8/Math.max(1,b.mass*.55)),kick.z*impulse);
-  }
 }
 function updateBall(leftTrigger,dt){
   const xrCam=getActiveCamera();
