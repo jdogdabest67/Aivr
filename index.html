@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // CUBE PROTOTYPE 88 • SQUID TOGGLE FIX</title>
+<title>SPLATVR // TEST LAB PROTOTYPE 89 • SQUID TOGGLE FIX</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 88</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 89</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action squidButton" id="squidButton">🦑 SQUID</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -64,8 +64,27 @@ setCameraTrackingUI();
 
 const armTestToggle=document.getElementById("armTestToggle");
 const debugToggle=document.getElementById("debugToggle");
+const hitboxToggle=document.getElementById("hitboxToggle");
 let debugMode=false;
-debugToggle.addEventListener("click",()=>{debugMode=!debugMode;debugToggle.classList.toggle("on",debugMode);debugToggle.setAttribute("aria-pressed",String(debugMode));debugToggle.textContent=debugMode?"🧪 DEBUG: ON":"🧪 DEBUG: OFF";document.getElementById("status").textContent=debugMode?"DEBUG ON • Targets + motion":"Ready";});
+let hitboxMode=false;
+debugToggle.addEventListener("click",()=>{
+  debugMode=!debugMode;
+  debugToggle.classList.toggle("on",debugMode);
+  debugToggle.setAttribute("aria-pressed",String(debugMode));
+  debugToggle.textContent=debugMode?"🧪 DEBUG: ON":"🧪 DEBUG: OFF";
+  hitboxToggle.style.display=debugMode?"inline-block":"none";
+  if(!debugMode){hitboxMode=false;hitboxGroup.visible=false;hitboxToggle.classList.remove("on");hitboxToggle.setAttribute("aria-pressed","false");hitboxToggle.textContent="▣ HITBOXES: OFF";}
+  document.getElementById("status").textContent=debugMode?"DEBUG ON • Hitboxes available":"Ready";
+});
+hitboxToggle.addEventListener("click",()=>{
+  if(!debugMode)return;
+  hitboxMode=!hitboxMode;
+  hitboxGroup.visible=hitboxMode;
+  hitboxToggle.classList.toggle("on",hitboxMode);
+  hitboxToggle.setAttribute("aria-pressed",String(hitboxMode));
+  hitboxToggle.textContent=hitboxMode?"▣ HITBOXES: ON":"▣ HITBOXES: OFF";
+  document.getElementById("status").textContent=hitboxMode?"HITBOXES ON • Yellow = collision":"DEBUG ON • Hitboxes available";
+});
 let armTestMode=false;
 armTestToggle.addEventListener("click",()=>{
   armTestMode=!armTestMode;
@@ -147,7 +166,7 @@ function makePatchNotesCubeNote(){
   lines.forEach((line,i)=>ctx.fillText(line,72,305+i*100));
   ctx.fillStyle="#94a3b8";
   ctx.font="500 30px system-ui, sans-serif";
-  ctx.fillText("SPLATVR // CUBE • PROTOTYPE 88",72,900);
+  ctx.fillText("SPLATVR // CUBE • PROTOTYPE 89",72,900);
   const tex=new THREE.CanvasTexture(canvas);
   tex.colorSpace=THREE.SRGBColorSpace;
   const note=new THREE.Mesh(
@@ -164,13 +183,55 @@ function makePatchNotesCubeNote(){
 // Actually call the patch notes generator so it shows up in scene
 makePatchNotesCubeNote();
 
-for(const [x,z] of [[-3,-2],[3,-2],[-2,1],[2,2]]){
+for(const [x,z] of [[-3,-2],[3,-2],[-3,2],[3,2]]){
   const o=new THREE.Mesh(new THREE.BoxGeometry(1.2,1.2,1.2),new THREE.MeshStandardMaterial({color:0x56627f,roughness:.68,metalness:.12}));
   o.position.set(x,.6,z);
   o.castShadow=true;
   o.receiveShadow=true;
   scene.add(o);
   solidObstacles.push(o);
+}
+// SPLATVR TEST LAB: compact stations for movement, collision, ball and aim testing.
+const testLabLines=[];
+function addLabLine(x,z,sx,sz,label){
+  const line=new THREE.Mesh(
+    new THREE.BoxGeometry(sx,.012,sz),
+    new THREE.MeshBasicMaterial({color:0x22d3ee,transparent:true,opacity:.32})
+  );
+  line.position.set(x,.014,z); scene.add(line); testLabLines.push(line);
+  if(label){
+    const canvas=document.createElement("canvas"); canvas.width=512; canvas.height=128;
+    const ctx=canvas.getContext("2d"); ctx.fillStyle="#ffffff"; ctx.font="900 42px system-ui,sans-serif"; ctx.fillText(label,18,78);
+    const tex=new THREE.CanvasTexture(canvas); tex.colorSpace=THREE.SRGBColorSpace;
+    const tag=new THREE.Mesh(new THREE.PlaneGeometry(1.5,.38),new THREE.MeshBasicMaterial({map:tex,transparent:true,side:THREE.DoubleSide}));
+    tag.position.set(x,.025,z); tag.rotation.x=-Math.PI/2; scene.add(tag);
+  }
+}
+addLabLine(0,-5.7,7.8,.035,"AIM / TARGETS");
+addLabLine(-4.6,0,2.7,.035,"MOVE");
+addLabLine(4.6,0,2.7,.035,"SQUID");
+addLabLine(0,3.9,2.8,.035,"BALL");
+const hitboxGroup=new THREE.Group(); hitboxGroup.visible=false; scene.add(hitboxGroup);
+const hitboxMat=new THREE.LineBasicMaterial({color:0xfacc15,transparent:true,opacity:.9});
+const obstacleHitboxes=solidObstacles.map(o=>{
+  const h=new THREE.BoxHelper(o,0xfacc15); h.material=hitboxMat; hitboxGroup.add(h); return h;
+});
+const ballHitbox=new THREE.Mesh(new THREE.SphereGeometry(BALL_RADIUS,12,8),new THREE.MeshBasicMaterial({color:0xfacc15,wireframe:true,transparent:true,opacity:.9}));
+hitboxGroup.add(ballHitbox);
+const playerHitboxBox=new THREE.Box3();
+const playerHitbox=new THREE.Box3Helper(playerHitboxBox,0xfacc15);
+hitboxGroup.add(playerHitbox);
+function updateHitboxes(){
+  if(!hitboxGroup.visible)return;
+  for(const h of obstacleHitboxes)h.update();
+  ballHitbox.position.copy(ball.position);
+  playerHitboxBox.set(
+    player.position.x-PLAYER_RADIUS,0,
+    player.position.z-PLAYER_RADIUS,
+    player.position.x+PLAYER_RADIUS,1.5,
+    player.position.z+PLAYER_RADIUS
+  );
+  playerHitbox.updateMatrixWorld(true);
 }
 const renderCube=new THREE.Mesh(
   new THREE.BoxGeometry(.7,.7,.7),
@@ -835,6 +896,7 @@ if(lookForward.lengthSq()>.0001){
 }
 const armInput=getArmTestInput();updateTestArms(armInput.x,armInput.z);
 const ballTriggers=getBallTriggerState();
+  updateHitboxes();
 updateSquidForm(ballTriggers.leftTrigger);
 // In this early SQUID MODE build, the left trigger belongs to transformation.
 // Keep the existing ball system alive, but do not let LT/L2/ZL also grab the ball.
