@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // CUBE PROTOTYPE 87 • SQUID TOGGLE FIX</title>
+<title>SPLATVR // CUBE PROTOTYPE 88 • SQUID TOGGLE FIX</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 87</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 88</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action squidButton" id="squidButton">🦑 SQUID</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -138,7 +138,7 @@ function makePatchNotesCubeNote(){
   ctx.fillStyle="#ffffff";
   ctx.font="600 38px system-ui, sans-serif";
   const lines=[
-    "• Prototype 87: squid button works during VR too",
+    "• Prototype 88: screen-mode squid proof transformation",
     "• Fixed-timestep movement + collision physics",
     "• Bounded ball substeps reduce wall/corner tunneling",
     "• Ball gravity, bounce, friction + obstacle collisions",
@@ -147,7 +147,7 @@ function makePatchNotesCubeNote(){
   lines.forEach((line,i)=>ctx.fillText(line,72,305+i*100));
   ctx.fillStyle="#94a3b8";
   ctx.font="500 30px system-ui, sans-serif";
-  ctx.fillText("SPLATVR // CUBE • PROTOTYPE 87",72,900);
+  ctx.fillText("SPLATVR // CUBE • PROTOTYPE 88",72,900);
   const tex=new THREE.CanvasTexture(canvas);
   tex.colorSpace=THREE.SRGBColorSpace;
   const note=new THREE.Mesh(
@@ -213,7 +213,9 @@ let squidForm=false;
 let squidTriggerLatch=false;
 function setSquidMode(enabled){
   squidForm=!!enabled;
-  playerBody.scale.set(1,squidForm?.55:1,1);
+  // SCREEN MODE PROOF: make the transformation unmistakable on a phone display.
+  playerBody.scale.set(squidForm?1.32:1,squidForm?.42:1,squidForm?1.32:1);
+  playerBody.position.y=squidForm?.18:0;
   const button=document.getElementById("squidButton");
   if(button){button.classList.toggle("on",squidForm);button.setAttribute("aria-pressed",String(squidForm));button.textContent=squidForm?"🦑 SQUID ON":"🦑 SQUID";}
   document.getElementById("status").textContent=squidForm?"SQUID MODE! 🦑 • SPEED UP":(renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready");
