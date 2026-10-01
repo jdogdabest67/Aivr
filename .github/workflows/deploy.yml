@@ -1,6 +1,6 @@
-# Deploy Build 107 Pages trigger refresh
+# Deploy Build 108 Pages trigger refresh
 name: Deploy to GitHub Pages
-# Build 107 final sanity • VR-only IMU recenter
+# Build 108 final sanity • back-camera pipeline
 
 on:
   push:
