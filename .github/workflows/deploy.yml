@@ -1,6 +1,6 @@
-# Deploy Build 108 Pages trigger refresh
+# Deploy Build 109 Pages trigger refresh
 name: Deploy to GitHub Pages
-# Build 108 final sanity • back-camera pipeline
+# Build 109 final sanity • hand tracking arm fusion
 
 on:
   push:
