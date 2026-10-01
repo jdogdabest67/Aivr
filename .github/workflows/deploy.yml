@@ -1,6 +1,6 @@
-# Deploy Build 110 Pages trigger refresh
+# Deploy Build 111 Pages trigger refresh
 name: Deploy to GitHub Pages
-# Build 110 final sanity • phone IMU step 1
+# Build 111 final sanity • accelerometer camera link
 
 on:
   push:
