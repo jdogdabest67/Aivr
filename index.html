@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 103 • MOTION SENSOR LAB</title>
+<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 104 • MOTION SENSOR LAB</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CONTROLLER LAB • PROTOTYPE 103</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button><button id="hidDevice" class="topJoycon">CONNECT ANY HID</button><button id="usbDevice" class="topJoycon">CONNECT USB</button><button id="motionTest" class="topJoycon">📱 MOTION TEST</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">VR INPUT: waiting</span></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CONTROLLER LAB • PROTOTYPE 104</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button><button id="hidDevice" class="topJoycon">CONNECT ANY HID</button><button id="usbDevice" class="topJoycon">CONNECT USB</button><button id="motionTest" class="topJoycon">📱 MOTION TEST</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">VR INPUT: waiting</span></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action squidButton" id="squidButton">🦑 SQUID</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -124,7 +124,9 @@ function resetVrImuHead(){
   imuHeadOffset.x=0;imuHeadOffset.y=0;imuHeadOffset.z=0;
   imuHeadVelocity.x=0;imuHeadVelocity.y=0;imuHeadVelocity.z=0;
   imuHeadBias.x=motionTelemetry.ax||0;imuHeadBias.y=motionTelemetry.ay||0;imuHeadBias.z=motionTelemetry.az||0;
+  imuLastTime=performance.now();
   imuRecentSamples=[];
+  vrMotionRig.position.set(0,0,0);
   document.getElementById("status").textContent="VR IMU RECENTERED • Square";
 }
 function updateVrImuHead(){
@@ -136,16 +138,17 @@ function updateVrImuHead(){
   const ax=motionTelemetry.ax-imuHeadBias.x;
   const ay=motionTelemetry.ay-imuHeadBias.y;
   const az=motionTelemetry.az-imuHeadBias.z;
-  const dead=.16;
+  const dead=.18;
   const x=Math.abs(ax)>dead?ax:0;
   const y=Math.abs(ay)>dead?ay:0;
   const z=Math.abs(az)>dead?az:0;
-  imuHeadVelocity.x=(imuHeadVelocity.x+x*dt)*.985;
-  imuHeadVelocity.y=(imuHeadVelocity.y+y*dt)*.985;
-  imuHeadVelocity.z=(imuHeadVelocity.z+z*dt)*.985;
-  imuHeadOffset.x=THREE.MathUtils.clamp(imuHeadOffset.x+imuHeadVelocity.x*dt,-.8,.8);
-  imuHeadOffset.y=THREE.MathUtils.clamp(imuHeadOffset.y+imuHeadVelocity.y*dt,-.5,.5);
-  imuHeadOffset.z=THREE.MathUtils.clamp(imuHeadOffset.z+imuHeadVelocity.z*dt,-.8,.8);
+  imuHeadVelocity.x=(imuHeadVelocity.x+x*dt)*.965;
+  imuHeadVelocity.y=(imuHeadVelocity.y+y*dt)*.965;
+  imuHeadVelocity.z=(imuHeadVelocity.z+z*dt)*.965;
+  imuHeadOffset.x=THREE.MathUtils.clamp(imuHeadOffset.x+imuHeadVelocity.x*dt,-.65,.65);
+  imuHeadOffset.y=THREE.MathUtils.clamp(imuHeadOffset.y+imuHeadVelocity.y*dt,-.35,.35);
+  imuHeadOffset.z=THREE.MathUtils.clamp(imuHeadOffset.z+imuHeadVelocity.z*dt,-.65,.65);
+  vrMotionRig.position.set(imuHeadOffset.x,imuHeadOffset.y,imuHeadOffset.z);
 }
 const armTestToggle=document.getElementById("armTestToggle");
 const debugToggle=document.getElementById("debugToggle");
@@ -230,7 +233,11 @@ const sun=new THREE.DirectionalLight(0xffffff,2.4);
 sun.position.set(3,8,2);
 sun.castShadow=true;
 scene.add(sun);
-const player=new THREE.Group();player.position.set(0,0,4);player.add(camera);scene.add(player);
+const player=new THREE.Group();player.position.set(0,0,4);
+const vrMotionRig=new THREE.Group();
+player.add(vrMotionRig);
+vrMotionRig.add(camera);
+scene.add(player);
 
 // VR crosshair: the HTML crosshair is not visible inside immersive WebXR.
 // This reticle lives in front of the headset camera, so it renders in VR.
@@ -315,7 +322,7 @@ function makePatchNotesCubeNote(){
   ctx.fillStyle="#ffffff";
   ctx.font="600 38px system-ui, sans-serif";
   const lines=[
-    "• Prototype 103: phone accelerometer + gyroscope test",
+    "• Prototype 104: phone accelerometer + gyroscope test",
     "• Prototype 88: screen-mode squid proof transformation",
     "• Fixed-timestep movement + collision physics",
     "• Bounded ball substeps reduce wall/corner tunneling",
@@ -1082,10 +1089,12 @@ function updateBall(leftTrigger,dt){
 function controllerInput() {
   if(renderer.xr.isPresenting){
     const pads=getControllers().filter(g=>g?.connected);
+    let squarePressed=false;
     for(const gp of pads){
-      if(gp.buttons?.[0]?.pressed && !window.__vrSquareLatch)vrSquareRecenter();
-      window.__vrSquareLatch=!!gp.buttons?.[0]?.pressed;
+      if(gp.buttons?.[2]?.pressed)squarePressed=true;
     }
+    if(squarePressed&&!window.__vrSquareLatch)vrSquareRecenter();
+    window.__vrSquareLatch=squarePressed;
   }
 
   // Poll directly every frame. This does not override Chrome/Android ownership,
@@ -1293,7 +1302,6 @@ const armInput=getArmTestInput();updateTestArms(armInput.x,armInput.z);
 const ballTriggers=getBallTriggerState();
   updateVRTracking();
 updateVrImuHead();
-if(renderer.xr.isPresenting&&motionTelemetry.active){player.position.x+=imuHeadOffset.x;player.position.y+=imuHeadOffset.y;player.position.z+=imuHeadOffset.z;imuHeadOffset.x=0;imuHeadOffset.y=0;imuHeadOffset.z=0;}
 updateHitboxes();
 updateSquidForm(ballTriggers.leftTrigger);
 // In this early SQUID MODE build, the left trigger belongs to transformation.
