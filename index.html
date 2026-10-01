@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 100 • CONTROLLER OBSERVATORY</title>
+<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 101 • MOTION SENSOR LAB</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CONTROLLER LAB • PROTOTYPE 100</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button><button id="hidDevice" class="topJoycon">CONNECT ANY HID</button><button id="usbDevice" class="topJoycon">CONNECT USB</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">VR INPUT: waiting</span></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CONTROLLER LAB • PROTOTYPE 101</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button><button id="hidDevice" class="topJoycon">CONNECT ANY HID</button><button id="usbDevice" class="topJoycon">CONNECT USB</button><button id="motionTest" class="topJoycon">📱 MOTION TEST</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">VR INPUT: waiting</span></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action squidButton" id="squidButton">🦑 SQUID</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -61,6 +61,58 @@ cameraToggle.addEventListener("click",()=>{
 });
 updateCameraTrackingSupport();
 setCameraTrackingUI();
+
+const motionTestButton=document.getElementById("motionTest");
+const motionTelemetry={ax:0,ay:0,az:0,gx:0,gy:0,gz:0,active:false,source:"none"};
+let motionListenerAttached=false;
+function fmtMotion(v){return Number.isFinite(v)?v.toFixed(2):"--";}
+function updateMotionStatus(){
+  const input=document.getElementById("vrInputStatus");
+  if(!input)return;
+  if(motionTelemetry.active)input.textContent="MOTION: A["+fmtMotion(motionTelemetry.ax)+","+fmtMotion(motionTelemetry.ay)+","+fmtMotion(motionTelemetry.az)+"] m/s² • G["+fmtMotion(motionTelemetry.gx)+","+fmtMotion(motionTelemetry.gy)+","+fmtMotion(motionTelemetry.gz)+"] rad/s";
+}
+function handleDeviceMotion(event){
+  const a=event.acceleration||event.accelerationIncludingGravity;
+  const r=event.rotationRate;
+  motionTelemetry.ax=Number.isFinite(a?.x)?a.x:0;
+  motionTelemetry.ay=Number.isFinite(a?.y)?a.y:0;
+  motionTelemetry.az=Number.isFinite(a?.z)?a.z:0;
+  motionTelemetry.gx=Number.isFinite(r?.alpha)?r.alpha*Math.PI/180:0;
+  motionTelemetry.gy=Number.isFinite(r?.beta)?r.beta*Math.PI/180:0;
+  motionTelemetry.gz=Number.isFinite(r?.gamma)?r.gamma*Math.PI/180:0;
+  motionTelemetry.active=true;
+  motionTelemetry.source="devicemotion";
+  updateMotionStatus();
+}
+async function startMotionSensors(){
+  if(!("DeviceMotionEvent" in window)){
+    document.getElementById("status").textContent="MOTION UNSUPPORTED • DeviceMotionEvent unavailable";
+    return;
+  }
+  motionTestButton.disabled=true;
+  motionTestButton.textContent="📱 REQUESTING MOTION…";
+  try{
+    if(typeof DeviceMotionEvent.requestPermission==="function"){
+      const permission=await DeviceMotionEvent.requestPermission();
+      if(permission!=="granted")throw new Error("Motion permission was denied");
+    }
+    if(!motionListenerAttached){
+      window.addEventListener("devicemotion",handleDeviceMotion);
+      motionListenerAttached=true;
+    }
+    motionTelemetry.active=false;
+    motionTestButton.textContent="📱 MOTION ACTIVE";
+    document.getElementById("status").textContent="MOTION SENSOR READY • Move the phone";
+    updateMotionStatus();
+  }catch(err){
+    console.warn("Motion sensor start failed",err);
+    document.getElementById("status").textContent="MOTION ERROR • "+(err?.message||"permission unavailable");
+    motionTestButton.textContent="📱 MOTION TEST";
+  }finally{
+    motionTestButton.disabled=false;
+  }
+}
+motionTestButton.addEventListener("click",startMotionSensors);
 
 const armTestToggle=document.getElementById("armTestToggle");
 const debugToggle=document.getElementById("debugToggle");
@@ -230,7 +282,7 @@ function makePatchNotesCubeNote(){
   ctx.fillStyle="#ffffff";
   ctx.font="600 38px system-ui, sans-serif";
   const lines=[
-    "• Prototype 100: magenta controller + live input observatory",
+    "• Prototype 101: phone accelerometer + gyroscope test",
     "• Prototype 88: screen-mode squid proof transformation",
     "• Fixed-timestep movement + collision physics",
     "• Bounded ball substeps reduce wall/corner tunneling",
@@ -1158,7 +1210,7 @@ function runPlayerPhysics(dt,inputX,inputZ){
   }
 }
 function animateFrame(){
-controllerLab.rotation.y+=.006;updateControllerModel();
+controllerLab.rotation.y+=.006;updateControllerModel();if(motionTelemetry.active)updateMotionStatus();
 const dt=Math.min(clock.getDelta(),.05);shotCooldown=Math.max(0,shotCooldown-dt);
 goofyTimer-=dt;
 if(goofyTimer<=0){goofyTimer=10+Math.random()*14;if(!squidForm)document.getElementById("status").textContent=goofyLines[Math.floor(Math.random()*goofyLines.length)];if(Math.random()<.35)renderCube.rotation.y+=Math.PI*2;}
