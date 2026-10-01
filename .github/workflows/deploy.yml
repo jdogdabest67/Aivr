@@ -1,5 +1,5 @@
 name: Deploy to GitHub Pages
-# Build 72 deployment refresh • prototype-name verification • frame + XR fixes
+# Build 73 deployment refresh • prototype-name verification • full physics engine rebuild
 
 on:
   push:
