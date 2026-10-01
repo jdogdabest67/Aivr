@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // CUBE PROTOTYPE 67 • INK RAY FIX</title>
+<title>SPLATVR // CUBE PROTOTYPE 68 • TRIGGERS FIX</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 67</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 68</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -129,15 +129,15 @@ function makePatchNotesCubeNote(){
   ctx.strokeRect(24,24,976,976);
   ctx.fillStyle="#ffffff";
   ctx.font="900 76px system-ui, sans-serif";
-  ctx.fillText("BUILD 66",72,130);
+  ctx.fillText("BUILD 68",72,130);
   ctx.font="800 52px system-ui, sans-serif";
   ctx.fillStyle="#67e8f9";
   ctx.fillText("PATCH NOTES",72,205);
   ctx.fillStyle="#ffffff";
   ctx.font="600 38px system-ui, sans-serif";
   const lines=[
-    "• Prototype 67: ink ray fixed",
-    "• Controls cleaned up + keyboard support",
+    "• Prototype 68: Triggers fixed",
+    "• Patch notes actually render now",
     "• Ball can now be kicked around",
     "• Added blocky R6-style walk animation",
     "• Magenta cube remains untouched"
@@ -409,6 +409,7 @@ if ("hid" in navigator) {
 
 let controllerIndex = null;
 let booyahLatch = false;
+let gamepadFireLatch = false;
 let joyconFireLatch = false;
 let joyconBooyahLatch = false;
 const AXIS_DEADZONE = 0.15;
@@ -442,9 +443,10 @@ window.addEventListener("gamepaddisconnected", e => {
 });
 
 function joyconInput() {
-  const fire = false;
+  const fire = !!joyconState.fire;
   const booyahPressed = !!joyconState.booyah;
 
+  if (fire && !joyconFireLatch && typeof shoot === "function") shoot();
   // Left trigger is reserved for squidbomb pickup.
   if (booyahPressed && !joyconBooyahLatch && typeof booyah === "function") booyah();
 
@@ -461,11 +463,11 @@ function joyconInput() {
 function getBallTriggerState() {
   let leftTrigger = !!joyconState.leftTrigger;
   for (const gp of getControllers().filter(g => g?.connected)) {
-    // Support the common Gamepad layouts for L2/ZL.
+    // Left trigger maps heavily to L1/L2 buttons. Remove right triggers mapping here
+    // to prevent picking up the ball while trying to ink (right trigger).
+    leftTrigger ||= !!gp.buttons?.[4]?.pressed;
     leftTrigger ||= !!gp.buttons?.[6]?.pressed;
-    leftTrigger ||= !!gp.buttons?.[7]?.pressed;
     leftTrigger ||= (typeof gp.buttons?.[6]?.value === "number" && gp.buttons[6].value > .5);
-    leftTrigger ||= (typeof gp.buttons?.[7]?.value === "number" && gp.buttons[7].value > .5);
   }
   return {leftTrigger};
 }
@@ -497,8 +499,11 @@ function controllerInput() {
       if (gp.buttons[13]?.pressed) z = 1;
     }
 
-    // Shooting is trigger-only. Face buttons never fire.
-    // Controller face buttons and triggers do not fire ink.
+    // Right bumpers and triggers (R1/R2) fire ink.
+    if (gp.buttons[5]?.pressed || gp.buttons[7]?.pressed ||
+        (typeof gp.buttons[7]?.value === "number" && gp.buttons[7].value > 0.5)) {
+      firePressed = true;
+    }
 
     if (gp.buttons[8]?.pressed || gp.buttons[9]?.pressed ||
         gp.buttons[10]?.pressed || gp.buttons[11]?.pressed) {
@@ -506,10 +511,10 @@ function controllerInput() {
     }
   }
 
-  // Ink firing is not bound to controller face buttons or triggers.
+  if (firePressed && !gamepadFireLatch && typeof shoot === "function") shoot();
   if (booyahPressed && !booyahLatch && typeof booyah === "function") booyah();
 
-  joyconFireLatch = false;
+  gamepadFireLatch = firePressed;
   booyahLatch = booyahPressed;
   return { x, z };
 }
