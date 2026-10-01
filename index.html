@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 110 • PHONE IMU STEP 1</title>
+<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 111 • ACCEL CAMERA LINK</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CONTROLLER LAB • PROTOTYPE 110</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="headLockToggle" class="cameraToggle" aria-pressed="false">🧠 HEAD LOCK: OFF</button><button id="handTrackingToggle" class="cameraToggle" aria-pressed="false">✋ HAND + ARM TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: HAND FUSION OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button><button id="hidDevice" class="topJoycon">CONNECT ANY HID</button><button id="usbDevice" class="topJoycon">CONNECT USB</button><button id="motionTest" class="topJoycon">📱 MOTION TEST</button><button id="cameraAccess" class="topJoycon">📷 REQUEST CAMERA ACCESS</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">VR INPUT: waiting</span></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CONTROLLER LAB • PROTOTYPE 111</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="headLockToggle" class="cameraToggle" aria-pressed="false">🧠 HEAD LOCK: OFF</button><button id="handTrackingToggle" class="cameraToggle" aria-pressed="false">✋ HAND + ARM TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: HAND FUSION OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button><button id="hidDevice" class="topJoycon">CONNECT ANY HID</button><button id="usbDevice" class="topJoycon">CONNECT USB</button><button id="motionTest" class="topJoycon">📱 MOTION TEST</button><button id="cameraAccess" class="topJoycon">📷 REQUEST CAMERA ACCESS</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">VR INPUT: waiting</span></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action squidButton" id="squidButton">🦑 SQUID</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -194,23 +194,21 @@ function resetVrImuHead(){
 function updateVrImuHead(){
   if(!vrFancyFeatures.headLock||!renderer.xr.isPresenting||!motionTelemetry.active||!motionTelemetry.accelerationAvailable)return;
   const now=performance.now();
-  if(!imuLastTime){imuLastTime=now;return;}
-  const dt=Math.min((now-imuLastTime)/1000,.05);
+  const dt=imuLastTime?Math.min((now-imuLastTime)/1000,.05):0;
   imuLastTime=now;
+  if(!dt)return;
   const ax=motionTelemetry.ax-imuHeadBias.x;
   const ay=motionTelemetry.ay-imuHeadBias.y;
   const az=motionTelemetry.az-imuHeadBias.z;
-  const dead=.18;
-  const x=Math.abs(ax)>dead?ax:0;
-  const y=Math.abs(ay)>dead?ay:0;
-  const z=Math.abs(az)>dead?az:0;
-  imuHeadVelocity.x=(imuHeadVelocity.x+x*dt)*.965;
-  imuHeadVelocity.y=(imuHeadVelocity.y+y*dt)*.965;
-  imuHeadVelocity.z=(imuHeadVelocity.z+z*dt)*.965;
-  imuHeadOffset.x=THREE.MathUtils.clamp(imuHeadOffset.x+imuHeadVelocity.x*dt,-.65,.65);
-  imuHeadOffset.y=THREE.MathUtils.clamp(imuHeadOffset.y+imuHeadVelocity.y*dt,-.35,.35);
-  imuHeadOffset.z=THREE.MathUtils.clamp(imuHeadOffset.z+imuHeadVelocity.z*dt,-.65,.65);
-  vrMotionRig.position.set(imuHeadOffset.x,imuHeadOffset.y,imuHeadOffset.z);
+  const deadband=.12;
+  const damped=(v)=>Math.abs(v)<deadband?0:v;
+  const accel=new THREE.Vector3(damped(ax),damped(ay),damped(az));
+  imuHeadVelocity.addScaledVector(accel,dt);
+  imuHeadVelocity.multiplyScalar(Math.pow(.035,dt));
+  imuHeadVelocity.clampLength(0,.7);
+  imuHeadOffset.addScaledVector(imuHeadVelocity,dt);
+  imuHeadOffset.clampLength(0,.45);
+  vrMotionRig.position.copy(imuHeadOffset);
 }
 const debugToggle=document.getElementById("debugToggle");
 const hitboxToggle=document.getElementById("hitboxToggle");
