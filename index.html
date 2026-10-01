@@ -326,13 +326,8 @@ function resetGame(){targetCount=0;inkCount=0;inkArea=0;inkCoverage=0;booyahCoun
 while(wallInkGroups.length){const g=wallInkGroups.pop();g.parent?.remove(g);}
 inkCoverage=0;refreshInkArea();while(inkParticleGroup.children.length)inkParticleGroup.remove(inkParticleGroup.children[0]);player.position.set(0,0,4);moveVelocity.set(0,0,0);physicsAccumulator=0;squidForm=false;updateStats();document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready"}
 document.getElementById("reset").addEventListener("click",resetGame);
-renderer.xr.addEventListener("sessionstart",()=>{squidForm=false;squidHeightReady=false;squidBaselineSamples=0;squidBaselineSum=0;squidEnterY=1.6;if(xrCameraTracking.mode==="immersive-ar"){document.getElementById("status").textContent="CAMERA TRACKING ACTIVE 📷 • Calibrating...";}else{document.getElementById("status").textContent="VR ACTIVE • Calibrating...";}});
-renderer.xr.addEventListener("sessionend",()=>{
-  squidForm=false;
-  squidHeightReady=false;
-  squidBaselineSamples=0;
-  squidBaselineSum=0;
-  squidEnterY=1.6;
+ renderer.xr.addEventListener("sessionstart",()=>{squidForm=false;squidTriggerLatch=false;if(xrCameraTracking.mode==="immersive-ar"){document.getElementById("status").textContent="CAMERA TRACKING ACTIVE 📷";}else{document.getElementById("status").textContent="VR ACTIVE • Look + ink";}});
+ renderer.xr.addEventListener("sessionend",()=>{squidForm=false;squidTriggerLatch=false;
   document.getElementById("status").textContent="Ready";
 });
 const keys=new Set();
