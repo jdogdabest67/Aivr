@@ -1,6 +1,6 @@
-# Deploy Build 100 Pages trigger refresh
+# Deploy Build 101 Pages trigger refresh
 name: Deploy to GitHub Pages
-# Build 100 final sanity • controller observatory
+# Build 101 final sanity • motion sensor lab
 
 on:
   push:
