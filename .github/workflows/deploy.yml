@@ -1,6 +1,6 @@
-# Deploy Build 96 Pages trigger refresh
+# Deploy Build 99 Pages trigger refresh
 name: Deploy to GitHub Pages
-# Build 98 final sanity • broad WebHID device lab
+# Build 99 final sanity • WebUSB + WebHID wired device lab
 
 on:
   push:
