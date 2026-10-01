@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 91 • SQUID TOGGLE FIX</title>
+<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 92 • SQUID TOGGLE FIX</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 91</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 92</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action squidButton" id="squidButton">🦑 SQUID</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -117,10 +117,10 @@ camera.add(vrReticle);
 const playerBody=new THREE.Group();
 const bodyMat=new THREE.MeshStandardMaterial({color:0x64748b,roughness:.68,metalness:.1});
 const limbMat=new THREE.MeshStandardMaterial({color:0x94a3b8,roughness:.72,metalness:.05});
-const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.18,.28,6,12),bodyMat);torso.position.set(0,.78,0);playerBody.add(torso);
-const head=new THREE.Mesh(new THREE.SphereGeometry(.18,16,12),limbMat);head.position.set(0,1.24,0);playerBody.add(head);
-for(const side of [-1,1]){const arm=new THREE.Group();arm.position.set(side*.29,.94,0);const mesh=new THREE.Mesh(new THREE.BoxGeometry(.12,.52,.12),limbMat);mesh.position.y=-.24;arm.add(mesh);playerBody.add(arm);playerBody.userData[side<0?"leftArm":"rightArm"]=arm;}
-for(const side of [-1,1]){const leg=new THREE.Group();leg.position.set(side*.11,.49,0);const mesh=new THREE.Mesh(new THREE.BoxGeometry(.12,.48,.12),limbMat);mesh.position.y=-.24;leg.add(mesh);playerBody.add(leg);playerBody.userData[side<0?"leftLeg":"rightLeg"]=leg;}
+const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.10,.62,6,10),bodyMat);torso.position.set(0,.72,0);playerBody.add(torso);
+const head=new THREE.Mesh(new THREE.SphereGeometry(.13,14,10),limbMat);head.position.set(0,1.25,0);playerBody.add(head);
+for(const side of [-1,1]){const arm=new THREE.Group();arm.position.set(side*.17,1.0,0);const mesh=new THREE.Mesh(new THREE.BoxGeometry(.08,.58,.08),limbMat);mesh.position.y=-.29;arm.add(mesh);playerBody.add(arm);playerBody.userData[side<0?"leftArm":"rightArm"]=arm;}
+for(const side of [-1,1]){const leg=new THREE.Group();leg.position.set(side*.08,.40,0);const mesh=new THREE.Mesh(new THREE.BoxGeometry(.09,.62,.09),limbMat);mesh.position.y=-.31;leg.add(mesh);playerBody.add(leg);playerBody.userData[side<0?"leftLeg":"rightLeg"]=leg;}
 player.add(playerBody);
 const floorMat=new THREE.MeshStandardMaterial({color:0x202946,roughness:.78,metalness:.05});
 const floor=new THREE.Mesh(new THREE.BoxGeometry(30,.12,30),floorMat);
@@ -166,7 +166,7 @@ function makePatchNotesCubeNote(){
   lines.forEach((line,i)=>ctx.fillText(line,72,305+i*100));
   ctx.fillStyle="#94a3b8";
   ctx.font="500 30px system-ui, sans-serif";
-  ctx.fillText("SPLATVR // CUBE • PROTOTYPE 91",72,900);
+  ctx.fillText("SPLATVR // CUBE • PROTOTYPE 92",72,900);
   const tex=new THREE.CanvasTexture(canvas);
   tex.colorSpace=THREE.SRGBColorSpace;
   const note=new THREE.Mesh(
