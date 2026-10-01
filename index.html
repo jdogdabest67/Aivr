@@ -393,6 +393,8 @@ const player=new THREE.Group();player.position.set(0,0,4);
 const vrMotionRig=new THREE.Group();
 player.add(vrMotionRig);
 vrMotionRig.add(camera);
+camera.position.set(0,1.08,0);
+camera.rotation.set(0,0,0);
 scene.add(player);
 
 // VR crosshair: the HTML crosshair is not visible inside immersive WebXR.
