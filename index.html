@@ -3,18 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 134 • CORE GAMEPLAY BUILD</title>
+<title>Ink Arena VR</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
-#controls{position:fixed;z-index:6;bottom:14px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:end;pointer-events:none}.pad{display:grid;grid-template-columns:48px 48px 48px;gap:6px;pointer-events:auto}.pad button,.action{width:48px;height:48px;border:0;border-radius:14px;background:#ffffff25;color:white;font-size:20px}.pad button:nth-child(1){grid-column:2}.pad button:nth-child(2){grid-column:1}.pad button:nth-child(3){grid-column:2}.pad button:nth-child(4){grid-column:3}.actions{display:flex;gap:8px;align-items:end;pointer-events:auto}.squidButton{width:72px;height:56px;border-radius:16px;background:#a855f7;color:white;font-size:12px;font-weight:900}.squidButton.on{background:#c084fc;color:#210047;box-shadow:0 0 0 2px #e9d5ff66}.fire{width:72px;height:72px;border-radius:50%;background:#22c55e;color:#052e16;font-size:14px;font-weight:800;box-shadow:0 0 0 2px #86efac55}.booyah{width:72px;height:56px;border-radius:16px;background:#22d3ee;font-size:12px;font-weight:900}
-.xrButton{margin-top:8px;padding:9px 12px;border:0;border-radius:10px;background:#ffffff25;color:white;font-weight:800;font-size:12px;pointer-events:auto}.xrButton:disabled{opacity:.55}.topJoycon{margin-top:8px;padding:9px 12px;border:0;border-radius:10px;background:#ffffff25;color:white;font-weight:800;font-size:12px;pointer-events:auto}.topJoycon:active{transform:scale(.97)}#cross{position:fixed;z-index:4;left:50%;top:50%;width:10px;height:10px;margin:-5px;border:2px solid white;border-radius:50%;pointer-events:none}#booyahFlash{position:fixed;inset:0;z-index:3;display:grid;place-items:center;pointer-events:none;font-size:42px;font-weight:1000;opacity:0;transform:scale(.8)}#booyahFlash.show{animation:booyah .65s ease-out}@keyframes booyah{0%{opacity:0;transform:scale(.7) rotate(-5deg)}20%{opacity:1;transform:scale(1.15) rotate(3deg)}100%{opacity:0;transform:scale(1.5)}}
+#controls{position:fixed;z-index:6;bottom:14px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:end;pointer-events:none}.pad{display:grid;grid-template-columns:48px 48px 48px;gap:6px;pointer-events:auto}.pad button,.action{width:48px;height:48px;border:0;border-radius:14px;background:#ffffff25;color:white;font-size:20px}.pad button:nth-child(1){grid-column:2}.pad button:nth-child(2){grid-column:1}.pad button:nth-child(3){grid-column:2}.pad button:nth-child(4){grid-column:3}.actions{display:flex;gap:8px;align-items:end;pointer-events:auto}.fire{width:72px;height:72px;border-radius:50%;background:#f97316;font-size:14px;font-weight:800}.booyah{width:72px;height:56px;border-radius:16px;background:#22d3ee;font-size:12px;font-weight:900}
+.cameraToggle{margin-top:8px;margin-right:6px;padding:9px 12px;border:0;border-radius:10px;background:#ffffff25;color:white;font-weight:800;font-size:12px;pointer-events:auto}.cameraToggle.on{background:#22d3ee;color:#06252b}.xrButton{margin-top:8px;padding:9px 12px;border:0;border-radius:10px;background:#ffffff25;color:white;font-weight:800;font-size:12px;pointer-events:auto}.xrButton:disabled{opacity:.55}.topJoycon{margin-top:8px;padding:9px 12px;border:0;border-radius:10px;background:#ffffff25;color:white;font-weight:800;font-size:12px;pointer-events:auto}.topJoycon:active{transform:scale(.97)}#cross{position:fixed;z-index:4;left:50%;top:50%;width:10px;height:10px;margin:-5px;border:2px solid white;border-radius:50%;pointer-events:none}#booyahFlash{position:fixed;inset:0;z-index:3;display:grid;place-items:center;pointer-events:none;font-size:42px;font-weight:1000;opacity:0;transform:scale(.8)}#booyahFlash.show{animation:booyah .65s ease-out}@keyframes booyah{0%{opacity:0;transform:scale(.7) rotate(-5deg)}20%{opacity:1;transform:scale(1.15) rotate(3deg)}100%{opacity:0;transform:scale(1.5)}}
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CONTROLLER LAB • PROTOTYPE 134</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="joycon" class="topJoycon">CONNECT CONTROLLER</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">CONTROLLER: waiting</span></div></div>
+<div id="ui"><div class="card"><b>🦑 INK ARENA VR</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
-<div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action squidButton" id="squidButton">🦑 SQUID</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
+<div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 import {VRButton} from "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/webxr/VRButton.js";
@@ -22,613 +22,163 @@ import {VRButton} from "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/
 const bootStatus=document.getElementById("status");
 window.addEventListener("error",e=>{console.error(e.error||e.message);if(bootStatus)bootStatus.textContent="ERROR: "+(e.message||"startup error");});
 window.addEventListener("unhandledrejection",e=>{console.error(e.reason);if(bootStatus)bootStatus.textContent="ERROR: "+(e.reason?.message||"promise error");});
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x11152b);scene.fog=new THREE.Fog(0x11152b,10,42);
-const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.03,100);camera.position.set(0,1.6,4);camera.rotation.set(0,0,0);
-const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,preserveDrawingBuffer:false});
-renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x11152b);scene.fog=new THREE.Fog(0x11152b,8,32);
+const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.03,100);camera.position.set(0,1.6,0);camera.rotation.set(0,0,0);
+const renderer=new THREE.WebGLRenderer({antialias:false,alpha:false,preserveDrawingBuffer:false});
+renderer.setPixelRatio(1);
 renderer.setSize(innerWidth,innerHeight,false);
 renderer.xr.enabled=true;
 document.body.appendChild(renderer.domElement);
+const xrCameraTracking={enabled:false,mode:"vr"};
+const cameraToggle=document.getElementById("cameraToggle");
+async function updateCameraTrackingSupport(){
+  if(!navigator.xr){
+    cameraToggle.disabled=true;
+    cameraToggle.textContent="📷 CAMERA TRACKING: UNSUPPORTED";
+    return;
+  }
+  try{
+    const arSupported=await navigator.xr.isSessionSupported("immersive-ar");
+    cameraToggle.disabled=!arSupported;
+    cameraToggle.title=arSupported?"Optional camera-based XR tracking.":"Camera-based XR tracking is unavailable on this device/browser.";
+    if(!arSupported)cameraToggle.textContent="📷 CAMERA TRACKING: UNSUPPORTED";
+  }catch(err){
+    console.warn("Camera tracking support check failed",err);
+    cameraToggle.disabled=true;
+    cameraToggle.textContent="📷 CAMERA TRACKING: UNSUPPORTED";
+  }
+}
+function setCameraTrackingUI(){
+  cameraToggle.classList.toggle("on",xrCameraTracking.enabled);
+  cameraToggle.setAttribute("aria-pressed",String(xrCameraTracking.enabled));
+  cameraToggle.textContent=xrCameraTracking.enabled?"📷 CAMERA TRACKING: ON":"📷 CAMERA TRACKING: OFF";
+}
+cameraToggle.addEventListener("click",()=>{
+  if(renderer.xr.isPresenting)return;
+  xrCameraTracking.enabled=!xrCameraTracking.enabled;
+  setCameraTrackingUI();
+  document.getElementById("status").textContent=xrCameraTracking.enabled?"CAMERA TRACKING ON • Enter VR":"CAMERA TRACKING OFF • Enter VR";
+});
+updateCameraTrackingSupport();
+setCameraTrackingUI();
+
+const armTestToggle=document.getElementById("armTestToggle");
+let armTestMode=false;
+armTestToggle.addEventListener("click",()=>{
+  armTestMode=!armTestMode;
+  armTestToggle.classList.toggle("on",armTestMode);
+  armTestToggle.setAttribute("aria-pressed",String(armTestMode));
+  armTestToggle.textContent=armTestMode?"🦾 ARM TEST: ON":"🦾 ARM TEST: OFF";
+  document.getElementById("status").textContent=armTestMode?"ARM TEST MODE • Sticks move arms":(renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready");
+});
+
 // Three.js VR entry button. Keep this as the single VR button creation point.
 const vrButton=VRButton.createButton(renderer);
 document.body.appendChild(vrButton);
+scene.add(new THREE.HemisphereLight(0xffffff,0x172033,1.5));const sun=new THREE.DirectionalLight(0xffffff,2);sun.position.set(3,8,2);scene.add(sun);
+const player=new THREE.Group();player.position.set(0,0,4);player.add(camera);scene.add(player);
 
-const vrControllers=[renderer.xr.getController(0),renderer.xr.getController(1)];
-const vrGrips=[renderer.xr.getControllerGrip(0),renderer.xr.getControllerGrip(1)];
-const vrControllerState={
-  left:{controller:vrControllers[0],grip:vrGrips[0],connected:false},
-  right:{controller:vrControllers[1],grip:vrGrips[1],connected:false}
-};
-vrControllers.forEach((controller,i)=>{
-  scene.add(controller);
-  const grip=vrGrips[i];
-  const fallbackHand=i===0?"left":"right";
-  controller.addEventListener("connected",event=>{
-    const hand=event.data?.handedness||fallbackHand;
-    if(hand==="left"||hand==="right"){
-      vrControllerState[hand].controller=controller;
-      vrControllerState[hand].grip=grip;
-      vrControllerState[hand].connected=true;
-      controller.userData.handedness=hand;
-    }
-  });
-  controller.addEventListener("disconnected",()=>{
-    const hand=controller.userData.handedness||fallbackHand;
-    if(hand==="left"||hand==="right"){
-      vrControllerState[hand].connected=false;
-      vrControllerState[hand].controller=null;
-      vrControllerState[hand].grip=null;
-    }
-  });
-});
-vrGrips.forEach((g,i)=>{g.add(vrHandVisuals[i===0?"left":"right"]);scene.add(g);});
-
-// Controller-agnostic weapon link: WebXR grips are optional.
-// External controllers such as Joy-Con/HID can become the pose source later
-// without requiring a VR controller to exist.
-const blasterControlSource={type:"none",handedness:"right",object:null,connected:false};
-const blasterMesh=new THREE.Group();
-const blasterBody=new THREE.Mesh(
-  new THREE.BoxGeometry(.10,.12,.30),
-  new THREE.MeshStandardMaterial({color:0x22c55e,roughness:.42,metalness:.18})
-);
-blasterBody.position.z=-.12;
-const blasterHandle=new THREE.Mesh(
-  new THREE.BoxGeometry(.075,.18,.09),
-  new THREE.MeshStandardMaterial({color:0x334155,roughness:.62,metalness:.08})
-);
-blasterHandle.position.set(0,-.11,.01);
-blasterHandle.rotation.x=-.18;
-const blasterMuzzle=new THREE.Mesh(
-  new THREE.CylinderGeometry(.055,.055,.10,12),
-  new THREE.MeshStandardMaterial({color:0x67e8f9,emissive:0x064e5b,emissiveIntensity:.8,roughness:.3,metalness:.12})
-);
-blasterMuzzle.rotation.x=Math.PI/2;
-blasterMuzzle.position.z=-.30;
-blasterMesh.add(blasterBody,blasterHandle,blasterMuzzle);
-blasterMesh.position.set(0,-.02,-.08);
-function setBlasterControlSource(type,object=null){
-  blasterControlSource.type=type;
-  blasterControlSource.object=object;
-  blasterControlSource.connected=!!object;
-}
-function syncControllerBlaster(){
-  const source=blasterControlSource;
-  if(source.type==="webxr-grip"&&source.object){
-    if(blasterMesh.parent!==source.object)source.object.add(blasterMesh);
-    blasterMesh.visible=true;
-    return;
-  }
-  blasterMesh.visible=false;
-}
-function updateBlasterControlSource(){
-  // WebXR grip is only an optional source. Do not assume the phone headset
-  // provides physical VR controllers.
-  const right=vrControllerState.right;
-  if(right.connected&&right.grip){
-    setBlasterControlSource("webxr-grip",right.grip);
-    return;
-  }
-  setBlasterControlSource("none");
-}
-function refreshVRInputSources(){
-  const session=renderer.xr.getSession();
-  const sources=session?Array.from(session.inputSources):[];
-  const status=document.getElementById("vrInputStatus");
-  if(!status)return;
-  if(!renderer.xr.isPresenting){status.textContent="VR INPUT: waiting";return;}
-  const tracked=sources.filter(s=>s.gripSpace||s.hand).length;
-  const hands=sources.filter(s=>s.hand).length;
-  status.textContent=hands?"VR INPUT: "+hands+" hand"+(hands===1?"":"s")+" tracked":"VR INPUT: "+tracked+" controller"+(tracked===1?"":"s")+" tracked";
-}
-const trackedArmState={left:{active:false,position:new THREE.Vector3(),wrist:new THREE.Vector3()},right:{active:false,position:new THREE.Vector3(),wrist:new THREE.Vector3()}};
-function resetTrackedArmPose(){
-  trackedArmState.left.active=false;trackedArmState.right.active=false;
-}
-function updateTrackedArm(side,worldWrist,worldIndex){
-  const arm=playerBody.userData[side+"Arm"];if(!arm)return;
-  const shoulderWorld=new THREE.Vector3();arm.getWorldPosition(shoulderWorld);
-  const targetWorld=worldIndex||worldWrist;
-  const parentWorldQuat=new THREE.Quaternion();playerBody.getWorldQuaternion(parentWorldQuat);
-  const localTarget=targetWorld.clone();player.worldToLocal(localTarget);
-  const shoulderLocal=shoulderWorld.clone();player.worldToLocal(shoulderLocal);
-  const dx=localTarget.x-shoulderLocal.x;
-  const dy=localTarget.y-shoulderLocal.y;
-  const dz=localTarget.z-shoulderLocal.z;
-  const horizontal=Math.hypot(dx,dz);
-  const yaw=Math.atan2(dx,dz);
-  const pitch=Math.atan2(dy,Math.max(.001,horizontal));
-  arm.rotation.y=THREE.MathUtils.damp(arm.rotation.y,yaw,14,1/60);
-  arm.rotation.x=THREE.MathUtils.damp(arm.rotation.x,-pitch,14,1/60);
-  arm.rotation.z=THREE.MathUtils.damp(arm.rotation.z,side==="left"?.12:-.12,14,1/60);
-  trackedArmState[side].active=true;
-  trackedArmState[side].wrist.copy(worldWrist);
-}
-function applyTrackedArmFusion(){
-  if(!armTestMode||!vrFancyFeatures.handTracking||!renderer.xr.isPresenting)return;
-  for(const side of ["left","right"]){
-    if(trackedArmState[side].active){
-      const wrist=trackedArmState[side].wrist;
-      updateTrackedArm(side,wrist,wrist);
-    }
-  }
-}
-
-function updateVRTracking(){
-  if(!renderer.xr.isPresenting){
-    vrHandVisuals.left.visible=false;vrHandVisuals.right.visible=false;
-    vrHandJoints.left.visible=false;vrHandJoints.right.visible=false;
-    return;
-  }
-  const session=renderer.xr.getSession();if(!session)return;
-  const frame=renderer.xr.getFrame();
-  const refSpace=renderer.xr.getReferenceSpace();
-  const sources=Array.from(session.inputSources);
-  for(const side of ["left","right"]){
-    const source=sources.find(s=>s.handedness===side);
-    const visual=vrHandVisuals[side];
-    const jointGroup=vrHandJoints[side];
-    if(!source){
-      visual.visible=false;jointGroup.visible=false;trackedArmState[side].active=false;
-      continue;
-    }
-    const hasHand=vrFancyFeatures.handTracking&&!!source.hand;
-    if(!hasHand)trackedArmState[side].active=false;
-    visual.visible=!hasHand&&!!source.gripSpace;
-    jointGroup.visible=hasHand&&!!frame&&!!refSpace;
-    if(hasHand&&frame&&refSpace){
-      for(let i=0;i<XR_HAND_JOINTS.length;i++){
-        const jointSpace=source.hand.get(XR_HAND_JOINTS[i]);
-        const wristPose=frame.getJointPose(source.hand.get("wrist"),refSpace);
-        const indexPose=frame.getJointPose(source.hand.get("index-finger-tip"),refSpace);
-        if(i===0&&wristPose){
-          const wp=new THREE.Vector3(wristPose.transform.position.x,wristPose.transform.position.y,wristPose.transform.position.z);
-          const ip=indexPose?new THREE.Vector3(indexPose.transform.position.x,indexPose.transform.position.y,indexPose.transform.position.z):wp.clone();
-          const handWorld=wp;
-          const indexWorld=ip;
-          trackedArmState[side].wrist.copy(handWorld);
-          trackedArmState[side].position.copy(indexWorld);
-          trackedArmState[side].active=true;
-        }
-        const jointMesh=vrHandJointMeshes[side][i];
-        const pose=jointSpace?frame.getJointPose(jointSpace,refSpace):null;
-        if(pose){
-          jointMesh.visible=true;
-          jointMesh.position.set(pose.transform.position.x,pose.transform.position.y,pose.transform.position.z);
-          jointMesh.quaternion.set(pose.transform.orientation.x,pose.transform.orientation.y,pose.transform.orientation.z,pose.transform.orientation.w);
-          const r=Number.isFinite(pose.radius)?Math.max(.006,pose.radius):.012;
-          jointMesh.scale.setScalar(r/.012);
-        }else{
-          jointMesh.visible=false;
-        }
-      }
-    }
-    const index=side==="left"?0:1;
-    const grip=vrGrips[index];
-    if(grip&&!hasHand)visual.position.set(0,0,0);
-  }
-  refreshVRInputSources();
-}
-
-scene.add(new THREE.HemisphereLight(0xffffff,0x172033,1.8));
-const sun=new THREE.DirectionalLight(0xffffff,2.4);
-sun.position.set(3,8,2);
-sun.castShadow=true;
-scene.add(sun);
-const player=new THREE.Group();player.position.set(0,0,4);
-const vrMotionRig=new THREE.Group();
-player.add(vrMotionRig);
-vrMotionRig.add(camera);
-camera.position.set(0,1.08,0);
-camera.rotation.set(0,0,0);
-scene.add(player);
-
-// VR crosshair: the HTML crosshair is not visible inside immersive WebXR.
-// This reticle lives in front of the headset camera, so it renders in VR.
-const vrReticle=new THREE.Mesh(
-  new THREE.RingGeometry(.018,.027,24),
-  new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.9,side:THREE.DoubleSide})
-);
-vrReticle.position.set(0,0,-1);
-camera.add(vrReticle);
-
-// Simple blocky R6-style test body. Visual only.
+// Generic first-person test body. Visual only, no gameplay/input changes.
 const playerBody=new THREE.Group();
-const bodyMat=new THREE.MeshStandardMaterial({color:0x64748b,roughness:.68,metalness:.1});
-const limbMat=new THREE.MeshStandardMaterial({color:0x94a3b8,roughness:.72,metalness:.05});
-const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.075,.46,6,10),bodyMat);torso.position.set(0,.67,0);playerBody.add(torso);
-const head=new THREE.Mesh(new THREE.SphereGeometry(.10,14,10),limbMat);head.visible=false;head.position.set(0,1.08,0);playerBody.add(head);
+const bodyMat=new THREE.MeshStandardMaterial({color:0x64748b,roughness:.9});
+const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.27,.72,6,12),bodyMat);
+torso.position.set(0,.78,0);
+playerBody.add(torso);
+
+const armUpperGeo=new THREE.CapsuleGeometry(.075,.32,5,8);
+const armLowerGeo=new THREE.CapsuleGeometry(.065,.30,5,8);
+const handGeo=new THREE.SphereGeometry(.09,10,8);
+
 for(const side of [-1,1]){
-  const arm=new THREE.Group();
-  arm.position.set(side*.13,.91,0);
-  const upper=new THREE.Mesh(new THREE.BoxGeometry(.06,.25,.06),limbMat);
-  upper.position.y=-.15;
-  arm.add(upper);
+  const armRoot=new THREE.Group();
+  armRoot.position.set(side*.34,1.02,0);
+  armRoot.rotation.z=side*.12;
+  const upper=new THREE.Mesh(armUpperGeo,bodyMat);
+  upper.position.y=-.16;
+  armRoot.add(upper);
+
   const elbow=new THREE.Group();
-  elbow.position.y=-.25;
-  const forearm=new THREE.Mesh(new THREE.BoxGeometry(.055,.24,.055),limbMat);
-  forearm.position.y=-.14;
-  elbow.add(forearm);
-  arm.add(elbow);
-  playerBody.add(arm);
-  playerBody.userData[side<0?"leftArm":"rightArm"]=arm;
+  elbow.position.set(0,-.34,0);
+  armRoot.add(elbow);
+
+  const lower=new THREE.Mesh(armLowerGeo,bodyMat);
+  lower.position.y=-.15;
+  elbow.add(lower);
+
+  const hand=new THREE.Mesh(handGeo,bodyMat);
+  hand.position.y=-.33;
+  elbow.add(hand);
+
+  playerBody.add(armRoot);
+  playerBody.userData[side<0?"leftArm":"rightArm"]=armRoot;
   playerBody.userData[side<0?"leftElbow":"rightElbow"]=elbow;
 }
+const legGeo=new THREE.CapsuleGeometry(.09,.58,5,8);
 for(const side of [-1,1]){
-  const leg=new THREE.Group();
-  leg.position.set(side*.065,.36,0);
-  const upper=new THREE.Mesh(new THREE.BoxGeometry(.065,.28,.065),limbMat);
-  upper.position.y=-.15;
-  leg.add(upper);
-  const knee=new THREE.Group();
-  knee.position.y=-.28;
-  const lower=new THREE.Mesh(new THREE.BoxGeometry(.06,.29,.06),limbMat);
-  lower.position.y=-.16;
-  knee.add(lower);
-  leg.add(knee);
+  const leg=new THREE.Mesh(legGeo,bodyMat);
+  leg.position.set(side*.14,.25,0);
   playerBody.add(leg);
-  playerBody.userData[side<0?"leftLeg":"rightLeg"]=leg;
-  playerBody.userData[side<0?"leftKnee":"rightKnee"]=knee;
 }
 player.add(playerBody);
-const floorMat=new THREE.MeshStandardMaterial({color:0x202946,roughness:.78,metalness:.05});
-const floor=new THREE.Mesh(new THREE.BoxGeometry(30,.12,30),floorMat);
-floor.position.y=-.06;
-floor.receiveShadow=true;
-scene.add(floor);
-const grid=new THREE.GridHelper(30,60,0x46506f,0x303954);
-grid.position.y=.005;
-scene.add(grid);
-const arenaRing=new THREE.Mesh(new THREE.RingGeometry(10.8,10.88,96),new THREE.MeshBasicMaterial({color:0x22d3ee,transparent:true,opacity:.24,side:THREE.DoubleSide}));
-arenaRing.rotation.x=-Math.PI/2;
-arenaRing.position.y=.008;
-scene.add(arenaRing);
-const wallMat=new THREE.MeshStandardMaterial({color:0x3d4660});const inkableWalls=[];for(const [x,z,sx,sz] of [[0,-15,30,.15],[-15,0,.15,30],[15,0,.15,30],[0,15,30,.15]]){const w=new THREE.Mesh(new THREE.BoxGeometry(sx,3,sz),wallMat.clone());w.position.set(x,1.5,z);w.receiveShadow=true;scene.add(w);inkableWalls.push(w)}
-const solidObstacles=[];
-const OBSTACLE_HALF_X=.6;
-const OBSTACLE_HALF_Z=.6;
-// Patch notes live on a normal arena cube so the magenta cube stays sacred.
-function makePatchNotesCubeNote(){
-  const canvas=document.createElement("canvas");
-  canvas.width=1024; canvas.height=1024;
-  const ctx=canvas.getContext("2d");
-  ctx.fillStyle="#101827";
-  ctx.fillRect(0,0,1024,1024);
-  ctx.strokeStyle="#22d3ee";
-  ctx.lineWidth=18;
-  ctx.strokeRect(24,24,976,976);
-  ctx.fillStyle="#ffffff";
-  ctx.font="900 76px system-ui, sans-serif";
-  ctx.fillText("BUILD 80",72,130);
-  ctx.font="800 52px system-ui, sans-serif";
-  ctx.fillStyle="#67e8f9";
-  ctx.fillText("PATCH NOTES",72,205);
-  ctx.fillStyle="#ffffff";
-  ctx.font="600 38px system-ui, sans-serif";
-  const lines=[
-    "• Prototype 105: phone accelerometer + gyroscope test",
-    "• Prototype 88: screen-mode squid proof transformation",
-    "• Fixed-timestep movement + collision physics",
-    "• Bounded ball substeps reduce wall/corner tunneling",
-    "• Ball gravity, bounce, friction + obstacle collisions",
-    "• HID/gamepad mappings remain untouched"
-  ];
-  lines.forEach((line,i)=>ctx.fillText(line,72,305+i*100));
-  ctx.fillStyle="#94a3b8";
-  ctx.font="500 30px system-ui, sans-serif";
-  ctx.fillText("SPLATVR // CUBE • PROTOTYPE 97",72,900);
-  const tex=new THREE.CanvasTexture(canvas);
-  tex.colorSpace=THREE.SRGBColorSpace;
-  const note=new THREE.Mesh(
-    new THREE.PlaneGeometry(.92,1.08),
-    new THREE.MeshBasicMaterial({map:tex,transparent:true})
-  );
-  // A physical-looking sheet of paper standing in front of the magenta cube.
-  note.position.set(0,.72,-3.48);
-  note.rotation.y=0.035;
-  note.renderOrder=4;
-  scene.add(note);
-}
-
-// Actually call the patch notes generator so it shows up in scene
-makePatchNotesCubeNote();
-
-for(const [x,z] of [[-3,-2],[3,-2],[-3,2],[3,2]]){
-  const o=new THREE.Mesh(new THREE.BoxGeometry(1.2,1.2,1.2),new THREE.MeshStandardMaterial({color:0x56627f,roughness:.68,metalness:.12}));
-  o.position.set(x,.6,z);
-  o.castShadow=true;
-  o.receiveShadow=true;
-  scene.add(o);
-  solidObstacles.push(o);
-}
-// SPLATVR TEST LAB: compact stations for movement, collision, ball and aim testing.
-const testLabLines=[];
-function addLabLine(x,z,sx,sz,label){
-  const line=new THREE.Mesh(
-    new THREE.BoxGeometry(sx,.012,sz),
-    new THREE.MeshBasicMaterial({color:0x22d3ee,transparent:true,opacity:.32})
-  );
-  line.position.set(x,.014,z); scene.add(line); testLabLines.push(line);
-  if(label){
-    const canvas=document.createElement("canvas"); canvas.width=512; canvas.height=128;
-    const ctx=canvas.getContext("2d"); ctx.fillStyle="#ffffff"; ctx.font="900 42px system-ui,sans-serif"; ctx.fillText(label,18,78);
-    const tex=new THREE.CanvasTexture(canvas); tex.colorSpace=THREE.SRGBColorSpace;
-    const tag=new THREE.Mesh(new THREE.PlaneGeometry(1.5,.38),new THREE.MeshBasicMaterial({map:tex,transparent:true,side:THREE.DoubleSide}));
-    tag.position.set(x,.025,z); tag.rotation.x=-Math.PI/2; scene.add(tag);
-  }
-}
-addLabLine(0,-10.5,10,.045,"AIM / TARGETS");
-addLabLine(-9,0,7,.045,"MOVE / COLLISION");
-addLabLine(9,0,7,.045,"SQUID SPEED");
-addLabLine(0,9.5,10,.045,"BALL LAB");
-const hitboxGroup=new THREE.Group(); hitboxGroup.visible=false; scene.add(hitboxGroup);
-const hitboxMat=new THREE.LineBasicMaterial({color:0xfacc15,transparent:true,opacity:.9});
-const obstacleHitboxes=solidObstacles.map(o=>{
-  const h=new THREE.BoxHelper(o,0xfacc15); h.material=hitboxMat; hitboxGroup.add(h); return h;
-});
-const ballHitbox=new THREE.Mesh(new THREE.SphereGeometry(.16,12,8),new THREE.MeshBasicMaterial({color:0xfacc15,wireframe:true,transparent:true,opacity:.9}));
-hitboxGroup.add(ballHitbox);
-const playerHitboxBox=new THREE.Box3();
-const playerHitbox=new THREE.Box3Helper(playerHitboxBox,0xfacc15);
-hitboxGroup.add(playerHitbox);
-function updateHitboxes(){
-  if(!hitboxGroup.visible)return;
-  for(const h of obstacleHitboxes)h.update();
-  ballHitbox.position.copy(ball.position);
-  playerHitboxBox.set(
-    new THREE.Vector3(player.position.x-.28,0,player.position.z-.28),
-    new THREE.Vector3(player.position.x+.28,1.5,player.position.z+.28)
-  );
-  playerHitbox.updateMatrixWorld(true);
-}
-const controllerLab=new THREE.Group();
-controllerLab.position.set(0,1.65,-3);
-scene.add(controllerLab);
-const controllerShell=new THREE.Mesh(
-  new THREE.BoxGeometry(1.45,.34,.78),
-  new THREE.MeshStandardMaterial({color:0xff00aa,emissive:0x7a004f,emissiveIntensity:1.1,roughness:.3,metalness:.15})
-);
-controllerShell.castShadow=true;
-controllerLab.add(controllerShell);
-const controllerGripL=new THREE.Mesh(new THREE.BoxGeometry(.28,.5,.42),controllerShell.material.clone());
-const controllerGripR=new THREE.Mesh(new THREE.BoxGeometry(.28,.5,.42),controllerShell.material.clone());
-controllerGripL.position.set(-.52,-.18,.02);controllerGripL.rotation.z=-.18;
-controllerGripR.position.set(.52,-.18,.02);controllerGripR.rotation.z=.18;
-controllerLab.add(controllerGripL,controllerGripR);
-const controllerCenter=new THREE.Mesh(new THREE.BoxGeometry(.36,.12,.26),new THREE.MeshStandardMaterial({color:0x1e293b,roughness:.4}));
-controllerLab.add(controllerCenter);
-const stickMat=new THREE.MeshStandardMaterial({color:0xe2e8f0,roughness:.45});
-const labSticks={left:new THREE.Mesh(new THREE.CylinderGeometry(.11,.11,.06,20),stickMat),right:new THREE.Mesh(new THREE.CylinderGeometry(.11,.11,.06,20),stickMat)};
-for(const k of ["left","right"]){labSticks[k].rotation.x=Math.PI/2;labSticks[k].position.y=.2;controllerLab.add(labSticks[k]);}
-labSticks.left.position.x=-.38;labSticks.right.position.x=.38;
-const labButtons=[];
-for(let i=0;i<4;i++){
-  const b=new THREE.Mesh(new THREE.SphereGeometry(.065,12,8),new THREE.MeshStandardMaterial({color:0xf8fafc,emissive:0x334155,emissiveIntensity:.25}));
-  b.position.set(.34+(i%2)*.14,.2,(i<2?-0.1:.1));
-  controllerLab.add(b);labButtons.push(b);
-}
-const controllerTelemetry={x:0,y:0,buttons:0,packets:0,bytes:0,lastPacket:0};
-function updateControllerModel(){
-  updateBlasterControlSource();
-  syncControllerBlaster();
-  const pads=getControllers().filter(g=>g?.connected);
-  const gp=pads[0];
-  if(gp){
-    controllerTelemetry.x=Number.isFinite(gp.axes?.[0])?gp.axes[0]:0;
-    controllerTelemetry.y=Number.isFinite(gp.axes?.[1])?gp.axes[1]:0;
-    const bx=gp.buttons||[];
-    controllerTelemetry.buttons=bx.reduce((n,b,i)=>n+(b?.pressed?(1<<Math.min(i,15)):0),0);
-    const lx=THREE.MathUtils.clamp(controllerTelemetry.x,-1,1);
-    const ly=THREE.MathUtils.clamp(controllerTelemetry.y,-1,1);
-    labSticks.left.position.set(-.38+lx*.10,.2,.02+ly*.10);
-    labSticks.right.position.set(.38+(Number.isFinite(gp.axes?.[2])?gp.axes[2]:0)*.10,.2,.02+(Number.isFinite(gp.axes?.[3])?gp.axes[3]:0)*.10);
-    for(let i=0;i<4;i++)labButtons[i].material.emissiveIntensity=bx[i]?.pressed?1.8:.25;
-  }
-}
-
-
-const ball=new THREE.Mesh(
-  new THREE.SphereGeometry(.16,18,14),
-  new THREE.MeshStandardMaterial({color:0xf8fafc,roughness:.35,metalness:.05})
-);
-ball.position.set(0,.16,9.5);
-ball.castShadow=true;
-scene.add(ball);
-let ballHeld=false;
-let ballVelocity=new THREE.Vector3();
-let ballGrabLatch=false;let ballKickCooldown=0;
-
+const floor=new THREE.Mesh(new THREE.BoxGeometry(14,.12,14),new THREE.MeshStandardMaterial({color:0x28304a,roughness:.85}));floor.position.y=-.06;scene.add(floor);
+const wallMat=new THREE.MeshStandardMaterial({color:0x3d4660});for(const [x,z,sx,sz] of [[0,-7,14,.15],[-7,0,.15,14],[7,0,.15,14],[0,7,14,.15]]){const w=new THREE.Mesh(new THREE.BoxGeometry(sx,3,sz),wallMat);w.position.set(x,1.5,z);scene.add(w)}
+for(const [x,z] of [[-3,-2],[3,-2],[-2,1],[2,2],[0,-4]]){const o=new THREE.Mesh(new THREE.BoxGeometry(1.2,1.2,1.2),new THREE.MeshStandardMaterial({color:0x64748b}));o.position.set(x,.6,z);scene.add(o)}
 const targets=[];const targetHomes=[[-4,-5],[0,-5],[4,-5],[-4,0],[4,0]];for(const [x,z] of targetHomes){const t=new THREE.Mesh(new THREE.CylinderGeometry(.55,.55,.15,24),new THREE.MeshStandardMaterial({color:0xf472b6,emissive:0x4a102d,emissiveIntensity:.5}));t.rotation.x=Math.PI/2;t.position.set(x,1.3,z);scene.add(t);targets.push(t)}
 const targetMotion=targets.map((t,i)=>({t,homeX:t.position.x,homeZ:t.position.z,phase:i*1.7}));
-const inkGroup=new THREE.Group();scene.add(inkGroup);
-const wallInkGroups=[];
-const ARENA_AREA=30*30;
-let inkCoverage=0;
-function refreshInkArea(){inkArea=Math.min(100,Math.round((inkCoverage/ARENA_AREA)*100));}
-function trimInk(){while(inkGroup.children.length>60){const oldest=inkGroup.children[0];inkCoverage=Math.max(0,inkCoverage-(oldest.userData.coverage||0));inkGroup.remove(oldest);}}
-function trimWallInk(){while(wallInkGroups.length>60){const oldest=wallInkGroups.shift();inkCoverage=Math.max(0,inkCoverage-(oldest.userData.coverage||0));oldest.parent?.remove(oldest);}}
-
-const inkParticleGroup=new THREE.Group();scene.add(inkParticleGroup);
-const inkParticleMat=new THREE.MeshBasicMaterial({color:0x67e8f9,transparent:true,opacity:.92});
-const inkMat=new THREE.MeshStandardMaterial({color:0x22d3ee,emissive:0x064e5b,emissiveIntensity:.45,transparent:true,opacity:.9,roughness:.7});
+const inkGroup=new THREE.Group();scene.add(inkGroup);const inkMat=new THREE.MeshStandardMaterial({color:0x22d3ee,emissive:0x064e5b,emissiveIntensity:.45,transparent:true,opacity:.9,roughness:.7});
 let inkCount=0,targetCount=0,booyahCount=0;let inkArea=0,shotCooldown=0;
-const goofyLines=["THE BALL HAS OPINIONS.","CERTIFIED SPLAT NOISE.","WHY IS THE CUBE JUDGING YOU?","INK ACQUIRED. BRAIN DELETED.","LOCAL SQUID REPORTS: SILLY.","THE WALL WILL REMEMBER THIS.","BOOYAH ENERGY DETECTED.","100% MORE GOOFY THAN NECESSARY."];
-let goofyTimer=8+Math.random()*7;
 
-// SQUID MODE prototype: left trigger (LT/L2/ZL) toggles squid form.
+// Squid form: calibrate the headset height after entering VR, then detect a deliberate crouch.
 let squidForm=false;
-let squidTriggerLatch=false;
-function setSquidMode(enabled){
-  squidForm=!!enabled;
-  // SCREEN MODE PROOF: make the transformation unmistakable on a phone display.
-  playerBody.scale.set(squidForm?1.32:1,squidForm?.42:1,squidForm?1.32:1);
-  playerBody.position.y=squidForm?.18:0;
-  const button=document.getElementById("squidButton");
-  if(button){button.classList.toggle("on",squidForm);button.setAttribute("aria-pressed",String(squidForm));button.textContent=squidForm?"🦑 SQUID ON":"🦑 SQUID";}
-  document.getElementById("status").textContent=squidForm?"SQUID MODE! 🦑 • SPEED UP":(renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready");
-}
-function updateSquidForm(leftTrigger){
-  const pressed=!!leftTrigger;
-  if(pressed&&!squidTriggerLatch)setSquidMode(!squidForm);
-  squidTriggerLatch=pressed;
+let squidHeightReady=false;
+let squidBaselineSamples=0;
+let squidBaselineSum=0;
+let squidEnterY=1.6;
+
+function updateSquidForm(){
+  if(!renderer.xr.isPresenting)return;
+  const xrCam=renderer.xr.getCamera();
+  const currentY=xrCam.position.y;
+  if(!squidHeightReady){
+    squidBaselineSum+=currentY;
+    squidBaselineSamples++;
+    if(squidBaselineSamples>30){
+      squidEnterY=squidBaselineSum/squidBaselineSamples;
+      squidHeightReady=true;
+    }
+    return;
+  }
+  const wasSquid=squidForm;
+  squidForm=currentY<squidEnterY-.35;
+  if(squidForm!==wasSquid){
+    document.getElementById("status").textContent=squidForm?"SQUID FORM! 🦑":"VR ACTIVE • Look + ink";
+  }
 }
 function updateStats(){document.getElementById("stats").textContent="Ink: "+inkCount+" • Targets: "+targetCount+"/5 • Paint: "+inkArea+"% • Booyah: "+booyahCount}
-function spawnInkTrail(start,end){
-  const distance=start.distanceTo(end);
-  const duration=THREE.MathUtils.clamp(distance/24,.12,.32);
-  const drop=new THREE.Mesh(new THREE.SphereGeometry(.085,12,10),inkParticleMat.clone());
-  drop.position.copy(start);
-  drop.userData.life=duration;
-  drop.userData.maxLife=duration;
-  drop.userData.start=start.clone();
-  drop.userData.end=end.clone();
-  drop.userData.arc=Math.min(.7,distance*.06);
-  drop.userData.impactPoint=end.clone();
-  inkParticleGroup.add(drop);
-}
-function makeWallInk(point,wall){
-  const local=wall.worldToLocal(point.clone());
-  const size=.34+Math.random()*.28;
-  const shape=new THREE.Shape();
-  const spikes=12;
-  for(let i=0;i<spikes;i++){const a=i/spikes*Math.PI*2;const r=size*(.72+Math.random()*.5);const x=Math.cos(a)*r,y=Math.sin(a)*r;if(i===0)shape.moveTo(x,y);else shape.lineTo(x,y)}
-  shape.closePath();
-  const splat=new THREE.Mesh(new THREE.ShapeGeometry(shape),inkMat.clone());
-  const isSide=Math.abs(wall.geometry.parameters.sx||0)<1;
-  const xSide=Math.sign(wall.position.x)||0;
-  const zSide=Math.sign(wall.position.z)||0;
-  if(isSide){splat.rotation.y=xSide>0?Math.PI/2:-Math.PI/2;splat.position.set(local.x+xSide*.09,local.y,local.z);}
-  else{splat.position.set(local.x,local.y,local.z+zSide*.09);}
-  const group=new THREE.Group();
-  group.userData.coverage=Math.PI*size*size*.55;
-  group.add(splat);
-  wall.add(group);
-  wallInkGroups.push(group);
-  inkCount++;
-  inkCoverage+=group.userData.coverage;
-  refreshInkArea();
-  trimWallInk();
-  updateStats();
-}
-function makeInk(point){
-  const pulse=new THREE.Mesh(new THREE.CircleGeometry(.22,16),new THREE.MeshBasicMaterial({color:0x67e8f9,transparent:true,opacity:.5,side:THREE.DoubleSide}));
-  pulse.rotation.x=-Math.PI/2;pulse.position.set(point.x,.016,point.z);pulse.userData.life=.22;pulse.userData.maxLife=.22;pulse.userData.kind="pulse";inkParticleGroup.add(pulse);
-
-  const size=.62+Math.random()*.42;
-  const shape=new THREE.Shape();
-  const spikes=14;
-  for(let i=0;i<spikes;i++){
-    const a=(i/spikes)*Math.PI*2;
-    const r=size*(.72+Math.random()*.5);
-    const x=Math.cos(a)*r;
-    const y=Math.sin(a)*r;
-    if(i===0)shape.moveTo(x,y);else shape.lineTo(x,y);
-  }
-  shape.closePath();
-  const group=new THREE.Group();
-  const splat=new THREE.Mesh(new THREE.ShapeGeometry(shape),inkMat.clone());
-  splat.rotation.x=-Math.PI/2;
-  splat.position.set(point.x,.012,point.z);
-  splat.scale.set(.9+Math.random()*.25,.9+Math.random()*.25,1);
-  group.add(splat);
-
-  let coverage=Math.PI*size*size*.58;
-  const droplets=2+Math.floor(Math.random()*4);
-  for(let i=0;i<droplets;i++){
-    const a=Math.random()*Math.PI*2;
-    const d=size*(1.05+Math.random()*.9);
-    const r=.08+Math.random()*.13;
-    const drop=new THREE.Mesh(new THREE.CircleGeometry(r,10),inkMat.clone());
-    drop.rotation.x=-Math.PI/2;
-    drop.position.set(point.x+Math.cos(a)*d,.013,point.z+Math.sin(a)*d);
-    group.add(drop);
-    coverage+=Math.PI*r*r;
-  }
-
-  group.userData.coverage=coverage;
-  inkGroup.add(group);
-  inkCount++;
-  inkCoverage+=coverage;
-  refreshInkArea();
-  trimInk();
-  updateStats();
-}
+function makeInk(point){const size=.35+Math.random()*.65;inkArea=Math.min(100,Math.round(inkGroup.children.length/1.8));const m=new THREE.Mesh(new THREE.CircleGeometry(size,20),inkMat);m.rotation.x=-Math.PI/2;m.position.set(point.x,.012,point.z);m.scale.x=.7+Math.random()*.6;m.scale.y=.7+Math.random()*.6;inkGroup.add(m);inkCount++;if(inkGroup.children.length>180)inkGroup.remove(inkGroup.children[0]);updateStats()}
 const raycaster=new THREE.Raycaster();
-function shoot(){
-  if(shotCooldown>0)return;
-  shotCooldown=.18;
-  const origin=new THREE.Vector3();
-  const dir=new THREE.Vector3();
-  const shootCamera=getActiveCamera();
-  shootCamera.updateMatrixWorld(true);
-  const shootQuat=new THREE.Quaternion();
-  shootCamera.getWorldPosition(origin);
-  shootCamera.getWorldQuaternion(shootQuat);
-  dir.set(0,0,-1).applyQuaternion(shootQuat).normalize();
-  // Use the headset's actual world-space ray. This avoids WebXR ArrayCamera
-  // projection issues that can make setFromCamera() miss every target/floor.
-  raycaster.ray.origin.copy(origin);
-  raycaster.ray.direction.copy(dir);
-  const hits=raycaster.intersectObjects([floor,...targets,...inkableWalls],false);
-  if(!hits.length)return;
-  const hit=hits[0];
-  spawnInkTrail(origin,hit.point);if(hit.object!==floor){const isTarget=targets.includes(hit.object);const isWall=inkableWalls.includes(hit.object);if(isWall){makeWallInk(hit.point,hit.object);}else{const alreadyInked=hit.object.material.color.getHex()===0x22d3ee;if(!alreadyInked){hit.object.material.color.set(0x22d3ee);hit.object.material.emissive.set(0x064e5b);hit.object.material.emissiveIntensity=.9;if(isTarget)targetCount++;}}}document.getElementById("status").textContent="INK!";setTimeout(()=>document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE":"Ready",180);updateStats();if(targetCount===targets.length)document.getElementById("status").textContent="ALL TARGETS INKED! 🎯"}
+function shoot(){if(shotCooldown>0)return;shotCooldown=.18;raycaster.setFromCamera(new THREE.Vector2(0,0),camera);const hits=raycaster.intersectObjects([floor,...targets],false);if(!hits.length)return;const hit=hits[0];if(hit.object!==floor&&hit.object.material.color.getHex()!==0x22d3ee){hit.object.material.color.set(0x22d3ee);hit.object.material.emissive.set(0x064e5b);hit.object.material.emissiveIntensity=.9;targetCount++}makeInk(hit.point);document.getElementById("status").textContent="INK!";setTimeout(()=>document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE":"Ready",180);updateStats();if(targetCount===targets.length)document.getElementById("status").textContent="ALL TARGETS INKED! 🎯"}
 function booyah(){booyahCount++;updateStats();const f=document.getElementById("booyahFlash");f.classList.remove("show");void f.offsetWidth;f.classList.add("show");document.getElementById("status").textContent="BOOYAH!";setTimeout(()=>document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE":"Ready",650)}
-document.getElementById("fire").addEventListener("click",shoot);document.getElementById("booyah").addEventListener("click",booyah);document.getElementById("squidButton").addEventListener("click",()=>{setSquidMode(!squidForm);});
-function resetGame(){targetCount=0;inkCount=0;inkArea=0;inkCoverage=0;booyahCount=0;shotCooldown=0;ballHeld=false;ballGrabLatch=false;ballKickCooldown=0;ballVelocity.set(0,0,0);ball.position.set(0,.16,7.4);for(const b of originalBall){b.velocity.set(0,0,0);b.mesh.position.set(...b.pos);}for(const {t,homeX,homeZ} of targetMotion){t.position.x=homeX;t.position.z=homeZ;t.material.color.set(0xf472b6);t.material.emissive.set(0x4a102d);t.material.emissiveIntensity=.5}while(inkGroup.children.length)inkGroup.remove(inkGroup.children[0]);
-while(wallInkGroups.length){const g=wallInkGroups.pop();g.parent?.remove(g);}
-inkCoverage=0;refreshInkArea();while(inkParticleGroup.children.length)inkParticleGroup.remove(inkParticleGroup.children[0]);player.position.set(0,0,4);moveVelocity.set(0,0,0);physicsAccumulator=0;squidTriggerLatch=false;setSquidMode(false);updateStats();document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready"}
+document.getElementById("fire").addEventListener("click",shoot);document.getElementById("booyah").addEventListener("click",booyah);
+function resetGame(){targetCount=0;inkCount=0;inkArea=0;booyahCount=0;shotCooldown=0;for(const {t,homeX,homeZ} of targetMotion){t.position.x=homeX;t.position.z=homeZ;t.material.color.set(0xf472b6);t.material.emissive.set(0x4a102d);t.material.emissiveIntensity=.5}while(inkGroup.children.length)inkGroup.remove(inkGroup.children[0]);player.position.set(0,0,4);squidForm=false;updateStats();document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready"}
 document.getElementById("reset").addEventListener("click",resetGame);
- renderer.xr.addEventListener("sessionstart",()=>{squidTriggerLatch=false;setSquidMode(false);document.getElementById("status").textContent="VR ACTIVE • Look + ink";});
- renderer.xr.addEventListener("sessionend",()=>{squidTriggerLatch=false;setSquidMode(false);
+renderer.xr.addEventListener("sessionstart",()=>{squidForm=false;squidHeightReady=false;squidBaselineSamples=0;squidBaselineSum=0;squidEnterY=1.6;if(xrCameraTracking.mode==="immersive-ar"){document.getElementById("status").textContent="CAMERA TRACKING ACTIVE 📷 • Calibrating...";}else{document.getElementById("status").textContent="VR ACTIVE • Calibrating...";}});
+renderer.xr.addEventListener("sessionend",()=>{
+  squidForm=false;
+  squidHeightReady=false;
+  squidBaselineSamples=0;
+  squidBaselineSum=0;
+  squidEnterY=1.6;
   document.getElementById("status").textContent="Ready";
 });
-const keys=new Set();
-window.addEventListener("keydown",e=>{const k=e.key.toLowerCase();const map={w:"up",s:"down",a:"left",d:"right",arrowup:"up",arrowdown:"down",arrowleft:"left",arrowright:"right"};if(map[k]){keys.add(map[k]);e.preventDefault();}if(k===" "&&!e.repeat)shoot();});
-window.addEventListener("keyup",e=>{const k=e.key.toLowerCase();const map={w:"up",s:"down",a:"left",d:"right",arrowup:"up",arrowdown:"down",arrowleft:"left",arrowright:"right"};if(map[k])keys.delete(map[k]);});window.addEventListener("blur",()=>keys.clear());
-let screenLookActive=false,screenLookLastX=0,screenLookLastY=0;
-let screenYaw=0,screenPitch=0;
-renderer.domElement.style.touchAction="none";
-renderer.domElement.addEventListener("pointerdown",e=>{
-  if(renderer.xr.isPresenting)return;
-  if(e.pointerType!=="touch"&&e.button!==0)return;
-  screenLookActive=true;screenLookLastX=e.clientX;screenLookLastY=e.clientY;
-  renderer.domElement.setPointerCapture?.(e.pointerId);
-});
-renderer.domElement.addEventListener("pointermove",e=>{
-  if(renderer.xr.isPresenting||!screenLookActive)return;
-  const dx=e.clientX-screenLookLastX,dy=e.clientY-screenLookLastY;
-  screenLookLastX=e.clientX;screenLookLastY=e.clientY;
-  screenYaw-=dx*.006;screenPitch=THREE.MathUtils.clamp(screenPitch-dy*.004,-1.15,1.15);
-});
-const stopScreenLook=e=>{screenLookActive=false;try{renderer.domElement.releasePointerCapture?.(e.pointerId)}catch{}};
-renderer.domElement.addEventListener("pointerup",stopScreenLook);
-renderer.domElement.addEventListener("pointercancel",stopScreenLook);
-renderer.domElement.addEventListener("pointerleave",e=>{if(e.pointerType!=="touch")screenLookActive=false});
-
-const moveButtons={up:"up",down:"down",left:"left",right:"right"};document.querySelectorAll("[data-move]").forEach(b=>{const k=moveButtons[b.dataset.move];const down=e=>{e.preventDefault();keys.add(k)};const up=e=>{e.preventDefault();keys.delete(k)};b.addEventListener("pointerdown",down);b.addEventListener("pointerup",up);b.addEventListener("pointercancel",up);b.addEventListener("pointerleave",up);b.addEventListener("pointerout",up)});
+const keys=new Set();const moveButtons={up:"up",down:"down",left:"left",right:"right"};document.querySelectorAll("[data-move]").forEach(b=>{const k=moveButtons[b.dataset.move];const down=e=>{e.preventDefault();keys.add(k)};const up=e=>{e.preventDefault();keys.delete(k)};b.addEventListener("pointerdown",down);b.addEventListener("pointerup",up);b.addEventListener("pointercancel",up);b.addEventListener("pointerleave",up)});
 // Joy-Con / Gamepad input
 // The game polls controller state directly every frame. Browser/Android still owns
 // the underlying HID connection, but this keeps gameplay input responsive.
 const joycons = new Map();
 const JOYCON_VENDOR = 0x057e;
-const JOYCON_PRODUCTS = new Set([0x2006, 0x2007, 0x2009]);
-const joyconState = {
-  x:0,z:0,fire:false,booyah:false,leftTrigger:false,
-  imuActive:false,
-  accel:new THREE.Vector3(),
-  gyro:new THREE.Vector3(),
-  imuSamples:0,
-  imuLastTime:0,
-  batteryLevel:-1,
-  charging:false,
-  packetCount:0,
-  lastPacketTime:0,
-  packetRate:0,
-  firmware:"unknown",
-  deviceType:"unknown"
-};
-const joyconPacketCounter={value:0};
+const JOYCON_PRODUCTS = new Set([0x2006, 0x2007]);
+const joyconState = {x:0,z:0,fire:false,booyah:false};
 
 function joyconStick(data, offset) {
   if (data.byteLength < offset + 3) return {x:0,y:0};
@@ -640,20 +190,11 @@ function joyconStick(data, offset) {
   };
 }
 
-function updateJoyconHardwareStatus(){
-  function handleJoyconReport(event) {
+function handleJoyconReport(event) {
   const d = event.data;
+  if (event.reportId !== 0x30 || d.byteLength < 12) return;
   const device = event.device;
-  if(reportId!==0x30||reportBytes<48)return;
-  const now=performance.now();
-  if(joyconState.lastPacketTime){
-    const dt=now-joyconState.lastPacketTime;
-    if(dt>0)joyconState.packetRate=joyconState.packetRate*.85+(1000/dt)*.15;
-  }
-  joyconState.lastPacketTime=now;
-  joyconState.packetCount++;
-  updateJoyconHardwareStatus();
-  const isLeft=device.productId===0x2006;
+  const isLeft = device.productId === 0x2006;
   const stick = joyconStick(d, isLeft ? 6 : 9);
 
   if (isLeft) {
@@ -668,9 +209,6 @@ function updateJoyconHardwareStatus(){
   const bL = d.getUint8(5);
   joyconState.fire = !!(bR & 0x08) || !!(bR & 0x40) || !!(bR & 0x80) || !!(bL & 0x40) || !!(bL & 0x80);
   joyconState.booyah = !!(bL & 0x01);
-  // Joy-Con ZL is 0x80 in the left-controller button byte.
-  // 0x04 is a D-pad bit and must not trigger Squidbomb pickup.
-  joyconState.leftTrigger = !!(bL & 0x80);
 }
 
 async function setupJoyCon(device) {
@@ -686,19 +224,18 @@ async function setupJoyCon(device) {
   device.addEventListener("inputreport", handleJoyconReport);
 
   try {
-    // Switch to standard full input reports so sticks and buttons are delivered.
-    await device.sendReport(0x01,new Uint8Array([0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x03,0x30]));
-    await new Promise(r=>setTimeout(r,100));
+    await device.sendReport(0x01, new Uint8Array([1,0,1,64,64,0,1,64,64,0x40,0x01]));
+    await new Promise(r => setTimeout(r, 500));
+    await device.sendReport(0x01, new Uint8Array([1,0,64,64,0,1,64,64,0x03,0x30]));
   } catch (err) {
-    console.warn("Joy-Con report-mode setup failed", err);
+    console.warn("Joy-Con setup command failed", err);
   }
 
   joycons.set(device.productId, device);
   const button = document.getElementById("joycon");
   const status = document.getElementById("status");
   button.textContent = joycons.size > 1 ? "JOY-CONS CONNECTED" : "JOY-CON CONNECTED";
-  const kind=device.productId===0x2009?"PRO CONTROLLER":device.productId===0x2006?"JOY-CON LEFT":"JOY-CON RIGHT";
-  status.textContent = `${kind} READY • HID CONNECTED`;
+  status.textContent = `JOY-CON READY • ${device.productName || "Nintendo controller"}`;
 }
 
 async function connectJoyCon() {
@@ -718,8 +255,7 @@ async function connectJoyCon() {
     const devices = await navigator.hid.requestDevice({
       filters: [
         {vendorId: JOYCON_VENDOR, productId: 0x2006},
-        {vendorId: JOYCON_VENDOR, productId: 0x2007},
-        {vendorId: JOYCON_VENDOR, productId: 0x2009}
+        {vendorId: JOYCON_VENDOR, productId: 0x2007}
       ]
     });
 
@@ -740,46 +276,31 @@ async function connectJoyCon() {
   }
 }
 
-document.getElementById("joycon").addEventListener("click",connectJoyCon);
+document.getElementById("joycon").addEventListener("click", connectJoyCon);
 
-// Resume every Nintendo HID device the user has already permitted.
-async function resumeNintendoHidDevices(){
-  if(!navigator.hid)return;
-  try{
-    const devices=await navigator.hid.getDevices();
-    const allowed=devices.filter(d=>d.vendorId===JOYCON_VENDOR&&JOYCON_PRODUCTS.has(d.productId));
-    for(const device of allowed)await setupJoyCon(device);
-    if(allowed.length){
-      const status=document.getElementById("status");
-      if(status)status.textContent="NINTENDO HID RESUMED • "+allowed.length+" DEVICE"+(allowed.length===1?"":"S");
+if ("hid" in navigator) {
+  navigator.hid.addEventListener("disconnect", event => {
+    joycons.delete(event.device.productId);
+    if (!joycons.size) {
+      joyconState.x = 0;
+      joyconState.z = 0;
+      joyconState.fire = false;
+      joyconState.booyah = false;
+      document.getElementById("joycon").textContent = "CONNECT JOY-CON";
+      document.getElementById("joycon").disabled = false;
+      document.getElementById("status").textContent = "JOY-CON DISCONNECTED";
     }
-  }catch(err){console.warn("Nintendo HID resume failed",err);}
+  });
+
+  navigator.hid.getDevices()
+    .then(devices => devices
+      .filter(d => d.vendorId === JOYCON_VENDOR && JOYCON_PRODUCTS.has(d.productId))
+      .forEach(setupJoyCon))
+    .catch(() => {});
 }
-resumeNintendoHidDevices();
 
-navigator.hid?.addEventListener("connect",async(event)=>{
-  const device=event.device;
-  if(device.vendorId!==JOYCON_VENDOR||!JOYCON_PRODUCTS.has(device.productId))return;
-  await setupJoyCon(device);
-  const status=document.getElementById("status");
-  if(status)status.textContent="NINTENDO HID CONNECTED • "+(device.productName||"controller");
-});
-
-navigator.hid?.addEventListener("disconnect",(event)=>{
-  const device=event.device;
-  if(device.vendorId!==JOYCON_VENDOR||!JOYCON_PRODUCTS.has(device.productId))return;
-  joycons.delete(device.productId);
-  if(!joycons.size){
-    joyconState.x=0;joyconState.z=0;joyconState.fire=false;joyconState.booyah=false;joyconState.leftTrigger=false;
-    joyconState.packetRate=0;joyconState.lastPacketTime=0;
-  }
-  const status=document.getElementById("status");
-  if(status)status.textContent="NINTENDO HID DISCONNECTED";
-  document.getElementById("joycon").textContent="CONNECT JOY-CON";
-});
 let controllerIndex = null;
 let booyahLatch = false;
-let gamepadFireLatch = false;
 let joyconFireLatch = false;
 let joyconBooyahLatch = false;
 const AXIS_DEADZONE = 0.15;
@@ -817,7 +338,6 @@ function joyconInput() {
   const booyahPressed = !!joyconState.booyah;
 
   if (fire && !joyconFireLatch && typeof shoot === "function") shoot();
-  // Left trigger is reserved for squidbomb pickup.
   if (booyahPressed && !joyconBooyahLatch && typeof booyah === "function") booyah();
 
   joyconFireLatch = fire;
@@ -830,101 +350,6 @@ function joyconInput() {
   return { x, z };
 }
 
-function getBallTriggerState() {
-  let leftTrigger = !!joyconState.leftTrigger;
-  for (const gp of getControllers().filter(g => g?.connected)) {
-    // Left trigger maps heavily to L1/L2 buttons. Remove right triggers mapping here
-    // to prevent picking up the ball while trying to ink (right trigger).
-    leftTrigger ||= !!gp.buttons?.[4]?.pressed;
-    leftTrigger ||= !!gp.buttons?.[6]?.pressed;
-    leftTrigger ||= (typeof gp.buttons?.[6]?.value === "number" && gp.buttons[6].value > .5);
-  }
-  return {leftTrigger};
-}
-
-const BALL_RADIUS=.16;
-const BALL_RESTITUTION=.52;
-const BALL_GROUND_FRICTION=.82;
-function resolveBallAABB(obstacle){
-  const halfX=.6,halfZ=.6;
-  const minX=obstacle.position.x-halfX-BALL_RADIUS,maxX=obstacle.position.x+halfX+BALL_RADIUS;
-  const minZ=obstacle.position.z-halfZ-BALL_RADIUS,maxZ=obstacle.position.z+halfZ+BALL_RADIUS;
-  if(ball.position.x<=minX||ball.position.x>=maxX||ball.position.z<=minZ||ball.position.z>=maxZ)return;
-  const leftPen=ball.position.x-(obstacle.position.x-halfX-BALL_RADIUS);
-  const rightPen=(obstacle.position.x+halfX+BALL_RADIUS)-ball.position.x;
-  const backPen=ball.position.z-(obstacle.position.z-halfZ-BALL_RADIUS);
-  const frontPen=(obstacle.position.z+halfZ+BALL_RADIUS)-ball.position.z;
-  const minPen=Math.min(leftPen,rightPen,backPen,frontPen);
-  if(minPen===leftPen){ball.position.x=obstacle.position.x-halfX-BALL_RADIUS;ballVelocity.x=-Math.abs(ballVelocity.x)*BALL_RESTITUTION;}
-  else if(minPen===rightPen){ball.position.x=obstacle.position.x+halfX+BALL_RADIUS;ballVelocity.x=Math.abs(ballVelocity.x)*BALL_RESTITUTION;}
-  else if(minPen===backPen){ball.position.z=obstacle.position.z-halfZ-BALL_RADIUS;ballVelocity.z=-Math.abs(ballVelocity.z)*BALL_RESTITUTION;}
-  else{ball.position.z=obstacle.position.z+halfZ+BALL_RADIUS;ballVelocity.z=Math.abs(ballVelocity.z)*BALL_RESTITUTION;}
-}
-function updateBall(leftTrigger,dt){
-  const xrCam=getActiveCamera();
-  const near=new THREE.Vector3();
-  xrCam.getWorldPosition(near);
-  ballKickCooldown=Math.max(0,ballKickCooldown-dt);
-
-  if(!ballHeld&&leftTrigger&&!ballGrabLatch&&ball.position.distanceTo(near)<1.05){
-    ballHeld=true;
-    ballVelocity.set(0,0,0);
-  }
-
-  if(ballHeld){
-    const hold=new THREE.Vector3(.28,-.12,-.48).applyMatrix4(xrCam.matrixWorld);
-    ball.position.copy(hold);
-    ballVelocity.set(0,0,0);
-  }else{
-    const steps=Math.max(1,Math.min(4,Math.ceil(dt/.012)));
-    const subDt=dt/steps;
-    for(let s=0;s<steps;s++){
-      ballVelocity.y-=9.8*subDt;
-      ball.position.addScaledVector(ballVelocity,subDt);
-
-      if(ball.position.y<BALL_RADIUS){
-        ball.position.y=BALL_RADIUS;
-        if(ballVelocity.y<-.35)ballVelocity.y=-ballVelocity.y*BALL_RESTITUTION;
-        else ballVelocity.y=0;
-        ballVelocity.x*=Math.pow(BALL_GROUND_FRICTION,subDt*60);
-        ballVelocity.z*=Math.pow(BALL_GROUND_FRICTION,subDt*60);
-      }
-
-      for(const obstacle of solidObstacles)resolveBallAABB(obstacle);
-
-      const arena=14.84-BALL_RADIUS;
-      if(ball.position.x<-arena){ball.position.x=-arena;ballVelocity.x=Math.abs(ballVelocity.x)*BALL_RESTITUTION;}
-      if(ball.position.x>arena){ball.position.x=arena;ballVelocity.x=-Math.abs(ballVelocity.x)*BALL_RESTITUTION;}
-      if(ball.position.z<-arena){ball.position.z=-arena;ballVelocity.z=Math.abs(ballVelocity.z)*BALL_RESTITUTION;}
-      if(ball.position.z>arena){ball.position.z=arena;ballVelocity.z=-Math.abs(ballVelocity.z)*BALL_RESTITUTION;}
-    }
-
-    if(ballVelocity.lengthSq()>.01){
-      ball.rotation.x+=dt*5;
-      ball.rotation.y+=dt*3;
-    }
-  }
-
-  if(ballGrabLatch&&!leftTrigger&&ballHeld){
-    const dir=new THREE.Vector3(0,0,-1).applyQuaternion(xrCam.quaternion);
-    dir.y+=.08;
-    dir.normalize();
-    ballHeld=false;
-    ballVelocity.copy(dir.multiplyScalar(7.2));
-  }
-
-  if(!ballHeld&&ballKickCooldown<=0){
-    const dx=ball.position.x-player.position.x;
-    const dz=ball.position.z-player.position.z;
-    const dist=Math.hypot(dx,dz);
-    if(dist<.62&&moveVelocity.lengthSq()>.18){
-      const kick=new THREE.Vector3(moveVelocity.x,0,moveVelocity.z).normalize();
-      ballVelocity.set(kick.x*6.5,1.8,kick.z*6.5);
-      ballKickCooldown=.22;
-    }
-  }
-  ballGrabLatch=leftTrigger;
-}
 function controllerInput() {
   // Poll directly every frame. This does not override Chrome/Android ownership,
   // but avoids waiting for browser events before gameplay sees the current state.
@@ -951,9 +376,10 @@ function controllerInput() {
       if (gp.buttons[13]?.pressed) z = 1;
     }
 
-    // Right bumpers and triggers (R1/R2) fire ink.
-    if (gp.buttons[5]?.pressed || gp.buttons[7]?.pressed ||
-        (typeof gp.buttons[7]?.value === "number" && gp.buttons[7].value > 0.5)) {
+    // Broad button fallback for Android/Chrome Joy-Con mappings.
+    if (gp.buttons[0]?.pressed || gp.buttons[1]?.pressed ||
+        gp.buttons[2]?.pressed || gp.buttons[3]?.pressed ||
+        gp.buttons[6]?.pressed || gp.buttons[7]?.pressed) {
       firePressed = true;
     }
 
@@ -963,35 +389,39 @@ function controllerInput() {
     }
   }
 
-  if (firePressed && !gamepadFireLatch && typeof shoot === "function") shoot();
+  if (firePressed && !joyconFireLatch && typeof shoot === "function") shoot();
   if (booyahPressed && !booyahLatch && typeof booyah === "function") booyah();
 
-  gamepadFireLatch = firePressed;
+  joyconFireLatch = firePressed;
   booyahLatch = booyahPressed;
   return { x, z };
 }
 
-const clock=new THREE.Clock();const moveVelocity=new THREE.Vector3();
-function getActiveCamera(){return renderer.xr.isPresenting?renderer.xr.getCamera():camera;}
-function syncDesktopCamera(){
-  if(renderer.xr.isPresenting)return;
-  camera.position.set(0,1.6,0);
-  camera.rotation.set(screenPitch,screenYaw,0,"YXZ");
+camera.lookAt(0,1.2,-3);const clock=new THREE.Clock();const moveVelocity=new THREE.Vector3();
+function updateTestArms(x,z){
+  if(!armTestMode)return;
+  const amount=Math.max(Math.abs(x),Math.abs(z));
+  const leanX=THREE.MathUtils.clamp(x,-1,1)*.85;
+  const lift=THREE.MathUtils.clamp(-z,-1,1)*.8;
+  const restLeft=0.12;
+  const restRight=-0.12;
+  if(amount<.15){
+    playerBody.userData.leftArm.rotation.z=restLeft;
+    playerBody.userData.rightArm.rotation.z=restRight;
+    playerBody.userData.leftArm.rotation.x=0;
+    playerBody.userData.rightArm.rotation.x=0;
+    playerBody.userData.leftElbow.rotation.z=0;
+    playerBody.userData.rightElbow.rotation.z=0;
+    return;
+  }
+  playerBody.userData.leftArm.rotation.z=restLeft-leanX;
+  playerBody.userData.rightArm.rotation.z=restRight+leanX;
+  playerBody.userData.leftArm.rotation.x=lift;
+  playerBody.userData.rightArm.rotation.x=lift;
+  const elbowBend=Math.max(0,Math.abs(lift)+Math.abs(leanX)-.15)*.7;
+  playerBody.userData.leftElbow.rotation.z=-elbowBend;
+  playerBody.userData.rightElbow.rotation.z=elbowBend;
 }
-function updateWalkAnimation(speed){
-  const moving=speed>.12;
-  const swing=moving?Math.sin(performance.now()*.012)*Math.min(.62,speed*.22):0;
-  playerBody.userData.leftLeg.rotation.x=swing;
-  playerBody.userData.rightLeg.rotation.x=-swing;
-  playerBody.userData.leftArm.rotation.x=-swing*.7;
-  playerBody.userData.rightArm.rotation.x=swing*.7;
-  playerBody.userData.leftElbow.rotation.x=.18;
-  playerBody.userData.rightElbow.rotation.x=.18;
-  playerBody.userData.leftKnee.rotation.x=.06;
-  playerBody.userData.rightKnee.rotation.x=.06;
-  playerBody.position.y=moving?Math.abs(Math.sin(performance.now()*.012))*.012:0;
-}
-function updateTestArms(x,z){if(!armTestMode)return;const lean=THREE.MathUtils.clamp(x,-1,1)*.85,lift=THREE.MathUtils.clamp(-z,-1,1)*.8;playerBody.userData.leftArm.rotation.z=.12-lean;playerBody.userData.rightArm.rotation.z=-.12+lean;playerBody.userData.leftArm.rotation.x=lift;playerBody.userData.rightArm.rotation.x=lift;}
 function getArmTestInput(){
   if(!armTestMode)return {x:0,z:0};
   const pads=getControllers().filter(gp=>gp?.connected);
@@ -1003,150 +433,23 @@ function getArmTestInput(){
   return {x:0,z:0};
 }
 
-
-const PLAYER_RADIUS=.28;
-const PLAYER_MAX_SPEED=2.4;
-const SQUID_MAX_SPEED=4.2;
-const PLAYER_ACCEL=18;
-const PLAYER_DECEL=22;
-const PHYSICS_STEP=1/120;
-let physicsAccumulator=0;
-const physicsTemp={forward:new THREE.Vector3(),right:new THREE.Vector3(),desired:new THREE.Vector3()};
-
-function resolvePlayerObstacle(obstacle){
-  const minX=obstacle.position.x-.6-PLAYER_RADIUS;
-  const maxX=obstacle.position.x+.6+PLAYER_RADIUS;
-  const minZ=obstacle.position.z-.6-PLAYER_RADIUS;
-  const maxZ=obstacle.position.z+.6+PLAYER_RADIUS;
-  if(player.position.x<minX||player.position.x>maxX||player.position.z<minZ||player.position.z>maxZ)return;
-
-  const left=player.position.x-minX;
-  const right=maxX-player.position.x;
-  const back=player.position.z-minZ;
-  const front=maxZ-player.position.z;
-  const penetration=Math.min(left,right,back,front);
-
-  if(penetration===left){
-    player.position.x=minX;
-    if(moveVelocity.x>0)moveVelocity.x=0;
-  }else if(penetration===right){
-    player.position.x=maxX;
-    if(moveVelocity.x<0)moveVelocity.x=0;
-  }else if(penetration===back){
-    player.position.z=minZ;
-    if(moveVelocity.z>0)moveVelocity.z=0;
-  }else{
-    player.position.z=maxZ;
-    if(moveVelocity.z<0)moveVelocity.z=0;
-  }
-}
-
-function resolveArenaBounds(){
-  const limit=14.65-PLAYER_RADIUS;
-  if(player.position.x<-limit){player.position.x=-limit;if(moveVelocity.x<0)moveVelocity.x=0;}
-  if(player.position.x>limit){player.position.x=limit;if(moveVelocity.x>0)moveVelocity.x=0;}
-  if(player.position.z<-limit){player.position.z=-limit;if(moveVelocity.z<0)moveVelocity.z=0;}
-  if(player.position.z>limit){player.position.z=limit;if(moveVelocity.z>0)moveVelocity.z=0;}
-}
-
-function simulatePlayerPhysics(dt,inputX,inputZ){
-  const inputLen=Math.hypot(inputX,inputZ);
-  let desiredX=0,desiredZ=0;
-
-  if(inputLen>.001){
-    physicsTemp.forward.set(0,0,-1).applyQuaternion(getActiveCamera().quaternion);
-    physicsTemp.forward.y=0;
-    if(physicsTemp.forward.lengthSq()<.0001)physicsTemp.forward.set(0,0,-1);
-    physicsTemp.forward.normalize();
-
-    physicsTemp.right.set(1,0,0).applyQuaternion(getActiveCamera().quaternion);
-    physicsTemp.right.y=0;
-    physicsTemp.right.normalize();
-
-    physicsTemp.desired.set(0,0,0)
-      .addScaledVector(physicsTemp.right,inputX/inputLen)
-      .addScaledVector(physicsTemp.forward,-inputZ/inputLen)
-      .normalize();
-
-    const maxSpeed=squidForm?SQUID_MAX_SPEED:PLAYER_MAX_SPEED;
-    desiredX=physicsTemp.desired.x*maxSpeed;
-    desiredZ=physicsTemp.desired.z*maxSpeed;
-  }
-
-  const accel=inputLen>.001?PLAYER_ACCEL:PLAYER_DECEL;
-  moveVelocity.x=THREE.MathUtils.damp(moveVelocity.x,desiredX,accel,dt);
-  moveVelocity.z=THREE.MathUtils.damp(moveVelocity.z,desiredZ,accel,dt);
-
-  player.position.x+=moveVelocity.x*dt;
-  player.position.z+=moveVelocity.z*dt;
-
-  resolveArenaBounds();
-  for(const obstacle of solidObstacles)resolvePlayerObstacle(obstacle);
-  resolveArenaBounds();
-}
-
-function runPlayerPhysics(dt,inputX,inputZ){
-  physicsAccumulator=Math.min(physicsAccumulator+dt,.1);
-  while(physicsAccumulator>=PHYSICS_STEP){
-    simulatePlayerPhysics(PHYSICS_STEP,inputX,inputZ);
-    physicsAccumulator-=PHYSICS_STEP;
-  }
-}
-function animateFrame(){
-updateControllerModel();
-const dt=Math.min(clock.getDelta(),.05);shotCooldown=Math.max(0,shotCooldown-dt);
-goofyTimer-=dt;
-if(goofyTimer<=0){goofyTimer=10+Math.random()*14;if(!squidForm)document.getElementById("status").textContent=goofyLines[Math.floor(Math.random()*goofyLines.length)];if(Math.random()<.35)renderCube.rotation.y+=Math.PI*2;}
-for(let i=inkParticleGroup.children.length-1;i>=0;i--){
-  const p=inkParticleGroup.children[i];
-  p.userData.life-=dt;
-  if(p.userData.kind==="pulse"){
-    const q=1-p.userData.life/p.userData.maxLife;
-    p.scale.setScalar(1+q*3);
-    p.material.opacity=Math.max(0,p.userData.life/p.userData.maxLife)*.65;
-  }else if(p.userData.start){
-    const q=THREE.MathUtils.clamp(1-p.userData.life/p.userData.maxLife,0,1);
-    p.position.lerpVectors(p.userData.start,p.userData.end,q);
-    p.position.y+=Math.sin(q*Math.PI)*p.userData.arc;
-    p.scale.setScalar(.82+Math.sin(q*Math.PI)*.28);
-    if(p.userData.life<=0){
-      const impact=p.userData.impactPoint.clone();
-      inkParticleGroup.remove(p);
-      makeInk(impact);
-      continue;
-    }
-  }
-  if(p.userData.life<=0)inkParticleGroup.remove(p);
-}for(const m of targetMotion){if(m.t.material.color.getHex()!==0x22d3ee){m.t.position.x=m.homeX+Math.sin(performance.now()*.0012+m.phase)*.65;m.t.position.y=1.3+Math.sin(performance.now()*.0017+m.phase)*.18}}updateGamepadStatus();if(debugMode){for(const m of targetMotion)m.t.scale.setScalar(1.05+Math.sin(performance.now()*.004+m.phase)*.08);}const pad=controllerInput();const jc=joyconInput();const touchX=(keys.has("right")?1:0)-(keys.has("left")?1:0);const touchZ=(keys.has("down")?1:0)-(keys.has("up")?1:0);const inputX=Math.abs(jc.x)>.15?jc.x:(Math.abs(pad.x)>.15?pad.x:touchX);const inputZ=Math.abs(jc.z)>.15?jc.z:(Math.abs(pad.z)>.15?pad.z:touchZ);const inputLen=Math.hypot(inputX,inputZ);
-
-const lookCamera=getActiveCamera();
-const lookForward=new THREE.Vector3(0,0,-1).applyQuaternion(lookCamera.quaternion);
-lookForward.y=0;
-if(lookForward.lengthSq()>.0001){
-  lookForward.normalize();
-  const desiredYaw=Math.atan2(lookForward.x,lookForward.z);
-  playerBody.rotation.y=THREE.MathUtils.damp(playerBody.rotation.y,desiredYaw,3.2,dt);
-}
-const ballTriggers=getBallTriggerState();
-updateHitboxes();
-updateSquidForm(ballTriggers.leftTrigger);
-// In this early SQUID MODE build, the left trigger belongs to transformation.
-// Keep the existing ball system alive, but do not let LT/L2/ZL also grab the ball.
-updateBall(squidForm?false:ballTriggers.leftTrigger,dt);
-runPlayerPhysics(dt,inputX,inputZ);
-updateWalkAnimation(Math.hypot(moveVelocity.x,moveVelocity.z));
-syncDesktopCamera();
-}
-function animate(){
-  try{
-    animateFrame();
-    renderer.render(scene,camera);
-  }catch(err){
-    console.error("SPLATVR frame error",err);
-    const status=document.getElementById("status");
-    if(status)status.textContent="STAGE GUARD ACTIVE • frame recovered";
-
-  }
-}
+function animate(){const dt=Math.min(clock.getDelta(),.05);shotCooldown=Math.max(0,shotCooldown-dt);updateSquidForm();for(const m of targetMotion){if(m.t.material.color.getHex()!==0x22d3ee){m.t.position.x=m.homeX+Math.sin(performance.now()*.0012+m.phase)*.65;m.t.position.y=1.3+Math.sin(performance.now()*.0017+m.phase)*.18}}updateGamepadStatus();const pad=controllerInput();const jc=joyconInput();const touchX=(keys.has("right")?1:0)-(keys.has("left")?1:0);const touchZ=(keys.has("down")?1:0)-(keys.has("up")?1:0);const inputX=Math.abs(jc.x)>.15?jc.x:(Math.abs(pad.x)>.15?pad.x:touchX);const inputZ=Math.abs(jc.z)>.15?jc.z:(Math.abs(pad.z)>.15?pad.z:touchZ);const inputLen=Math.hypot(inputX,inputZ);const armInput=getArmTestInput();updateTestArms(armInput.x,armInput.z);let targetVX=0,targetVZ=0;if(inputLen>.01){
+  targetVX=inputX/inputLen;
+  targetVZ=inputZ/inputLen;
+  const speed=squidForm?4.2:2.4;
+  const xrCam=renderer.xr.isPresenting?renderer.xr.getCamera():camera;
+  const forward=new THREE.Vector3(0,0,-1).applyQuaternion(xrCam.quaternion);
+  forward.y=0;
+  if(forward.lengthSq()<.0001)forward.set(0,0,-1);
+  forward.normalize();
+  const right=new THREE.Vector3(1,0,0).applyQuaternion(xrCam.quaternion);
+  right.y=0;
+  right.normalize();
+  const dir=new THREE.Vector3().addScaledVector(right,targetVX).addScaledVector(forward,-targetVZ);
+  if(dir.lengthSq()<.0001)dir.set(0,0,-1);
+  dir.normalize();
+  targetVX=dir.x*speed;
+  targetVZ=dir.z*speed;
+}const response=inputLen>.01?10:14;moveVelocity.x=THREE.MathUtils.damp(moveVelocity.x,targetVX,response,dt);moveVelocity.z=THREE.MathUtils.damp(moveVelocity.z,targetVZ,response,dt);player.position.x+=moveVelocity.x*dt;player.position.z+=moveVelocity.z*dt;player.position.x=THREE.MathUtils.clamp(player.position.x,-6.2,6.2);player.position.z=THREE.MathUtils.clamp(player.position.z,-6.2,6.2);renderer.render(scene,camera)}
 renderer.setAnimationLoop(animate);bootStatus.textContent="3D READY • Enter VR";addEventListener("resize",()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
 </script></body></html>
