@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 131 • JOY-CON HARDWARE PACK</title>
+<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 132 • JOY-CON HARDWARE PACK</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CONTROLLER LAB • PROTOTYPE 131</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="headLockToggle" class="cameraToggle" aria-pressed="false">🧠 HEAD LOCK: OFF</button><button id="handTrackingToggle" class="cameraToggle" aria-pressed="false">✋ HAND + ARM TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: HAND FUSION OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button><button id="hidDevice" class="topJoycon">CONNECT ANY HID</button><button id="motionTest" class="topJoycon">📱 MOTION TEST</button><button id="cameraAccess" class="topJoycon">📷 REQUEST CAMERA ACCESS</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">VR INPUT: waiting</span><div id="joyconImuStatus" class="imuIndicator">JOY-CON IMU • OFF</div><div id="joyconHardwareStatus" class="imuIndicator">JOY-CON HW • WAITING</div><button id="joyconInfo" class="topJoycon">JOY-CON INFO</button><button id="joyconRumble" class="topJoycon">HD RUMBLE TEST</button></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CONTROLLER LAB • PROTOTYPE 132</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="headLockToggle" class="cameraToggle" aria-pressed="false">🧠 HEAD LOCK: OFF</button><button id="handTrackingToggle" class="cameraToggle" aria-pressed="false">✋ HAND + ARM TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: HAND FUSION OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button><button id="hidDevice" class="topJoycon">CONNECT ANY HID</button><button id="motionTest" class="topJoycon">🎮 CONTROLLER TEST</button><button id="cameraAccess" class="topJoycon">📷 REQUEST CAMERA ACCESS</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">VR INPUT: waiting</span><div id="joyconImuStatus" class="imuIndicator">JOY-CON IMU • OFF</div><div id="joyconHardwareStatus" class="imuIndicator">JOY-CON HW • WAITING</div><button id="joyconInfo" class="topJoycon">JOY-CON INFO</button><button id="joyconRumble" class="topJoycon">HD RUMBLE TEST</button></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action squidButton" id="squidButton">🦑 SQUID</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -85,6 +85,19 @@ updateCameraTrackingSupport();
 setCameraTrackingUI();
 
 const motionTestButton=document.getElementById("motionTest");
+let controllerTestActive=false;
+function updateControllerTestStatus(){
+  if(!controllerTestActive)return;
+  const pads=getControllers().filter(g=>g?.connected);
+  const xr=renderer.xr.isPresenting;
+  const labels=pads.map((gp,i)=>{
+    const axes=(gp.axes||[]).slice(0,4).map(v=>Number.isFinite(v)?v.toFixed(2):"0").join(",");
+    const pressed=(gp.buttons||[]).filter(b=>b?.pressed).length;
+    return "P"+(i+1)+" A["+axes+"] B:"+pressed;
+  });
+  const input=document.getElementById("vrInputStatus");
+  if(input)input.textContent=xr?"CONTROLLER: "+(labels.length?labels.join(" • "):"XR controller waiting"):"CONTROLLER TEST: Enter VR for WebXR input";
+}
 const motionTelemetry={ax:0,ay:0,az:0,gx:0,gy:0,gz:0,active:false,source:"none",accelerationAvailable:false};
 let motionListenerAttached=false;
 function fmtMotion(v){return Number.isFinite(v)?v.toFixed(2):"--";}
@@ -107,35 +120,13 @@ function handleDeviceMotion(event){
   motionTelemetry.source="devicemotion";
   updateMotionStatus();
 }
-async function startMotionSensors(){
-  if(!("DeviceMotionEvent" in window)){
-    document.getElementById("status").textContent="MOTION UNSUPPORTED • DeviceMotionEvent unavailable";
-    return;
-  }
-  motionTestButton.disabled=true;
-  motionTestButton.textContent="📱 REQUESTING MOTION…";
-  try{
-    if(typeof DeviceMotionEvent.requestPermission==="function"){
-      const permission=await DeviceMotionEvent.requestPermission();
-      if(permission!=="granted")throw new Error("Motion permission was denied");
-    }
-    if(!motionListenerAttached){
-      window.addEventListener("devicemotion",handleDeviceMotion);
-      motionListenerAttached=true;
-    }
-    motionTelemetry.active=false;
-    motionTestButton.textContent="📱 MOTION ACTIVE";
-    document.getElementById("status").textContent="MOTION SENSOR READY • Move the phone";
-    updateMotionStatus();
-  }catch(err){
-    console.warn("Motion sensor start failed",err);
-    document.getElementById("status").textContent="MOTION ERROR • "+(err?.message||"permission unavailable");
-    motionTestButton.textContent="📱 MOTION TEST";
-  }finally{
-    motionTestButton.disabled=false;
-  }
+function startControllerTest(){
+  controllerTestActive=!controllerTestActive;
+  motionTestButton.textContent=controllerTestActive?"🎮 CONTROLLER TEST: ON":"🎮 CONTROLLER TEST";
+  document.getElementById("status").textContent=controllerTestActive?"CONTROLLER TEST READY • Enter VR and move a controller":"CONTROLLER TEST OFF";
+  updateControllerTestStatus();
 }
-motionTestButton.addEventListener("click",startMotionSensors);
+motionTestButton.addEventListener("click",startControllerTest);
 const cameraAccessButton=document.getElementById("cameraAccess");
 let cameraStream=null;
 let cameraTrack=null;
@@ -1611,7 +1602,7 @@ function runPlayerPhysics(dt,inputX,inputZ){
   }
 }
 function animateFrame(){
-controllerLab.rotation.y+=.006;updateControllerModel();if(motionTelemetry.active)updateMotionStatus();
+controllerLab.rotation.y+=.006;updateControllerModel();if(motionTelemetry.active)updateMotionStatus();if(controllerTestActive)updateControllerTestStatus();
 const dt=Math.min(clock.getDelta(),.05);shotCooldown=Math.max(0,shotCooldown-dt);
 goofyTimer-=dt;
 if(goofyTimer<=0){goofyTimer=10+Math.random()*14;if(!squidForm)document.getElementById("status").textContent=goofyLines[Math.floor(Math.random()*goofyLines.length)];if(Math.random()<.35)renderCube.rotation.y+=Math.PI*2;}
