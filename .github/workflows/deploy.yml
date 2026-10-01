@@ -1,6 +1,6 @@
-# Deploy Build 109 Pages trigger refresh
+# Deploy Build 110 Pages trigger refresh
 name: Deploy to GitHub Pages
-# Build 109 final sanity • hand tracking arm fusion
+# Build 110 final sanity • phone IMU step 1
 
 on:
   push:
