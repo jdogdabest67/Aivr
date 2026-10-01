@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // CUBE PROTOTYPE 74 • CODE STABILIZATION</title>
+<title>SPLATVR // CUBE PROTOTYPE 75 • CODE STABILIZATION + DEAD STATE CLEANUP</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 74</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 75</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -129,7 +129,7 @@ function makePatchNotesCubeNote(){
   ctx.strokeRect(24,24,976,976);
   ctx.fillStyle="#ffffff";
   ctx.font="900 76px system-ui, sans-serif";
-  ctx.fillText("BUILD 74",72,130);
+  ctx.fillText("BUILD 75",72,130);
   ctx.font="800 52px system-ui, sans-serif";
   ctx.fillStyle="#67e8f9";
   ctx.fillText("PATCH NOTES",72,205);
@@ -332,7 +332,7 @@ function booyah(){booyahCount++;updateStats();const f=document.getElementById("b
 document.getElementById("fire").addEventListener("click",shoot);document.getElementById("booyah").addEventListener("click",booyah);
 function resetGame(){targetCount=0;inkCount=0;inkArea=0;inkCoverage=0;booyahCount=0;shotCooldown=0;ballHeld=false;ballGrabLatch=false;ballKickCooldown=0;ballVelocity.set(0,0,0);ball.position.set(0,.16,1.8);for(const {t,homeX,homeZ} of targetMotion){t.position.x=homeX;t.position.z=homeZ;t.material.color.set(0xf472b6);t.material.emissive.set(0x4a102d);t.material.emissiveIntensity=.5}while(inkGroup.children.length)inkGroup.remove(inkGroup.children[0]);
 while(wallInkGroups.length){const g=wallInkGroups.pop();g.parent?.remove(g);}
-inkCoverage=0;refreshInkArea();while(inkParticleGroup.children.length)inkParticleGroup.remove(inkParticleGroup.children[0]);player.position.set(0,0,4);moveVelocity.set(0,0,0);physicsAccumulator=0;grounded=true;squidForm=false;updateStats();document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready"}
+inkCoverage=0;refreshInkArea();while(inkParticleGroup.children.length)inkParticleGroup.remove(inkParticleGroup.children[0]);player.position.set(0,0,4);moveVelocity.set(0,0,0);physicsAccumulator=0squidForm=false;updateStats();document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready"}
 document.getElementById("reset").addEventListener("click",resetGame);
 renderer.xr.addEventListener("sessionstart",()=>{squidForm=false;squidHeightReady=false;squidBaselineSamples=0;squidBaselineSum=0;squidEnterY=1.6;if(xrCameraTracking.mode==="immersive-ar"){document.getElementById("status").textContent="CAMERA TRACKING ACTIVE 📷 • Calibrating...";}else{document.getElementById("status").textContent="VR ACTIVE • Calibrating...";}});
 renderer.xr.addEventListener("sessionend",()=>{
@@ -704,7 +704,6 @@ const PLAYER_ACCEL=18;
 const PLAYER_DECEL=22;
 const PHYSICS_STEP=1/120;
 let physicsAccumulator=0;
-let grounded=true;
 const physicsTemp={forward:new THREE.Vector3(),right:new THREE.Vector3(),desired:new THREE.Vector3()};
 
 function resolvePlayerObstacle(obstacle){
