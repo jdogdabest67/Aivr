@@ -1,5 +1,5 @@
-# Deploy Build 131 Pages trigger refresh
-# Build 131 final sanity • Joy-Con hardware pack
+# Deploy Build 132 Pages trigger refresh
+# Build 132 final sanity • controller test + XR grip weapon
 
 on:
   push:
