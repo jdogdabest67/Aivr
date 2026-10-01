@@ -1,5 +1,5 @@
 name: Deploy to GitHub Pages
-# Build 92 final sanity • ball hitboxes + stick player
+# Build 93 final sanity • freeze fix + configured arena
 
 on:
   push:
