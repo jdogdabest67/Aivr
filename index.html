@@ -216,7 +216,7 @@ const hitboxMat=new THREE.LineBasicMaterial({color:0xfacc15,transparent:true,opa
 const obstacleHitboxes=solidObstacles.map(o=>{
   const h=new THREE.BoxHelper(o,0xfacc15); h.material=hitboxMat; hitboxGroup.add(h); return h;
 });
-const ballHitbox=new THREE.Mesh(new THREE.SphereGeometry(BALL_RADIUS,12,8),new THREE.MeshBasicMaterial({color:0xfacc15,wireframe:true,transparent:true,opacity:.9}));
+const ballHitbox=new THREE.Mesh(new THREE.SphereGeometry(.16,12,8),new THREE.MeshBasicMaterial({color:0xfacc15,wireframe:true,transparent:true,opacity:.9}));
 hitboxGroup.add(ballHitbox);
 const playerHitboxBox=new THREE.Box3();
 const playerHitbox=new THREE.Box3Helper(playerHitboxBox,0xfacc15);
@@ -226,8 +226,8 @@ function updateHitboxes(){
   for(const h of obstacleHitboxes)h.update();
   ballHitbox.position.copy(ball.position);
   playerHitboxBox.set(
-    player.position.x-PLAYER_RADIUS,0,
-    player.position.z-PLAYER_RADIUS,
+    player.position.x-.28,0,
+    player.position.z-.28,
     player.position.x+PLAYER_RADIUS,1.5,
     player.position.z+PLAYER_RADIUS
   );
