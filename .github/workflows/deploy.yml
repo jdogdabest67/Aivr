@@ -1,5 +1,5 @@
 name: Deploy to GitHub Pages
-# Build 95 final sanity • copied ball physics + smaller stick body
+# Build 96 final sanity • original working ball replaces lab balls
 
 on:
   push:
