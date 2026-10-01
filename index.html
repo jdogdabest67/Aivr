@@ -1040,7 +1040,8 @@ async function connectJoyCon() {
     const devices = await navigator.hid.requestDevice({
       filters: [
         {vendorId: JOYCON_VENDOR, productId: 0x2006},
-        {vendorId: JOYCON_VENDOR, productId: 0x2007}
+        {vendorId: JOYCON_VENDOR, productId: 0x2007},
+        {vendorId: JOYCON_VENDOR, productId: 0x2009}
       ]
     });
 
