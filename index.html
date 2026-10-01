@@ -159,6 +159,9 @@ function makePatchNotesCubeNote(){
   scene.add(note);
 }
 
+// Actually call the patch notes generator so it shows up in scene
+makePatchNotesCubeNote();
+
 for(const [x,z] of [[-3,-2],[3,-2],[-2,1],[2,2],[0,-4]]){
   const o=new THREE.Mesh(new THREE.BoxGeometry(1.2,1.2,1.2),new THREE.MeshStandardMaterial({color:0x56627f,roughness:.68,metalness:.12}));
   o.position.set(x,.6,z);
