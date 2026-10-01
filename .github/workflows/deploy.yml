@@ -1,6 +1,6 @@
 # Deploy Build 96 Pages trigger refresh
 name: Deploy to GitHub Pages
-# Build 97 final sanity • VR pose tracking pass
+# Build 98 final sanity • broad WebHID device lab
 
 on:
   push:
