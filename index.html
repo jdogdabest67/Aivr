@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 99 • USB + WEBHID LAB</title>
+<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 100 • CONTROLLER OBSERVATORY</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 99</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button><button id="hidDevice" class="topJoycon">CONNECT ANY HID</button><button id="usbDevice" class="topJoycon">CONNECT USB</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">VR INPUT: waiting</span></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CONTROLLER LAB • PROTOTYPE 100</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button><button id="hidDevice" class="topJoycon">CONNECT ANY HID</button><button id="usbDevice" class="topJoycon">CONNECT USB</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">VR INPUT: waiting</span></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action squidButton" id="squidButton">🦑 SQUID</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -230,7 +230,7 @@ function makePatchNotesCubeNote(){
   ctx.fillStyle="#ffffff";
   ctx.font="600 38px system-ui, sans-serif";
   const lines=[
-    "• Prototype 99: USB + WebHID permission lab",
+    "• Prototype 100: magenta controller + live input observatory",
     "• Prototype 88: screen-mode squid proof transformation",
     "• Fixed-timestep movement + collision physics",
     "• Bounded ball substeps reduce wall/corner tunneling",
@@ -305,13 +305,54 @@ function updateHitboxes(){
   );
   playerHitbox.updateMatrixWorld(true);
 }
-const renderCube=new THREE.Mesh(
-  new THREE.BoxGeometry(.7,.7,.7),
+const controllerLab=new THREE.Group();
+controllerLab.position.set(0,1.65,-3);
+scene.add(controllerLab);
+const controllerShell=new THREE.Mesh(
+  new THREE.BoxGeometry(1.45,.34,.78),
   new THREE.MeshStandardMaterial({color:0xff00aa,emissive:0x7a004f,emissiveIntensity:1.1,roughness:.3,metalness:.15})
 );
-renderCube.position.set(0,1.65,-3);
-renderCube.castShadow=true;
-scene.add(renderCube);
+controllerShell.castShadow=true;
+controllerLab.add(controllerShell);
+const controllerGripL=new THREE.Mesh(new THREE.BoxGeometry(.28,.5,.42),controllerShell.material.clone());
+const controllerGripR=new THREE.Mesh(new THREE.BoxGeometry(.28,.5,.42),controllerShell.material.clone());
+controllerGripL.position.set(-.52,-.18,.02);controllerGripL.rotation.z=-.18;
+controllerGripR.position.set(.52,-.18,.02);controllerGripR.rotation.z=.18;
+controllerLab.add(controllerGripL,controllerGripR);
+const controllerCenter=new THREE.Mesh(new THREE.BoxGeometry(.36,.12,.26),new THREE.MeshStandardMaterial({color:0x1e293b,roughness:.4}));
+controllerLab.add(controllerCenter);
+const stickMat=new THREE.MeshStandardMaterial({color:0xe2e8f0,roughness:.45});
+const labSticks={left:new THREE.Mesh(new THREE.CylinderGeometry(.11,.11,.06,20),stickMat),right:new THREE.Mesh(new THREE.CylinderGeometry(.11,.11,.06,20),stickMat)};
+for(const k of ["left","right"]){labSticks[k].rotation.x=Math.PI/2;labSticks[k].position.y=.2;controllerLab.add(labSticks[k]);}
+labSticks.left.position.x=-.38;labSticks.right.position.x=.38;
+const labButtons=[];
+for(let i=0;i<4;i++){
+  const b=new THREE.Mesh(new THREE.SphereGeometry(.065,12,8),new THREE.MeshStandardMaterial({color:0xf8fafc,emissive:0x334155,emissiveIntensity:.25}));
+  b.position.set(.34+(i%2)*.14,.2,(i<2?-0.1:.1));
+  controllerLab.add(b);labButtons.push(b);
+}
+const usbPulse=new THREE.Mesh(new THREE.TorusGeometry(.13,.025,8,24),new THREE.MeshBasicMaterial({color:0x22d3ee,transparent:true,opacity:.9}));
+usbPulse.rotation.x=Math.PI/2;usbPulse.position.set(0,.22,.22);controllerLab.add(usbPulse);
+const controllerTelemetry={x:0,y:0,buttons:0,packets:0,bytes:0,lastPacket:0};
+function updateControllerModel(){
+  const pads=getControllers().filter(g=>g?.connected);
+  const gp=pads[0];
+  if(gp){
+    controllerTelemetry.x=Number.isFinite(gp.axes?.[0])?gp.axes[0]:0;
+    controllerTelemetry.y=Number.isFinite(gp.axes?.[1])?gp.axes[1]:0;
+    const bx=gp.buttons||[];
+    controllerTelemetry.buttons=bx.reduce((n,b,i)=>n+(b?.pressed?(1<<Math.min(i,15)):0),0);
+    const lx=THREE.MathUtils.clamp(controllerTelemetry.x,-1,1);
+    const ly=THREE.MathUtils.clamp(controllerTelemetry.y,-1,1);
+    labSticks.left.position.set(-.38+lx*.10,.2,.02+ly*.10);
+    labSticks.right.position.set(.38+(Number.isFinite(gp.axes?.[2])?gp.axes[2]:0)*.10,.2,.02+(Number.isFinite(gp.axes?.[3])?gp.axes[3]:0)*.10);
+    for(let i=0;i<4;i++)labButtons[i].material.emissiveIntensity=bx[i]?.pressed?1.8:.25;
+  }
+  const pulse=performance.now()/1000;
+  usbPulse.scale.setScalar(1+Math.sin(pulse*8)*.08);
+  usbPulse.material.opacity=genericUsbDevices.size?.7:.18;
+}
+
 
 const ball=new THREE.Mesh(
   new THREE.SphereGeometry(.16,18,14),
@@ -1117,7 +1158,7 @@ function runPlayerPhysics(dt,inputX,inputZ){
   }
 }
 function animateFrame(){
-renderCube.rotation.x+=.012;renderCube.rotation.y+=.018;
+controllerLab.rotation.y+=.006;updateControllerModel();
 const dt=Math.min(clock.getDelta(),.05);shotCooldown=Math.max(0,shotCooldown-dt);
 goofyTimer-=dt;
 if(goofyTimer<=0){goofyTimer=10+Math.random()*14;if(!squidForm)document.getElementById("status").textContent=goofyLines[Math.floor(Math.random()*goofyLines.length)];if(Math.random()<.35)renderCube.rotation.y+=Math.PI*2;}
