@@ -1,5 +1,5 @@
 name: Deploy to GitHub Pages
-# Build 89 final sanity • TEST LAB + debug hitboxes
+# Build 90 final sanity • expanded TEST LAB + weighted balls
 
 on:
   push:
