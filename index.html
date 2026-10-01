@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 104 • MOTION SENSOR LAB</title>
+<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 105 • MOTION SENSOR LAB</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CONTROLLER LAB • PROTOTYPE 104</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button><button id="hidDevice" class="topJoycon">CONNECT ANY HID</button><button id="usbDevice" class="topJoycon">CONNECT USB</button><button id="motionTest" class="topJoycon">📱 MOTION TEST</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">VR INPUT: waiting</span></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CONTROLLER LAB • PROTOTYPE 105</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button><button id="hidDevice" class="topJoycon">CONNECT ANY HID</button><button id="usbDevice" class="topJoycon">CONNECT USB</button><button id="motionTest" class="topJoycon">📱 MOTION TEST</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">VR INPUT: waiting</span></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action squidButton" id="squidButton">🦑 SQUID</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -189,6 +189,15 @@ document.body.appendChild(vrButton);
 // VR INPUT PASS: WebXR controller/hand pose tracking.
 const vrHands=new THREE.Group();scene.add(vrHands);
 const vrHandVisuals={left:new THREE.Group(),right:new THREE.Group()};
+const vrHandJoints={left:new THREE.Group(),right:new THREE.Group()};
+const XR_HAND_JOINTS=[
+  "wrist","thumb-metacarpal","thumb-phalanx-proximal","thumb-phalanx-distal","thumb-tip",
+  "index-finger-metacarpal","index-finger-phalanx-proximal","index-finger-phalanx-intermediate","index-finger-phalanx-distal","index-finger-tip",
+  "middle-finger-metacarpal","middle-finger-phalanx-proximal","middle-finger-phalanx-intermediate","middle-finger-phalanx-distal","middle-finger-tip",
+  "ring-finger-metacarpal","ring-finger-phalanx-proximal","ring-finger-phalanx-intermediate","ring-finger-phalanx-distal","ring-finger-tip",
+  "pinky-finger-metacarpal","pinky-finger-phalanx-proximal","pinky-finger-phalanx-intermediate","pinky-finger-phalanx-distal","pinky-finger-tip"
+];
+const vrHandJointMeshes={left:[],right:[]};
 const vrHandColors={left:0x67e8f9,right:0xf472b6};
 for(const side of ["left","right"]){
   const g=vrHandVisuals[side];
@@ -197,6 +206,15 @@ for(const side of ["left","right"]){
   const pointer=new THREE.Mesh(new THREE.CapsuleGeometry(.025,.13,4,8),new THREE.MeshStandardMaterial({color:0xffffff,roughness:.45}));
   pointer.position.set(0,0,-.10);pointer.rotation.x=Math.PI/2;g.add(pointer);
   g.visible=false;vrHands.add(g);
+  const jointGroup=vrHandJoints[side];
+  for(const jointName of XR_HAND_JOINTS){
+    const joint=new THREE.Mesh(new THREE.SphereGeometry(.012,8,6),new THREE.MeshStandardMaterial({color:vrHandColors[side],roughness:.6,emissive:vrHandColors[side],emissiveIntensity:.15}));
+    joint.visible=false;
+    jointGroup.add(joint);
+    vrHandJointMeshes[side].push(joint);
+  }
+  jointGroup.visible=false;
+  vrHands.add(jointGroup);
 }
 const vrControllers=[renderer.xr.getController(0),renderer.xr.getController(1)];
 const vrGrips=[renderer.xr.getControllerGrip(0),renderer.xr.getControllerGrip(1)];
@@ -213,17 +231,45 @@ function refreshVRInputSources(){
   status.textContent=hands?"VR INPUT: "+hands+" hand"+(hands===1?"":"s")+" tracked":"VR INPUT: "+tracked+" controller"+(tracked===1?"":"s")+" tracked";
 }
 function updateVRTracking(){
-  if(!renderer.xr.isPresenting){vrHandVisuals.left.visible=false;vrHandVisuals.right.visible=false;return;}
+  if(!renderer.xr.isPresenting){
+    vrHandVisuals.left.visible=false;vrHandVisuals.right.visible=false;
+    vrHandJoints.left.visible=false;vrHandJoints.right.visible=false;
+    return;
+  }
   const session=renderer.xr.getSession();if(!session)return;
+  const frame=renderer.xr.getFrame();
+  const refSpace=renderer.xr.getReferenceSpace();
   const sources=Array.from(session.inputSources);
   for(const side of ["left","right"]){
     const source=sources.find(s=>s.handedness===side);
     const visual=vrHandVisuals[side];
-    if(!source){visual.visible=false;continue;}
+    const jointGroup=vrHandJoints[side];
+    if(!source){
+      visual.visible=false;jointGroup.visible=false;
+      continue;
+    }
+    const hasHand=!!source.hand;
+    visual.visible=!hasHand&&!!source.gripSpace;
+    jointGroup.visible=hasHand&&!!frame&&!!refSpace;
+    if(hasHand&&frame&&refSpace){
+      for(let i=0;i<XR_HAND_JOINTS.length;i++){
+        const jointSpace=source.hand.get(XR_HAND_JOINTS[i]);
+        const jointMesh=vrHandJointMeshes[side][i];
+        const pose=jointSpace?frame.getJointPose(jointSpace,refSpace):null;
+        if(pose){
+          jointMesh.visible=true;
+          jointMesh.position.set(pose.transform.position.x,pose.transform.position.y,pose.transform.position.z);
+          jointMesh.quaternion.set(pose.transform.orientation.x,pose.transform.orientation.y,pose.transform.orientation.z,pose.transform.orientation.w);
+          const r=Number.isFinite(pose.radius)?Math.max(.006,pose.radius):.012;
+          jointMesh.scale.setScalar(r/.012);
+        }else{
+          jointMesh.visible=false;
+        }
+      }
+    }
     const index=side==="left"?0:1;
     const grip=vrGrips[index];
-    visual.visible=!!(source.gripSpace||source.hand);
-    if(grip)visual.position.set(0,0,0);
+    if(grip&&!hasHand)visual.position.set(0,0,0);
   }
   refreshVRInputSources();
 }
@@ -322,7 +368,7 @@ function makePatchNotesCubeNote(){
   ctx.fillStyle="#ffffff";
   ctx.font="600 38px system-ui, sans-serif";
   const lines=[
-    "• Prototype 104: phone accelerometer + gyroscope test",
+    "• Prototype 105: phone accelerometer + gyroscope test",
     "• Prototype 88: screen-mode squid proof transformation",
     "• Fixed-timestep movement + collision physics",
     "• Bounded ball substeps reduce wall/corner tunneling",
@@ -1149,6 +1195,20 @@ function syncDesktopCamera(){
   camera.position.set(0,1.6,0);
   camera.rotation.set(screenPitch,screenYaw,0,"YXZ");
 }
+function syncVrAvatarHead(){
+  if(!renderer.xr.isPresenting)return;
+  const headMesh=playerBody.children.find(obj=>obj===head);
+  if(!headMesh)return;
+  const worldPos=new THREE.Vector3();
+  const worldQuat=new THREE.Quaternion();
+  camera.getWorldPosition(worldPos);
+  camera.getWorldQuaternion(worldQuat);
+  player.worldToLocal(worldPos);
+  head.position.copy(worldPos);
+  head.position.y-=.12;
+  playerBody.worldToLocal(worldPos.set(0,0,0));
+  head.quaternion.copy(playerBody.quaternion).invert().multiply(worldQuat);
+}
 function updateWalkAnimation(speed){
   const moving=speed>.12;
   const swing=moving?Math.sin(performance.now()*.012)*Math.min(.62,speed*.22):0;
@@ -1302,6 +1362,7 @@ const armInput=getArmTestInput();updateTestArms(armInput.x,armInput.z);
 const ballTriggers=getBallTriggerState();
   updateVRTracking();
 updateVrImuHead();
+syncVrAvatarHead();
 updateHitboxes();
 updateSquidForm(ballTriggers.leftTrigger);
 // In this early SQUID MODE build, the left trigger belongs to transformation.
