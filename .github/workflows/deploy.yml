@@ -1,5 +1,5 @@
-# Deploy Build 134 Core controller build refresh
-# Build 134 final sanity • controller test + XR grip weapon
+# Deploy Build 53 Core controller build refresh
+# Build 53 final sanity • version 53 rollback
 
 on:
   push:
