@@ -1,5 +1,5 @@
 name: Deploy to GitHub Pages
-# Build 87 final sanity • SQUID button works during VR
+# Build 88 final sanity • screen-mode SQUID proof transformation
 
 on:
   push:
