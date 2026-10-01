@@ -1,5 +1,5 @@
 name: Deploy to GitHub Pages
-# Build 88 final sanity • screen-mode SQUID proof transformation
+# Build 89 final sanity • TEST LAB + debug hitboxes
 
 on:
   push:
