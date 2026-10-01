@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // CUBE PROTOTYPE 71 • STAGE GUARD</title>
+<title>SPLATVR // CUBE PROTOTYPE 72 • FRAME + XR FIXES</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 71</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 72</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -22,8 +22,8 @@ import {VRButton} from "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/
 const bootStatus=document.getElementById("status");
 window.addEventListener("error",e=>{console.error(e.error||e.message);if(bootStatus)bootStatus.textContent="ERROR: "+(e.message||"startup error");});
 window.addEventListener("unhandledrejection",e=>{console.error(e.reason);if(bootStatus)bootStatus.textContent="ERROR: "+(e.reason?.message||"promise error");});
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x11152b);scene.fog=new THREE.Fog(0x11152b,8,32);
-const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.03,100);camera.position.set(0,1.6,0);camera.rotation.set(0,0,0);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x11152b);scene.fog=new THREE.Fog(0x11152b,10,42);
+const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.03,100);camera.position.set(0,1.6,4);camera.rotation.set(0,0,0);
 const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,preserveDrawingBuffer:false});
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));
 renderer.setSize(innerWidth,innerHeight,false);
@@ -83,7 +83,7 @@ const sun=new THREE.DirectionalLight(0xffffff,2.4);
 sun.position.set(3,8,2);
 sun.castShadow=true;
 scene.add(sun);
-const player=new THREE.Group();player.position.set(0,0,4);player.add(camera);scene.add(player);
+const player=new THREE.Group();player.position.set(0,0,4);scene.add(player);scene.add(camera);
 
 // VR crosshair: the HTML crosshair is not visible inside immersive WebXR.
 // This reticle lives in front of the headset camera, so it renders in VR.
@@ -129,23 +129,23 @@ function makePatchNotesCubeNote(){
   ctx.strokeRect(24,24,976,976);
   ctx.fillStyle="#ffffff";
   ctx.font="900 76px system-ui, sans-serif";
-  ctx.fillText("BUILD 71",72,130);
+  ctx.fillText("BUILD 72",72,130);
   ctx.font="800 52px system-ui, sans-serif";
   ctx.fillStyle="#67e8f9";
   ctx.fillText("PATCH NOTES",72,205);
   ctx.fillStyle="#ffffff";
   ctx.font="600 38px system-ui, sans-serif";
   const lines=[
-    "• Prototype 71: Stage guard prevents silent frame death",
-    "• Failed frames now recover and keep the scene rendering",
-    "• Error state is surfaced in the status readout",
+    "• Prototype 72: frame loop + XR camera fixes",
+    "• One render per frame, with visible recovery state",
+    "• XR camera no longer fights the player transform",
     "• Inkable walls + bigger splats remain",
     "• Ball + controls remain in prototype mode"
   ];
   lines.forEach((line,i)=>ctx.fillText(line,72,305+i*100));
   ctx.fillStyle="#94a3b8";
   ctx.font="500 30px system-ui, sans-serif";
-  ctx.fillText("SPLATVR // CUBE • PROTOTYPE 71",72,900);
+  ctx.fillText("SPLATVR // CUBE • PROTOTYPE 72",72,900);
   const tex=new THREE.CanvasTexture(canvas);
   tex.colorSpace=THREE.SRGBColorSpace;
   const note=new THREE.Mesh(
@@ -192,6 +192,11 @@ let ballGrabLatch=false;let ballKickCooldown=0;
 const targets=[];const targetHomes=[[-4,-5],[0,-5],[4,-5],[-4,0],[4,0]];for(const [x,z] of targetHomes){const t=new THREE.Mesh(new THREE.CylinderGeometry(.55,.55,.15,24),new THREE.MeshStandardMaterial({color:0xf472b6,emissive:0x4a102d,emissiveIntensity:.5}));t.rotation.x=Math.PI/2;t.position.set(x,1.3,z);scene.add(t);targets.push(t)}
 const targetMotion=targets.map((t,i)=>({t,homeX:t.position.x,homeZ:t.position.z,phase:i*1.7}));
 const inkGroup=new THREE.Group();scene.add(inkGroup);
+const ARENA_AREA=14*14;
+let inkCoverage=0;
+function refreshInkArea(){inkArea=Math.min(100,Math.round((inkCoverage/ARENA_AREA)*100));}
+function trimInk(){while(inkGroup.children.length>60){const oldest=inkGroup.children[0];inkCoverage=Math.max(0,inkCoverage-(oldest.userData.coverage||0));inkGroup.remove(oldest);}}
+
 const inkParticleGroup=new THREE.Group();scene.add(inkParticleGroup);
 const inkParticleMat=new THREE.MeshBasicMaterial({color:0x67e8f9,transparent:true,opacity:.92});
 const inkMat=new THREE.MeshStandardMaterial({color:0x22d3ee,emissive:0x064e5b,emissiveIntensity:.45,transparent:true,opacity:.9,roughness:.7});
@@ -206,7 +211,7 @@ let squidEnterY=1.6;
 
 function updateSquidForm(){
   if(!renderer.xr.isPresenting)return;
-  const xrCam=renderer.xr.getCamera();
+  const xrCam=getActiveCamera();
   const currentY=xrCam.position.y;
   if(!squidHeightReady){
     squidBaselineSum+=currentY;
@@ -237,7 +242,30 @@ function spawnInkTrail(start,end){
   drop.userData.impactPoint=end.clone();
   inkParticleGroup.add(drop);
 }
-function makeWallInk(point,wall){const local=wall.worldToLocal(point.clone());const size=.34+Math.random()*.28;const shape=new THREE.Shape();const spikes=12;for(let i=0;i<spikes;i++){const a=i/spikes*Math.PI*2;const r=size*(.72+Math.random()*.5);const x=Math.cos(a)*r,y=Math.sin(a)*r;if(i===0)shape.moveTo(x,y);else shape.lineTo(x,y)}shape.closePath();const splat=new THREE.Mesh(new THREE.ShapeGeometry(shape),inkMat.clone());if(Math.abs(wall.geometry.parameters.sx||0)<1)splat.rotation.y=Math.PI/2;splat.position.copy(point).addScaledVector(new THREE.Vector3(Math.sign(wall.position.x)||0,0,Math.sign(wall.position.z)||0),.006);splat.position.y=point.y;inkGroup.add(splat);inkCount++;inkArea=Math.min(100,Math.round(inkGroup.children.length/2.2));while(inkGroup.children.length>180)inkGroup.remove(inkGroup.children[0]);updateStats()}\nfunction makeInk(point){
+function makeWallInk(point,wall){
+  const local=wall.worldToLocal(point.clone());
+  const size=.34+Math.random()*.28;
+  const shape=new THREE.Shape();
+  const spikes=12;
+  for(let i=0;i<spikes;i++){const a=i/spikes*Math.PI*2;const r=size*(.72+Math.random()*.5);const x=Math.cos(a)*r,y=Math.sin(a)*r;if(i===0)shape.moveTo(x,y);else shape.lineTo(x,y)}
+  shape.closePath();
+  const splat=new THREE.Mesh(new THREE.ShapeGeometry(shape),inkMat.clone());
+  const isSide=Math.abs(wall.geometry.parameters.sx||0)<1;
+  const xSide=Math.sign(wall.position.x)||0;
+  const zSide=Math.sign(wall.position.z)||0;
+  if(isSide){splat.rotation.y=xSide>0?Math.PI/2:-Math.PI/2;splat.position.set(local.x+xSide*.09,local.y,local.z);}
+  else{splat.position.set(local.x,local.y,local.z+zSide*.09);}
+  const group=new THREE.Group();
+  group.userData.coverage=Math.PI*size*size*.55;
+  group.add(splat);
+  wall.add(group);
+  inkCount++;
+  inkCoverage+=group.userData.coverage;
+  refreshInkArea();
+  trimInk();
+  updateStats();
+}
+function makeInk(point){
   const pulse=new THREE.Mesh(new THREE.CircleGeometry(.22,16),new THREE.MeshBasicMaterial({color:0x67e8f9,transparent:true,opacity:.5,side:THREE.DoubleSide}));
   pulse.rotation.x=-Math.PI/2;pulse.position.set(point.x,.016,point.z);pulse.userData.life=.22;pulse.userData.maxLife=.22;pulse.userData.kind="pulse";inkParticleGroup.add(pulse);
 
@@ -252,12 +280,14 @@ function makeWallInk(point,wall){const local=wall.worldToLocal(point.clone());co
     if(i===0)shape.moveTo(x,y);else shape.lineTo(x,y);
   }
   shape.closePath();
+  const group=new THREE.Group();
   const splat=new THREE.Mesh(new THREE.ShapeGeometry(shape),inkMat.clone());
   splat.rotation.x=-Math.PI/2;
   splat.position.set(point.x,.012,point.z);
   splat.scale.set(.9+Math.random()*.25,.9+Math.random()*.25,1);
-  inkGroup.add(splat);
+  group.add(splat);
 
+  let coverage=Math.PI*size*size*.58;
   const droplets=2+Math.floor(Math.random()*4);
   for(let i=0;i<droplets;i++){
     const a=Math.random()*Math.PI*2;
@@ -266,12 +296,16 @@ function makeWallInk(point,wall){const local=wall.worldToLocal(point.clone());co
     const drop=new THREE.Mesh(new THREE.CircleGeometry(r,10),inkMat.clone());
     drop.rotation.x=-Math.PI/2;
     drop.position.set(point.x+Math.cos(a)*d,.013,point.z+Math.sin(a)*d);
-    inkGroup.add(drop);
+    group.add(drop);
+    coverage+=Math.PI*r*r;
   }
 
+  group.userData.coverage=coverage;
+  inkGroup.add(group);
   inkCount++;
-  inkArea=Math.min(100,Math.round(inkGroup.children.length/2.2));
-  while(inkGroup.children.length>180)inkGroup.remove(inkGroup.children[0]);
+  inkCoverage+=coverage;
+  refreshInkArea();
+  trimInk();
   updateStats();
 }
 const raycaster=new THREE.Raycaster();
@@ -280,7 +314,7 @@ function shoot(){
   shotCooldown=.18;
   const origin=new THREE.Vector3();
   const dir=new THREE.Vector3();
-  const shootCamera=renderer.xr.isPresenting?renderer.xr.getCamera():camera;
+  const shootCamera=getActiveCamera();
   shootCamera.getWorldPosition(origin);
   shootCamera.getWorldDirection(dir);
   // Use the headset's actual world-space ray. This avoids WebXR ArrayCamera
@@ -293,7 +327,7 @@ function shoot(){
   spawnInkTrail(origin,hit.point);if(hit.object!==floor){const isTarget=targets.includes(hit.object);const alreadyInked=hit.object.material.color.getHex()===0x22d3ee;if(!alreadyInked){hit.object.material.color.set(0x22d3ee);hit.object.material.emissive.set(0x064e5b);hit.object.material.emissiveIntensity=.9;if(isTarget)targetCount++;else if(inkableWalls.includes(hit.object))makeWallInk(hit.point,hit.object)}}document.getElementById("status").textContent="INK!";setTimeout(()=>document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE":"Ready",180);updateStats();if(targetCount===targets.length)document.getElementById("status").textContent="ALL TARGETS INKED! 🎯"}
 function booyah(){booyahCount++;updateStats();const f=document.getElementById("booyahFlash");f.classList.remove("show");void f.offsetWidth;f.classList.add("show");document.getElementById("status").textContent="BOOYAH!";setTimeout(()=>document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE":"Ready",650)}
 document.getElementById("fire").addEventListener("click",shoot);document.getElementById("booyah").addEventListener("click",booyah);
-function resetGame(){targetCount=0;inkCount=0;inkArea=0;booyahCount=0;shotCooldown=0;ballHeld=false;ballGrabLatch=false;ballKickCooldown=0;ballVelocity.set(0,0,0);ball.position.set(0,.16,1.8);for(const {t,homeX,homeZ} of targetMotion){t.position.x=homeX;t.position.z=homeZ;t.material.color.set(0xf472b6);t.material.emissive.set(0x4a102d);t.material.emissiveIntensity=.5}while(inkGroup.children.length)inkGroup.remove(inkGroup.children[0]);while(inkParticleGroup.children.length)inkParticleGroup.remove(inkParticleGroup.children[0]);player.position.set(0,0,4);moveVelocity.set(0,0,0);squidForm=false;updateStats();document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready"}
+function resetGame(){targetCount=0;inkCount=0;inkArea=0;inkCoverage=0;booyahCount=0;shotCooldown=0;ballHeld=false;ballGrabLatch=false;ballKickCooldown=0;ballVelocity.set(0,0,0);ball.position.set(0,.16,1.8);for(const {t,homeX,homeZ} of targetMotion){t.position.x=homeX;t.position.z=homeZ;t.material.color.set(0xf472b6);t.material.emissive.set(0x4a102d);t.material.emissiveIntensity=.5}while(inkGroup.children.length)inkGroup.remove(inkGroup.children[0]);inkCoverage=0;refreshInkArea();while(inkParticleGroup.children.length)inkParticleGroup.remove(inkParticleGroup.children[0]);player.position.set(0,0,4);moveVelocity.set(0,0,0);squidForm=false;updateStats();document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready"}
 document.getElementById("reset").addEventListener("click",resetGame);
 renderer.xr.addEventListener("sessionstart",()=>{squidForm=false;squidHeightReady=false;squidBaselineSamples=0;squidBaselineSum=0;squidEnterY=1.6;if(xrCameraTracking.mode==="immersive-ar"){document.getElementById("status").textContent="CAMERA TRACKING ACTIVE 📷 • Calibrating...";}else{document.getElementById("status").textContent="VR ACTIVE • Calibrating...";}});
 renderer.xr.addEventListener("sessionend",()=>{
@@ -508,7 +542,7 @@ function getBallTriggerState() {
   return {leftTrigger};
 }
 
-function updateBall(leftTrigger,dt){const xrCam=renderer.xr.isPresenting?renderer.xr.getCamera():camera;const near=new THREE.Vector3();xrCam.getWorldPosition(near);ballKickCooldown=Math.max(0,ballKickCooldown-dt);if(!ballHeld&&leftTrigger&&!ballGrabLatch&&ball.position.distanceTo(near)<1.05){ballHeld=true;ballVelocity.set(0,0,0);}if(ballHeld){const hold=new THREE.Vector3(.28,-.12,-.48);hold.applyMatrix4(xrCam.matrixWorld);ball.position.lerp(hold,.45);ballVelocity.set(0,0,0);}else{ballVelocity.y-=9.8*dt;ball.position.addScaledVector(ballVelocity,dt);if(ball.position.y<.16){ball.position.y=.16;if(Math.abs(ballVelocity.y)>.8)ballVelocity.y*=-.45;else ballVelocity.y=0;}ballVelocity.x*=Math.pow(.985,dt*60);ballVelocity.z*=Math.pow(.985,dt*60);if(ballVelocity.lengthSq()>.01){ball.rotation.x+=dt*5;ball.rotation.y+=dt*3;}}if(ballGrabLatch&&!leftTrigger&&ballHeld){const dir=new THREE.Vector3(0,0,-1).applyQuaternion(xrCam.quaternion);dir.y+=.08;dir.normalize();ballHeld=false;ballVelocity.copy(dir.multiplyScalar(7.2));}if(!ballHeld&&ballKickCooldown<=0){const dx=ball.position.x-player.position.x,dz=ball.position.z-player.position.z,dist=Math.hypot(dx,dz);if(dist<.62&&moveVelocity.lengthSq()>.18){const kick=new THREE.Vector3(moveVelocity.x,0,moveVelocity.z).normalize();ballVelocity.set(kick.x*6.5,1.8,kick.z*6.5);ballKickCooldown=.22;}}ballGrabLatch=leftTrigger;}
+function updateBall(leftTrigger,dt){const xrCam=getActiveCamera();const near=new THREE.Vector3();xrCam.getWorldPosition(near);ballKickCooldown=Math.max(0,ballKickCooldown-dt);if(!ballHeld&&leftTrigger&&!ballGrabLatch&&ball.position.distanceTo(near)<1.05){ballHeld=true;ballVelocity.set(0,0,0);}if(ballHeld){const hold=new THREE.Vector3(.28,-.12,-.48);hold.applyMatrix4(xrCam.matrixWorld);ball.position.lerp(hold,.45);ballVelocity.set(0,0,0);}else{ballVelocity.y-=9.8*dt;ball.position.addScaledVector(ballVelocity,dt);if(ball.position.y<.16){ball.position.y=.16;if(Math.abs(ballVelocity.y)>.8)ballVelocity.y*=-.45;else ballVelocity.y=0;}ballVelocity.x*=Math.pow(.985,dt*60);ballVelocity.z*=Math.pow(.985,dt*60);if(ballVelocity.lengthSq()>.01){ball.rotation.x+=dt*5;ball.rotation.y+=dt*3;}}if(ballGrabLatch&&!leftTrigger&&ballHeld){const dir=new THREE.Vector3(0,0,-1).applyQuaternion(xrCam.quaternion);dir.y+=.08;dir.normalize();ballHeld=false;ballVelocity.copy(dir.multiplyScalar(7.2));}if(!ballHeld&&ballKickCooldown<=0){const dx=ball.position.x-player.position.x,dz=ball.position.z-player.position.z,dist=Math.hypot(dx,dz);if(dist<.62&&moveVelocity.lengthSq()>.18){const kick=new THREE.Vector3(moveVelocity.x,0,moveVelocity.z).normalize();ballVelocity.set(kick.x*6.5,1.8,kick.z*6.5);ballKickCooldown=.22;}}ballGrabLatch=leftTrigger;}
 function controllerInput() {
   // Poll directly every frame. This does not override Chrome/Android ownership,
   // but avoids waiting for browser events before gameplay sees the current state.
@@ -555,7 +589,13 @@ function controllerInput() {
   return { x, z };
 }
 
-camera.lookAt(0,1.2,-3);const clock=new THREE.Clock();const moveVelocity=new THREE.Vector3();
+const clock=new THREE.Clock();const moveVelocity=new THREE.Vector3();
+function getActiveCamera(){return renderer.xr.isPresenting?renderer.xr.getCamera():camera;}
+function syncDesktopCamera(){
+  if(renderer.xr.isPresenting)return;
+  camera.position.set(player.position.x,player.position.y+1.6,player.position.z);
+  camera.lookAt(player.position.x,player.position.y+1.2,player.position.z-3);
+}
 function updateWalkAnimation(speed){const moving=speed>.12;const swing=moving?Math.sin(performance.now()*.012)*Math.min(.62,speed*.22):0;playerBody.userData.leftLeg.rotation.x=swing;playerBody.userData.rightLeg.rotation.x=-swing;playerBody.userData.leftArm.rotation.x=-swing*.7;playerBody.userData.rightArm.rotation.x=swing*.7;playerBody.position.y=moving?Math.abs(Math.sin(performance.now()*.012))*.012:0;}
 function updateTestArms(x,z){if(!armTestMode)return;const lean=THREE.MathUtils.clamp(x,-1,1)*.85,lift=THREE.MathUtils.clamp(-z,-1,1)*.8;playerBody.userData.leftArm.rotation.z=.12-lean;playerBody.userData.rightArm.rotation.z=-.12+lean;playerBody.userData.leftArm.rotation.x=lift;playerBody.userData.rightArm.rotation.x=lift;}
 function getArmTestInput(){
@@ -612,7 +652,7 @@ const dt=Math.min(clock.getDelta(),.05);shotCooldown=Math.max(0,shotCooldown-dt)
   if(p.userData.life<=0)inkParticleGroup.remove(p);
 }for(const m of targetMotion){if(m.t.material.color.getHex()!==0x22d3ee){m.t.position.x=m.homeX+Math.sin(performance.now()*.0012+m.phase)*.65;m.t.position.y=1.3+Math.sin(performance.now()*.0017+m.phase)*.18}}updateGamepadStatus();if(debugMode){for(const m of targetMotion)m.t.scale.setScalar(1.05+Math.sin(performance.now()*.004+m.phase)*.08);}const pad=controllerInput();const jc=joyconInput();const touchX=(keys.has("right")?1:0)-(keys.has("left")?1:0);const touchZ=(keys.has("down")?1:0)-(keys.has("up")?1:0);const inputX=Math.abs(jc.x)>.15?jc.x:(Math.abs(pad.x)>.15?pad.x:touchX);const inputZ=Math.abs(jc.z)>.15?jc.z:(Math.abs(pad.z)>.15?pad.z:touchZ);const inputLen=Math.hypot(inputX,inputZ);
 
-const lookCamera=renderer.xr.isPresenting?renderer.xr.getCamera():camera;
+const lookCamera=getActiveCamera();
 const lookForward=new THREE.Vector3(0,0,-1).applyQuaternion(lookCamera.quaternion);
 lookForward.y=0;
 if(lookForward.lengthSq()>.0001){
@@ -627,7 +667,7 @@ let targetVX=0,targetVZ=0;if(inputLen>.01){
   targetVX=inputX/inputLen;
   targetVZ=inputZ/inputLen;
   const speed=squidForm?4.2:2.4;
-  const xrCam=renderer.xr.isPresenting?renderer.xr.getCamera():camera;
+  const xrCam=getActiveCamera();
   const forward=new THREE.Vector3(0,0,-1).applyQuaternion(xrCam.quaternion);
   forward.y=0;
   if(forward.lengthSq()<.0001)forward.set(0,0,-1);
@@ -640,19 +680,16 @@ let targetVX=0,targetVZ=0;if(inputLen>.01){
   dir.normalize();
   targetVX=dir.x*speed;
   targetVZ=dir.z*speed;
-}const response=inputLen>.01?10:14;moveVelocity.x=THREE.MathUtils.damp(moveVelocity.x,targetVX,response,dt);moveVelocity.z=THREE.MathUtils.damp(moveVelocity.z,targetVZ,response,dt);player.position.x+=moveVelocity.x*dt;player.position.z+=moveVelocity.z*dt;player.position.x=THREE.MathUtils.clamp(player.position.x,-6.2,6.2);player.position.z=THREE.MathUtils.clamp(player.position.z,-6.2,6.2);resolveObstacleCollisions();updateWalkAnimation(Math.hypot(moveVelocity.x,moveVelocity.z));renderer.render(scene,camera)}
+}const response=inputLen>.01?10:14;moveVelocity.x=THREE.MathUtils.damp(moveVelocity.x,targetVX,response,dt);moveVelocity.z=THREE.MathUtils.damp(moveVelocity.z,targetVZ,response,dt);player.position.x+=moveVelocity.x*dt;player.position.z+=moveVelocity.z*dt;const arenaLimit=6.65;player.position.x=THREE.MathUtils.clamp(player.position.x,-arenaLimit,arenaLimit);player.position.z=THREE.MathUtils.clamp(player.position.z,-arenaLimit,arenaLimit);resolveObstacleCollisions();updateWalkAnimation(Math.hypot(moveVelocity.x,moveVelocity.z));syncDesktopCamera()}
 function animate(){
   try{
     animateFrame();
+    renderer.render(scene,camera);
   }catch(err){
     console.error("SPLATVR frame error",err);
     const status=document.getElementById("status");
     if(status)status.textContent="STAGE GUARD ACTIVE • frame recovered";
-  }
-  try{
-    renderer.render(scene,camera);
-  }catch(err){
-    console.error("SPLATVR render error",err);
+    try{renderer.render(scene,camera);}catch(renderErr){console.error("SPLATVR recovery render error",renderErr);}
   }
 }
 renderer.setAnimationLoop(animate);bootStatus.textContent="3D READY • Enter VR";addEventListener("resize",()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
