@@ -256,10 +256,8 @@ function updateHitboxes(){
   for(const h of obstacleHitboxes)h.update();
   ballHitbox.position.copy(ball.position);
   playerHitboxBox.set(
-    player.position.x-.28,0,
-    player.position.z-.28,1.5,
-    player.position.x+.28,1.5,
-    player.position.z+.28
+    new THREE.Vector3(player.position.x-.28,0,player.position.z-.28),
+    new THREE.Vector3(player.position.x+.28,1.5,player.position.z+.28)
   );
   playerHitbox.updateMatrixWorld(true);
 }
