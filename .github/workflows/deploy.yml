@@ -1,5 +1,5 @@
 name: Deploy to GitHub Pages
-# Build 94 final sanity • ball collisions + corrected limbs
+# Build 95 final sanity • copied ball physics + smaller stick body
 
 on:
   push:
