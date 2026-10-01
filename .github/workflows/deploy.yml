@@ -1,5 +1,5 @@
-# Deploy Build 117 Pages trigger refresh
-# Build 115 final sanity • XR camera stability
+# Deploy Build 118 Pages trigger refresh
+# Build 115 final sanity • WebXR sensor fusion toggle
 
 on:
   push:
