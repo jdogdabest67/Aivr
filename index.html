@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // CUBE PROTOTYPE 70 • INK WALLS</title>
+<title>SPLATVR // CUBE PROTOTYPE 71 • STAGE GUARD</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 70</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 71</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -129,7 +129,7 @@ function makePatchNotesCubeNote(){
   ctx.strokeRect(24,24,976,976);
   ctx.fillStyle="#ffffff";
   ctx.font="900 76px system-ui, sans-serif";
-  ctx.fillText("BUILD 70",72,130);
+  ctx.fillText("BUILD 71",72,130);
   ctx.font="800 52px system-ui, sans-serif";
   ctx.fillStyle="#67e8f9";
   ctx.fillText("PATCH NOTES",72,205);
@@ -137,15 +137,15 @@ function makePatchNotesCubeNote(){
   ctx.font="600 38px system-ui, sans-serif";
   const lines=[
     "• Prototype 70: Walls can now be inked",
-    "• Bigger irregular ink splats remain",
-    "• Magenta cube raised + rear cube removed",
-    "• Player body is no longer a box",
+    "• Failed frames now recover and keep the scene rendering",
+    "• Error state is surfaced in the status readout",
+    "• Inkable walls + bigger splats remain",
     "• Ball + controls remain in prototype mode"
   ];
   lines.forEach((line,i)=>ctx.fillText(line,72,305+i*100));
   ctx.fillStyle="#94a3b8";
   ctx.font="500 30px system-ui, sans-serif";
-  ctx.fillText("SPLATVR // CUBE • PROTOTYPE 70",72,900);
+  ctx.fillText("SPLATVR // CUBE • PROTOTYPE 71",72,900);
   const tex=new THREE.CanvasTexture(canvas);
   tex.colorSpace=THREE.SRGBColorSpace;
   const note=new THREE.Mesh(
@@ -588,7 +588,7 @@ function resolveObstacleCollisions(){
     }
   }
 }
-function animate(){
+function animateFrame(){
 renderCube.rotation.x+=.012;renderCube.rotation.y+=.018;
 const dt=Math.min(clock.getDelta(),.05);shotCooldown=Math.max(0,shotCooldown-dt);updateSquidForm();for(let i=inkParticleGroup.children.length-1;i>=0;i--){
   const p=inkParticleGroup.children[i];
@@ -641,5 +641,19 @@ let targetVX=0,targetVZ=0;if(inputLen>.01){
   targetVX=dir.x*speed;
   targetVZ=dir.z*speed;
 }const response=inputLen>.01?10:14;moveVelocity.x=THREE.MathUtils.damp(moveVelocity.x,targetVX,response,dt);moveVelocity.z=THREE.MathUtils.damp(moveVelocity.z,targetVZ,response,dt);player.position.x+=moveVelocity.x*dt;player.position.z+=moveVelocity.z*dt;player.position.x=THREE.MathUtils.clamp(player.position.x,-6.2,6.2);player.position.z=THREE.MathUtils.clamp(player.position.z,-6.2,6.2);resolveObstacleCollisions();updateWalkAnimation(Math.hypot(moveVelocity.x,moveVelocity.z));renderer.render(scene,camera)}
+function animate(){
+  try{
+    animateFrame();
+  }catch(err){
+    console.error("SPLATVR frame error",err);
+    const status=document.getElementById("status");
+    if(status)status.textContent="STAGE GUARD ACTIVE • frame recovered";
+  }
+  try{
+    renderer.render(scene,camera);
+  }catch(err){
+    console.error("SPLATVR render error",err);
+  }
+}
 renderer.setAnimationLoop(animate);bootStatus.textContent="3D READY • Enter VR";addEventListener("resize",()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
 </script></body></html>
