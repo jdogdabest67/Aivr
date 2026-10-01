@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 INK ARENA VR • QOL PATCH</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
+<div id="ui"><div class="card"><b>🦑 INK ARENA VR • CONTROLLER CUBE</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action fire" id="fire">INK!</button><button class="action" id="respawn">RESPAWN</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -123,6 +123,10 @@ player.add(playerBody);
 function updateBodyForView(){
   playerBody.visible=!renderer.xr.isPresenting;
 }
+const controllerCube=new THREE.Mesh(new THREE.BoxGeometry(.24,.24,.24),new THREE.MeshStandardMaterial({color:0xff00ff,emissive:0x660066,emissiveIntensity:.65}));
+controllerCube.position.set(0,1.15,3.25);
+controllerCube.visible=false;
+scene.add(controllerCube);
 const floor=new THREE.Mesh(new THREE.BoxGeometry(14,.12,14),new THREE.MeshStandardMaterial({color:0x28304a,roughness:.85}));floor.position.y=-.06;scene.add(floor);
 const wallMat=new THREE.MeshStandardMaterial({color:0x3d4660});for(const [x,z,sx,sz] of [[0,-7,14,.15],[-7,0,.15,14],[7,0,.15,14],[0,7,14,.15]]){const w=new THREE.Mesh(new THREE.BoxGeometry(sx,3,sz),wallMat);w.position.set(x,1.5,z);scene.add(w)}
 for(const [x,z] of [[-3,-2],[3,-2],[-2,1],[2,2],[0,-4]]){const o=new THREE.Mesh(new THREE.BoxGeometry(1.2,1.2,1.2),new THREE.MeshStandardMaterial({color:0x64748b}));o.position.set(x,.6,z);scene.add(o)}
@@ -323,11 +327,17 @@ function updateGamepadStatus() {
   const status = document.getElementById("status");
   if (!status) return;
 
-  if (pads.length) {
-    const names = pads.map(g => g.id || "GAMEPAD").join(" + ");
-    if (!joycons.size) status.textContent = `GAMEPAD ACTIVE: ${names}`;
-  } else if (!joycons.size && status.textContent.startsWith("GAMEPAD ACTIVE:")) {
-    status.textContent = renderer.xr.isPresenting ? "VR ACTIVE • Look + ink" : "Ready";
+  controllerCube.visible=pads.length>0;
+  if(pads.length){
+    const gp=pads[0];
+    const x=Number.isFinite(gp.axes?.[0])?THREE.MathUtils.clamp(gp.axes[0],-1,1):0;
+    const z=Number.isFinite(gp.axes?.[1])?THREE.MathUtils.clamp(gp.axes[1],-1,1):0;
+    controllerCube.position.set(player.position.x+x*.7,1.15,player.position.z+3.25+z*.7);
+    const names=pads.map(g=>g.id||"GAMEPAD").join(" + ");
+    if(!joycons.size)status.textContent=`GAMEPAD ACTIVE: ${names}`;
+  }else{
+    controllerCube.visible=false;
+    if(!joycons.size&&status.textContent.startsWith("GAMEPAD ACTIVE:"))status.textContent=renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready";
   }
 }
 
