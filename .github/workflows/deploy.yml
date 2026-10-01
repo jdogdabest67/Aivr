@@ -1,5 +1,5 @@
 name: Deploy to GitHub Pages
-# Build 70 deployment refresh • prototype-name verification • inkable walls
+# Build 71 deployment refresh • prototype-name verification • stage guard
 
 on:
   push:
