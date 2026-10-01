@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 132 • JOY-CON HARDWARE PACK</title>
+<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 133 • CORE CONTROLLER BUILD</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
 #controls{position:fixed;z-index:6;bottom:14px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:end;pointer-events:none}.pad{display:grid;grid-template-columns:48px 48px 48px;gap:6px;pointer-events:auto}.pad button,.action{width:48px;height:48px;border:0;border-radius:14px;background:#ffffff25;color:white;font-size:20px}.pad button:nth-child(1){grid-column:2}.pad button:nth-child(2){grid-column:1}.pad button:nth-child(3){grid-column:2}.pad button:nth-child(4){grid-column:3}.actions{display:flex;gap:8px;align-items:end;pointer-events:auto}.squidButton{width:72px;height:56px;border-radius:16px;background:#a855f7;color:white;font-size:12px;font-weight:900}.squidButton.on{background:#c084fc;color:#210047;box-shadow:0 0 0 2px #e9d5ff66}.fire{width:72px;height:72px;border-radius:50%;background:#22c55e;color:#052e16;font-size:14px;font-weight:800;box-shadow:0 0 0 2px #86efac55}.booyah{width:72px;height:56px;border-radius:16px;background:#22d3ee;font-size:12px;font-weight:900}
-.cameraToggle{margin-top:8px;margin-right:6px;padding:9px 12px;border:0;border-radius:10px;background:#ffffff25;color:white;font-weight:800;font-size:12px;pointer-events:auto}.cameraToggle.on{background:#22d3ee;color:#06252b}.imuIndicator{display:inline-block;margin-top:8px;padding:7px 10px;border-radius:999px;background:#ffffff12;color:#94a3b8;font-size:11px;font-weight:900;letter-spacing:.04em}.imuIndicator.on{background:#22c55e22;color:#86efac;box-shadow:inset 0 0 0 1px #22c55e55}.xrButton{margin-top:8px;padding:9px 12px;border:0;border-radius:10px;background:#ffffff25;color:white;font-weight:800;font-size:12px;pointer-events:auto}.xrButton:disabled{opacity:.55}.topJoycon{margin-top:8px;padding:9px 12px;border:0;border-radius:10px;background:#ffffff25;color:white;font-weight:800;font-size:12px;pointer-events:auto}.topJoycon:active{transform:scale(.97)}#cross{position:fixed;z-index:4;left:50%;top:50%;width:10px;height:10px;margin:-5px;border:2px solid white;border-radius:50%;pointer-events:none}#booyahFlash{position:fixed;inset:0;z-index:3;display:grid;place-items:center;pointer-events:none;font-size:42px;font-weight:1000;opacity:0;transform:scale(.8)}#booyahFlash.show{animation:booyah .65s ease-out}@keyframes booyah{0%{opacity:0;transform:scale(.7) rotate(-5deg)}20%{opacity:1;transform:scale(1.15) rotate(3deg)}100%{opacity:0;transform:scale(1.5)}}
+.xrButton{margin-top:8px;padding:9px 12px;border:0;border-radius:10px;background:#ffffff25;color:white;font-weight:800;font-size:12px;pointer-events:auto}.xrButton:disabled{opacity:.55}.topJoycon{margin-top:8px;padding:9px 12px;border:0;border-radius:10px;background:#ffffff25;color:white;font-weight:800;font-size:12px;pointer-events:auto}.topJoycon:active{transform:scale(.97)}#cross{position:fixed;z-index:4;left:50%;top:50%;width:10px;height:10px;margin:-5px;border:2px solid white;border-radius:50%;pointer-events:none}#booyahFlash{position:fixed;inset:0;z-index:3;display:grid;place-items:center;pointer-events:none;font-size:42px;font-weight:1000;opacity:0;transform:scale(.8)}#booyahFlash.show{animation:booyah .65s ease-out}@keyframes booyah{0%{opacity:0;transform:scale(.7) rotate(-5deg)}20%{opacity:1;transform:scale(1.15) rotate(3deg)}100%{opacity:0;transform:scale(1.5)}}
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CONTROLLER LAB • PROTOTYPE 132</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="headLockToggle" class="cameraToggle" aria-pressed="false">🧠 HEAD LOCK: OFF</button><button id="handTrackingToggle" class="cameraToggle" aria-pressed="false">✋ HAND + ARM TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: HAND FUSION OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button><button id="hidDevice" class="topJoycon">CONNECT ANY HID</button><button id="motionTest" class="topJoycon">🎮 CONTROLLER TEST</button><button id="cameraAccess" class="topJoycon">📷 REQUEST CAMERA ACCESS</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">VR INPUT: waiting</span><div id="joyconImuStatus" class="imuIndicator">JOY-CON IMU • OFF</div><div id="joyconHardwareStatus" class="imuIndicator">JOY-CON HW • WAITING</div><button id="joyconInfo" class="topJoycon">JOY-CON INFO</button><button id="joyconRumble" class="topJoycon">HD RUMBLE TEST</button></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CONTROLLER LAB • PROTOTYPE 133</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="joycon" class="topJoycon">CONNECT CONTROLLER</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">CONTROLLER: waiting</span></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action squidButton" id="squidButton">🦑 SQUID</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -29,249 +29,10 @@ renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));
 renderer.setSize(innerWidth,innerHeight,false);
 renderer.xr.enabled=true;
 document.body.appendChild(renderer.domElement);
-const xrCameraTracking={enabled:false,mode:"vr"};
-const vrFancyFeatures={headLock:false,handTracking:false};
-const headLockToggle=document.getElementById("headLockToggle");
-const handTrackingToggle=document.getElementById("handTrackingToggle");
-const armTestToggle=document.getElementById("armTestToggle");
-let armTestMode=false;
-function updateArmFusionUI(){
-  armTestToggle.classList.toggle("on",armTestMode);
-  armTestToggle.setAttribute("aria-pressed",String(armTestMode));
-  armTestToggle.textContent=armTestMode?"🦾 ARM TEST: HAND FUSION ON":"🦾 ARM TEST: HAND FUSION OFF";
-}
-function setVrFancyUI(){
-  headLockToggle.classList.toggle("on",vrFancyFeatures.headLock);headLockToggle.setAttribute("aria-pressed",String(vrFancyFeatures.headLock));headLockToggle.textContent=vrFancyFeatures.headLock?"🧠 HEAD LOCK: ON":"🧠 HEAD LOCK: OFF";
-  handTrackingToggle.classList.toggle("on",vrFancyFeatures.handTracking);handTrackingToggle.setAttribute("aria-pressed",String(vrFancyFeatures.handTracking));handTrackingToggle.textContent=vrFancyFeatures.handTracking?"✋ HAND + ARM TRACKING: ON":"✋ HAND + ARM TRACKING: OFF";
-}
-headLockToggle.addEventListener("click",()=>{vrFancyFeatures.headLock=!vrFancyFeatures.headLock;if(vrFancyFeatures.headLock){resetVrImuHead();headLockBase.set(0,0,0);document.getElementById("status").textContent="HEAD LOCK ON • XR head anchored";}else{resetVrImuHead();vrMotionRig.position.set(0,0,0);document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE • Head Lock OFF":"Ready";}setVrFancyUI();});
-handTrackingToggle.addEventListener("click",()=>{
-  vrFancyFeatures.handTracking=!vrFancyFeatures.handTracking;
-  armTestMode=vrFancyFeatures.handTracking;
-  if(!vrFancyFeatures.handTracking){vrHandJoints.left.visible=false;vrHandJoints.right.visible=false;resetTrackedArmPose();}
-  setVrFancyUI();updateArmFusionUI();
-});
-setVrFancyUI();
-const cameraToggle=document.getElementById("cameraToggle");
-async function updateCameraTrackingSupport(){
-  if(!navigator.xr){
-    cameraToggle.disabled=true;
-    cameraToggle.textContent="📷 BACK CAMERA TRACKING: UNSUPPORTED";
-    return;
-  }
-  try{
-    const arSupported=await navigator.xr.isSessionSupported("immersive-ar");
-    cameraToggle.disabled=!arSupported;
-    cameraToggle.title=arSupported?"Uses the WebXR environment/back-facing camera tracking provided by the device.":"Back-camera WebXR tracking is unavailable on this device/browser.";
-    if(!arSupported)cameraToggle.textContent="📷 CAMERA TRACKING: UNSUPPORTED";
-  }catch(err){
-    console.warn("Camera tracking support check failed",err);
-    cameraToggle.disabled=true;
-    cameraToggle.textContent="📷 CAMERA TRACKING: UNSUPPORTED";
-  }
-}
-function setCameraTrackingUI(){
-  cameraToggle.classList.toggle("on",xrCameraTracking.enabled);
-  cameraToggle.setAttribute("aria-pressed",String(xrCameraTracking.enabled));
-  cameraToggle.textContent=xrCameraTracking.enabled?"📷 BACK CAMERA TRACKING: ON":"📷 BACK CAMERA TRACKING: OFF";
-}
-cameraToggle.addEventListener("click",()=>{
-  if(renderer.xr.isPresenting)return;
-  xrCameraTracking.enabled=!xrCameraTracking.enabled;
-  setCameraTrackingUI();
-  document.getElementById("status").textContent=xrCameraTracking.enabled?"CAMERA TRACKING ON • Enter VR":"CAMERA TRACKING OFF • Enter VR";
-});
-updateCameraTrackingSupport();
-setCameraTrackingUI();
-
-const motionTestButton=document.getElementById("motionTest");
-let controllerTestActive=false;
-function updateControllerTestStatus(){
-  if(!controllerTestActive)return;
-  const pads=getControllers().filter(g=>g?.connected);
-  const xr=renderer.xr.isPresenting;
-  const labels=pads.map((gp,i)=>{
-    const axes=(gp.axes||[]).slice(0,4).map(v=>Number.isFinite(v)?v.toFixed(2):"0").join(",");
-    const pressed=(gp.buttons||[]).filter(b=>b?.pressed).length;
-    return "P"+(i+1)+" A["+axes+"] B:"+pressed;
-  });
-  const input=document.getElementById("vrInputStatus");
-  if(input)input.textContent=xr?"CONTROLLER: "+(labels.length?labels.join(" • "):"XR controller waiting"):"CONTROLLER TEST: Enter VR for WebXR input";
-}
-const motionTelemetry={ax:0,ay:0,az:0,gx:0,gy:0,gz:0,active:false,source:"none",accelerationAvailable:false};
-let motionListenerAttached=false;
-function fmtMotion(v){return Number.isFinite(v)?v.toFixed(2):"--";}
-function updateMotionStatus(){
-  const input=document.getElementById("vrInputStatus");
-  if(!input)return;
-  if(motionTelemetry.active)input.textContent="MOTION: A["+fmtMotion(motionTelemetry.ax)+","+fmtMotion(motionTelemetry.ay)+","+fmtMotion(motionTelemetry.az)+"] m/s² • G["+fmtMotion(motionTelemetry.gx)+","+fmtMotion(motionTelemetry.gy)+","+fmtMotion(motionTelemetry.gz)+"] rad/s";
-}
-function handleDeviceMotion(event){
-  const a=event.acceleration;
-  const r=event.rotationRate;
-  motionTelemetry.accelerationAvailable=!!a&&[a.x,a.y,a.z].some(Number.isFinite);
-  motionTelemetry.ax=motionTelemetry.accelerationAvailable&&Number.isFinite(a?.x)?a.x:0;
-  motionTelemetry.ay=motionTelemetry.accelerationAvailable&&Number.isFinite(a?.y)?a.y:0;
-  motionTelemetry.az=motionTelemetry.accelerationAvailable&&Number.isFinite(a?.z)?a.z:0;
-  motionTelemetry.gx=Number.isFinite(r?.alpha)?r.alpha*Math.PI/180:0;
-  motionTelemetry.gy=Number.isFinite(r?.beta)?r.beta*Math.PI/180:0;
-  motionTelemetry.gz=Number.isFinite(r?.gamma)?r.gamma*Math.PI/180:0;
-  motionTelemetry.active=motionTelemetry.accelerationAvailable||!!r;
-  motionTelemetry.source="devicemotion";
-  updateMotionStatus();
-}
-function startControllerTest(){
-  controllerTestActive=!controllerTestActive;
-  motionTestButton.textContent=controllerTestActive?"🎮 CONTROLLER TEST: ON":"🎮 CONTROLLER TEST";
-  document.getElementById("status").textContent=controllerTestActive?"CONTROLLER TEST READY • Enter VR and move a controller":"CONTROLLER TEST OFF";
-  updateControllerTestStatus();
-}
-motionTestButton.addEventListener("click",startControllerTest);
-const cameraAccessButton=document.getElementById("cameraAccess");
-let cameraStream=null;
-let cameraTrack=null;
-const cameraConstraints={video:{facingMode:{ideal:"environment"}},audio:false};
-async function getBackCameraStream(){
-  if(!navigator.mediaDevices?.getUserMedia)throw new Error("getUserMedia unavailable");
-  if(cameraStream?.active&&cameraTrack?.readyState==="live")return cameraStream;
-  cameraStream=await navigator.mediaDevices.getUserMedia(cameraConstraints);
-  cameraTrack=cameraStream.getVideoTracks()[0]||null;
-  return cameraStream;
-}
-function cameraDescription(){
-  const settings=cameraTrack?.getSettings?.()||{};
-  const facing=settings.facingMode;
-  const label=cameraTrack?.label||"environment camera";
-  return facing==="environment"||/back|rear|environment/i.test(label)
-    ?"BACK CAMERA READY • "+label
-    :"CAMERA READY • requested back camera • "+label;
-}
-async function requestCameraAccess(){
-  if(!navigator.mediaDevices?.getUserMedia){
-    document.getElementById("status").textContent="CAMERA UNSUPPORTED • getUserMedia unavailable";
-    return;
-  }
-  cameraAccessButton.disabled=true;
-  cameraAccessButton.textContent="📷 REQUESTING BACK CAMERA…";
-  try{
-    await getBackCameraStream();
-    document.getElementById("status").textContent=cameraDescription();
-    cameraAccessButton.textContent="📷 BACK CAMERA: ON";
-  }catch(err){
-    console.warn("Back camera access request failed",err);
-    document.getElementById("status").textContent="BACK CAMERA FAILED • "+(err?.name||"unknown error");
-    cameraAccessButton.textContent="📷 REQUEST BACK CAMERA";
-  }finally{
-    cameraAccessButton.disabled=false;
-  }
-}
-cameraAccessButton.addEventListener("click",requestCameraAccess);
-
-const imuHeadOffset={x:0,y:0,z:0};
-const imuHeadVelocity={x:0,y:0,z:0};
-const imuHeadBias={x:0,y:0,z:0};
-let imuLastTime=0;
-let imuRecentSamples=[];
-function resetVrImuHead(){
-  if(!renderer.xr.isPresenting)return;
-  imuHeadOffset.x=0;imuHeadOffset.y=0;imuHeadOffset.z=0;
-  imuHeadVelocity.x=0;imuHeadVelocity.y=0;imuHeadVelocity.z=0;
-  imuHeadBias.x=motionTelemetry.accelerationAvailable?(motionTelemetry.ax||0):0;imuHeadBias.y=motionTelemetry.accelerationAvailable?(motionTelemetry.ay||0):0;imuHeadBias.z=motionTelemetry.accelerationAvailable?(motionTelemetry.az||0):0;
-  imuLastTime=performance.now();
-  imuRecentSamples=[];
-  headLockBase.set(0,0,0);
-  vrMotionRig.position.set(0,0,0);
-  document.getElementById("status").textContent="VR IMU RECENTERED • Square";
-}
-const headLockBase=new THREE.Vector3();
-function updateVrImuHead(){
-  if(!vrFancyFeatures.headLock||!renderer.xr.isPresenting||!motionTelemetry.active||!motionTelemetry.accelerationAvailable)return;
-  const now=performance.now();
-  const dt=imuLastTime?Math.min((now-imuLastTime)/1000,.05):0;
-  imuLastTime=now;
-  if(!dt)return;
-  const ax=motionTelemetry.ax-imuHeadBias.x;
-  const ay=motionTelemetry.ay-imuHeadBias.y;
-  const az=motionTelemetry.az-imuHeadBias.z;
-  const deadband=.12;
-  const damped=(v)=>Math.abs(v)<deadband?0:v;
-  const accel=new THREE.Vector3(damped(ax),damped(ay),damped(az)).multiplyScalar(2.4);
-  const xrCam=renderer.xr.getCamera();
-  const headQuat=new THREE.Quaternion();
-  xrCam.getWorldQuaternion(headQuat);
-  accel.applyQuaternion(headQuat);
-  imuHeadVelocity.addScaledVector(accel,dt);
-  imuHeadVelocity.multiplyScalar(Math.pow(.08,dt));
-  imuHeadVelocity.clampLength(0,.9);
-  imuHeadOffset.addScaledVector(imuHeadVelocity,dt);
-  imuHeadOffset.multiplyScalar(Math.pow(.08,dt));
-  imuHeadOffset.clampLength(0,.55);
-  vrMotionRig.position.copy(headLockBase).add(imuHeadOffset);
-}
-const debugToggle=document.getElementById("debugToggle");
-const hitboxToggle=document.getElementById("hitboxToggle");
-let debugMode=false;
-let hitboxMode=false;
-debugToggle.addEventListener("click",()=>{
-  debugMode=!debugMode;
-  debugToggle.classList.toggle("on",debugMode);
-  debugToggle.setAttribute("aria-pressed",String(debugMode));
-  debugToggle.textContent=debugMode?"🧪 DEBUG: ON":"🧪 DEBUG: OFF";
-  hitboxToggle.style.display=debugMode?"inline-block":"none";
-  if(!debugMode){hitboxMode=false;hitboxGroup.visible=false;hitboxToggle.classList.remove("on");hitboxToggle.setAttribute("aria-pressed","false");hitboxToggle.textContent="▣ HITBOXES: OFF";}
-  document.getElementById("status").textContent=debugMode?"DEBUG ON • Hitboxes available":"Ready";
-});
-hitboxToggle.addEventListener("click",()=>{
-  if(!debugMode)return;
-  hitboxMode=!hitboxMode;
-  hitboxGroup.visible=hitboxMode;
-  hitboxToggle.classList.toggle("on",hitboxMode);
-  hitboxToggle.setAttribute("aria-pressed",String(hitboxMode));
-  hitboxToggle.textContent=hitboxMode?"▣ HITBOXES: ON":"▣ HITBOXES: OFF";
-  document.getElementById("status").textContent=hitboxMode?"HITBOXES ON • Yellow = collision":"DEBUG ON • Hitboxes available";
-});
-armTestToggle.addEventListener("click",()=>{
-  armTestMode=!armTestMode;
-  vrFancyFeatures.handTracking=armTestMode;
-  if(!armTestMode)resetTrackedArmPose();
-  setVrFancyUI();updateArmFusionUI();
-  document.getElementById("status").textContent=armTestMode?"HAND FUSION ARM TEST • Move your hands":(renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready");
-});
-
 // Three.js VR entry button. Keep this as the single VR button creation point.
-const vrButton=VRButton.createButton(renderer,{optionalFeatures:["hand-tracking"]});
+const vrButton=VRButton.createButton(renderer);
 document.body.appendChild(vrButton);
 
-// VR INPUT PASS: WebXR controller/hand pose tracking.
-const vrHands=new THREE.Group();scene.add(vrHands);
-const vrHandVisuals={left:new THREE.Group(),right:new THREE.Group()};
-const vrHandJoints={left:new THREE.Group(),right:new THREE.Group()};
-const XR_HAND_JOINTS=[
-  "wrist","thumb-metacarpal","thumb-phalanx-proximal","thumb-phalanx-distal","thumb-tip",
-  "index-finger-metacarpal","index-finger-phalanx-proximal","index-finger-phalanx-intermediate","index-finger-phalanx-distal","index-finger-tip",
-  "middle-finger-metacarpal","middle-finger-phalanx-proximal","middle-finger-phalanx-intermediate","middle-finger-phalanx-distal","middle-finger-tip",
-  "ring-finger-metacarpal","ring-finger-phalanx-proximal","ring-finger-phalanx-intermediate","ring-finger-phalanx-distal","ring-finger-tip",
-  "pinky-finger-metacarpal","pinky-finger-phalanx-proximal","pinky-finger-phalanx-intermediate","pinky-finger-phalanx-distal","pinky-finger-tip"
-];
-const vrHandJointMeshes={left:[],right:[]};
-const vrHandColors={left:0x67e8f9,right:0xf472b6};
-for(const side of ["left","right"]){
-  const g=vrHandVisuals[side];
-  const palm=new THREE.Mesh(new THREE.SphereGeometry(.075,12,8),new THREE.MeshStandardMaterial({color:vrHandColors[side],roughness:.5,emissive:vrHandColors[side],emissiveIntensity:.18}));
-  g.add(palm);
-  const pointer=new THREE.Mesh(new THREE.CapsuleGeometry(.025,.13,4,8),new THREE.MeshStandardMaterial({color:0xffffff,roughness:.45}));
-  pointer.position.set(0,0,-.10);pointer.rotation.x=Math.PI/2;g.add(pointer);
-  g.visible=false;vrHands.add(g);
-  const jointGroup=vrHandJoints[side];
-  for(const jointName of XR_HAND_JOINTS){
-    const joint=new THREE.Mesh(new THREE.SphereGeometry(.012,8,6),new THREE.MeshStandardMaterial({color:vrHandColors[side],roughness:.6,emissive:vrHandColors[side],emissiveIntensity:.15}));
-    joint.visible=false;
-    jointGroup.add(joint);
-    vrHandJointMeshes[side].push(joint);
-  }
-  jointGroup.visible=false;
-  vrHands.add(jointGroup);
-}
 const vrControllers=[renderer.xr.getController(0),renderer.xr.getController(1)];
 const vrGrips=[renderer.xr.getControllerGrip(0),renderer.xr.getControllerGrip(1)];
 const vrControllerState={
@@ -818,7 +579,7 @@ function resetGame(){targetCount=0;inkCount=0;inkArea=0;inkCoverage=0;booyahCoun
 while(wallInkGroups.length){const g=wallInkGroups.pop();g.parent?.remove(g);}
 inkCoverage=0;refreshInkArea();while(inkParticleGroup.children.length)inkParticleGroup.remove(inkParticleGroup.children[0]);player.position.set(0,0,4);moveVelocity.set(0,0,0);physicsAccumulator=0;squidTriggerLatch=false;setSquidMode(false);updateStats();document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready"}
 document.getElementById("reset").addEventListener("click",resetGame);
- renderer.xr.addEventListener("sessionstart",()=>{squidTriggerLatch=false;setSquidMode(false);if(xrCameraTracking.mode==="immersive-ar"){document.getElementById("status").textContent="CAMERA TRACKING ACTIVE 📷";}else{document.getElementById("status").textContent="VR ACTIVE • Look + ink";}});
+ renderer.xr.addEventListener("sessionstart",()=>{squidTriggerLatch=false;setSquidMode(false);document.getElementById("status").textContent="VR ACTIVE • Look + ink";});
  renderer.xr.addEventListener("sessionend",()=>{squidTriggerLatch=false;setSquidMode(false);
   document.getElementById("status").textContent="Ready";
 });
@@ -889,68 +650,9 @@ function updateJoyconHardwareStatus(){
   el.textContent="JOY-CON HW • "+battery+charge+" • "+rate;
   el.classList.toggle("on",joyconState.packetRate>20);
 }
-function updateJoyconImuIndicator(){
-  const el=document.getElementById("joyconImuStatus");
-  if(!el)return;
-  const age=Math.max(0,performance.now()-joyconState.imuLastTime);
-  const live=joyconState.imuActive&&age<100;
-  el.textContent=live?"JOY-CON IMU • LIVE":joyconState.imuActive?"JOY-CON IMU • WAITING":"JOY-CON IMU • OFF";
-  el.classList.toggle("on",live);
-}
-function parseJoyconImu(data, isLeft) {
-  if (data.byteLength < 49) return;
-  const base = 13;
-  const samples = [];
-  for (let sample = 0; sample < 3; sample++) {
-    const o = base + sample * 12;
-    const rawAccel = new THREE.Vector3(
-      data.getInt16(o, true),
-      data.getInt16(o + 2, true),
-      data.getInt16(o + 4, true)
-    );
-    const rawGyro = new THREE.Vector3(
-      data.getInt16(o + 6, true),
-      data.getInt16(o + 8, true),
-      data.getInt16(o + 10, true)
-    );
-    samples.push({accel:rawAccel,gyro:rawGyro});
-  }
-  const latest=samples[2];
-  // Keep raw sensor units for now. Calibration/scaling comes in a later step.
-  joyconState.accel.copy(latest.accel);
-  joyconState.gyro.copy(latest.gyro);
-  joyconState.imuActive=true;
-  joyconState.imuSamples+=samples.length;
-  joyconState.imuLastTime=performance.now();
-  updateJoyconImuIndicator();
-  return samples;
-}
-
 function handleJoyconReport(event) {
   const d = event.data;
   const device = event.device;
-  const status=document.getElementById("joyconImuStatus");
-  const reportId=event.reportId;
-  const reportBytes=d?.byteLength||0;
-  if(status&&reportId!==0x30){
-    status.textContent="JOY-CON REPORT • 0x"+reportId.toString(16).padStart(2,"0")+" • "+reportBytes+"B";
-    status.classList.remove("on");
-  }
-  if(reportId===0x21&&reportBytes>=15){
-    const batteryNibble=(d.getUint8(1)>>4)&0x0F;
-    joyconState.batteryLevel=THREE.MathUtils.clamp(batteryNibble*12.5,0,100);
-    joyconState.charging=!!(d.getUint8(1)&0x01);
-    const ack=d.getUint8(12);
-    const replyId=d.getUint8(13);
-    if((ack&0x80)&&replyId===0x02&&reportBytes>=21){
-      joyconState.firmware=d.getUint8(14)+"."+d.getUint8(15);
-      joyconState.deviceType=d.getUint8(16)===1?"LEFT":d.getUint8(16)===2?"RIGHT":"UNKNOWN";
-      const status=document.getElementById("status");
-      if(status)status.textContent="JOY-CON INFO • "+joyconState.deviceType+" • FW "+joyconState.firmware;
-    }
-    updateJoyconHardwareStatus();
-    return;
-  }
   if(reportId!==0x30||reportBytes<48)return;
   const now=performance.now();
   if(joyconState.lastPacketTime){
@@ -961,7 +663,6 @@ function handleJoyconReport(event) {
   joyconState.packetCount++;
   updateJoyconHardwareStatus();
   const isLeft=device.productId===0x2006;
-  parseJoyconImu(d,isLeft);
   const stick = joyconStick(d, isLeft ? 6 : 9);
 
   if (isLeft) {
@@ -994,15 +695,9 @@ async function setupJoyCon(device) {
   device.addEventListener("inputreport", handleJoyconReport);
 
   try {
-    // Joy-Con protocol: standard full mode (0x03 -> 0x30), then IMU enable (0x40 -> 0x01).
-    await device.sendReport(0x01, new Uint8Array([
-      0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x03,0x30
-    ]));
-    await new Promise(r => setTimeout(r, 80));
-    await device.sendReport(0x01, new Uint8Array([
-      0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x40,0x01
-    ]));
-    await new Promise(r => setTimeout(r, 250));
+    // Switch to standard full input reports so sticks and buttons are delivered.
+    await device.sendReport(0x01,new Uint8Array([0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x03,0x30]));
+    await new Promise(r=>setTimeout(r,100));
   } catch (err) {
     console.warn("Joy-Con report-mode setup failed", err);
   }
@@ -1054,46 +749,7 @@ async function connectJoyCon() {
   }
 }
 
-async function joyconSubcommand(device,subcommand,data=[]){
-  if(!device||!device.opened)return false;
-  const packet=(joyconPacketCounter.value++&0x0F);
-  const payload=new Uint8Array(11+data.length);
-  payload[0]=0x01;payload[1]=packet;
-  payload[10]=subcommand;
-  for(let i=0;i<data.length;i++)payload[11+i]=data[i];
-  await device.sendReport(0x01,payload);
-  return true;
-}
-async function requestJoyconInfo(){
-  const device=[...joycons.values()][0];
-  if(!device)return;
-  try{
-    await joyconSubcommand(device,0x02);
-    document.getElementById("status").textContent="JOY-CON INFO REQUESTED • waiting for reply";
-  }catch(err){console.warn("Joy-Con info request failed",err);}
-}
-async function joyconRumbleTest(){
-  const devices=[...joycons.values()];
-  if(!devices.length)return;
-  try{
-    for(const device of devices){
-      await joyconSubcommand(device,0x48,[0x01]);
-      const packet=(joyconPacketCounter.value++&0x0F);
-      const rumble=new Uint8Array([0x10,packet,0x00,0x04,0x40,0x62,0x00,0x04,0x40,0x62]);
-      await device.sendReport(0x10,rumble);
-    }
-    document.getElementById("status").textContent="HD RUMBLE TEST • 300ms";
-    setTimeout(async()=>{
-      for(const device of devices){
-        const packet=(joyconPacketCounter.value++&0x0F);
-        await device.sendReport(0x10,new Uint8Array([0x10,packet,0x00,0x01,0x40,0x40,0x00,0x01,0x40,0x40]));
-      }
-    },300);
-  }catch(err){console.warn("Joy-Con rumble test failed",err);}
-}
-document.getElementById("joyconInfo").addEventListener("click",requestJoyconInfo);
-document.getElementById("joyconRumble").addEventListener("click",joyconRumbleTest);
-document.getElementById("joycon").addEventListener("click", connectJoyCon);
+document.getElementById("joycon").addEventListener("click",connectJoyCon);
 
 // Resume every Nintendo HID device the user has already permitted.
 async function resumeNintendoHidDevices(){
@@ -1126,8 +782,6 @@ navigator.hid?.addEventListener("disconnect",(event)=>{
     joyconState.x=0;joyconState.z=0;joyconState.fire=false;joyconState.booyah=false;joyconState.leftTrigger=false;
     joyconState.imuActive=false;joyconState.packetRate=0;joyconState.lastPacketTime=0;
   }
-  updateJoyconImuIndicator();
-  updateJoyconHardwareStatus();
   const status=document.getElementById("status");
   if(status)status.textContent="NINTENDO HID DISCONNECTED";
   document.getElementById("joycon").textContent="CONNECT JOY-CON";
@@ -1234,10 +888,6 @@ if ("hid" in navigator) {
     .catch(() => {});
 }
 
-function vrSquareRecenter(){
-  if(!renderer.xr.isPresenting)return;
-  resetVrImuHead();
-}
 let controllerIndex = null;
 let booyahLatch = false;
 let gamepadFireLatch = false;
@@ -1387,16 +1037,6 @@ function updateBall(leftTrigger,dt){
   ballGrabLatch=leftTrigger;
 }
 function controllerInput() {
-  if(renderer.xr.isPresenting){
-    const pads=getControllers().filter(g=>g?.connected);
-    let squarePressed=false;
-    for(const gp of pads){
-      if(gp.buttons?.[2]?.pressed)squarePressed=true;
-    }
-    if(squarePressed&&!window.__vrSquareLatch)vrSquareRecenter();
-    window.__vrSquareLatch=squarePressed;
-  }
-
   // Poll directly every frame. This does not override Chrome/Android ownership,
   // but avoids waiting for browser events before gameplay sees the current state.
   const pads = getControllers().filter(gp => gp?.connected);
@@ -1448,44 +1088,6 @@ function syncDesktopCamera(){
   if(renderer.xr.isPresenting)return;
   camera.position.set(0,1.6,0);
   camera.rotation.set(screenPitch,screenYaw,0,"YXZ");
-}
-function syncVrCameraToHead(){
-  if(!renderer.xr.isPresenting)return;
-  const headWorld=new THREE.Vector3();
-  const headQuat=new THREE.Quaternion();
-  head.getWorldPosition(headWorld);
-  head.getWorldQuaternion(headQuat);
-  vrMotionRig.worldToLocal(headWorld);
-  const rigWorldQuat=new THREE.Quaternion();
-  vrMotionRig.getWorldQuaternion(rigWorldQuat);
-  camera.position.copy(headWorld);
-  camera.quaternion.copy(rigWorldQuat.invert().multiply(headQuat));
-}
-function syncVrAvatarHead(){
-  if(!vrFancyFeatures.headLock||!renderer.xr.isPresenting)return;
-  const headMesh=playerBody.children.find(obj=>obj===head);
-  if(!headMesh)return;
-  const xrCam=renderer.xr.getCamera();
-  const worldPos=new THREE.Vector3();
-  const worldQuat=new THREE.Quaternion();
-  xrCam.getWorldPosition(worldPos);
-  xrCam.getWorldQuaternion(worldQuat);
-  player.worldToLocal(worldPos);
-  const anchorWorld=new THREE.Vector3();
-  vrMotionRig.getWorldPosition(anchorWorld);
-  player.worldToLocal(anchorWorld);
-  const headOffset=worldPos.clone().sub(anchorWorld);
-  const distance=headOffset.length();
-  const rubberBandRadius=.55;
-  if(distance>rubberBandRadius){
-    const excess=distance-rubberBandRadius;
-    headOffset.multiplyScalar((rubberBandRadius+(excess*.18))/distance);
-    worldPos.copy(anchorWorld).add(headOffset);
-  }
-  head.position.copy(worldPos);
-  const playerWorldQuat=new THREE.Quaternion();
-  player.getWorldQuaternion(playerWorldQuat);
-  head.quaternion.copy(playerWorldQuat.invert().multiply(worldQuat));
 }
 function updateWalkAnimation(speed){
   const moving=speed>.12;
@@ -1602,7 +1204,7 @@ function runPlayerPhysics(dt,inputX,inputZ){
   }
 }
 function animateFrame(){
-controllerLab.rotation.y+=.006;updateControllerModel();if(motionTelemetry.active)updateMotionStatus();if(controllerTestActive)updateControllerTestStatus();
+updateControllerModel();
 const dt=Math.min(clock.getDelta(),.05);shotCooldown=Math.max(0,shotCooldown-dt);
 goofyTimer-=dt;
 if(goofyTimer<=0){goofyTimer=10+Math.random()*14;if(!squidForm)document.getElementById("status").textContent=goofyLines[Math.floor(Math.random()*goofyLines.length)];if(Math.random()<.35)renderCube.rotation.y+=Math.PI*2;}
@@ -1638,9 +1240,6 @@ if(lookForward.lengthSq()>.0001){
 }
 const armInput=getArmTestInput();if(!vrFancyFeatures.handTracking)updateTestArms(armInput.x,armInput.z);
 const ballTriggers=getBallTriggerState();
-  updateVRTracking();
-updateVrImuHead();
-syncVrAvatarHead();
 updateHitboxes();
 updateSquidForm(ballTriggers.leftTrigger);
 // In this early SQUID MODE build, the left trigger belongs to transformation.
