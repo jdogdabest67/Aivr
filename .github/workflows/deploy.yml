@@ -1,5 +1,5 @@
 name: Deploy to GitHub Pages
-# Build 85 final sanity • green ink button + refined SQUID MODE
+# Build 86 final sanity • screen SQUID button + refined SQUID MODE
 
 on:
   push:
