@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 123 • JOY-CON IMU MONITOR</title>
+<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 124 • JOY-CON IMU CLEANUP</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
 #controls{position:fixed;z-index:6;bottom:14px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:end;pointer-events:none}.pad{display:grid;grid-template-columns:48px 48px 48px;gap:6px;pointer-events:auto}.pad button,.action{width:48px;height:48px;border:0;border-radius:14px;background:#ffffff25;color:white;font-size:20px}.pad button:nth-child(1){grid-column:2}.pad button:nth-child(2){grid-column:1}.pad button:nth-child(3){grid-column:2}.pad button:nth-child(4){grid-column:3}.actions{display:flex;gap:8px;align-items:end;pointer-events:auto}.squidButton{width:72px;height:56px;border-radius:16px;background:#a855f7;color:white;font-size:12px;font-weight:900}.squidButton.on{background:#c084fc;color:#210047;box-shadow:0 0 0 2px #e9d5ff66}.fire{width:72px;height:72px;border-radius:50%;background:#22c55e;color:#052e16;font-size:14px;font-weight:800;box-shadow:0 0 0 2px #86efac55}.booyah{width:72px;height:56px;border-radius:16px;background:#22d3ee;font-size:12px;font-weight:900}
-.cameraToggle{margin-top:8px;margin-right:6px;padding:9px 12px;border:0;border-radius:10px;background:#ffffff25;color:white;font-weight:800;font-size:12px;pointer-events:auto}.cameraToggle.on{background:#22d3ee;color:#06252b}.xrButton{margin-top:8px;padding:9px 12px;border:0;border-radius:10px;background:#ffffff25;color:white;font-weight:800;font-size:12px;pointer-events:auto}.xrButton:disabled{opacity:.55}.topJoycon{margin-top:8px;padding:9px 12px;border:0;border-radius:10px;background:#ffffff25;color:white;font-weight:800;font-size:12px;pointer-events:auto}.topJoycon:active{transform:scale(.97)}#cross{position:fixed;z-index:4;left:50%;top:50%;width:10px;height:10px;margin:-5px;border:2px solid white;border-radius:50%;pointer-events:none}#booyahFlash{position:fixed;inset:0;z-index:3;display:grid;place-items:center;pointer-events:none;font-size:42px;font-weight:1000;opacity:0;transform:scale(.8)}#booyahFlash.show{animation:booyah .65s ease-out}@keyframes booyah{0%{opacity:0;transform:scale(.7) rotate(-5deg)}20%{opacity:1;transform:scale(1.15) rotate(3deg)}100%{opacity:0;transform:scale(1.5)}}
+.cameraToggle{margin-top:8px;margin-right:6px;padding:9px 12px;border:0;border-radius:10px;background:#ffffff25;color:white;font-weight:800;font-size:12px;pointer-events:auto}.cameraToggle.on{background:#22d3ee;color:#06252b}.imuIndicator{display:inline-block;margin-top:8px;padding:7px 10px;border-radius:999px;background:#ffffff12;color:#94a3b8;font-size:11px;font-weight:900;letter-spacing:.04em}.imuIndicator.on{background:#22c55e22;color:#86efac;box-shadow:inset 0 0 0 1px #22c55e55}.xrButton{margin-top:8px;padding:9px 12px;border:0;border-radius:10px;background:#ffffff25;color:white;font-weight:800;font-size:12px;pointer-events:auto}.xrButton:disabled{opacity:.55}.topJoycon{margin-top:8px;padding:9px 12px;border:0;border-radius:10px;background:#ffffff25;color:white;font-weight:800;font-size:12px;pointer-events:auto}.topJoycon:active{transform:scale(.97)}#cross{position:fixed;z-index:4;left:50%;top:50%;width:10px;height:10px;margin:-5px;border:2px solid white;border-radius:50%;pointer-events:none}#booyahFlash{position:fixed;inset:0;z-index:3;display:grid;place-items:center;pointer-events:none;font-size:42px;font-weight:1000;opacity:0;transform:scale(.8)}#booyahFlash.show{animation:booyah .65s ease-out}@keyframes booyah{0%{opacity:0;transform:scale(.7) rotate(-5deg)}20%{opacity:1;transform:scale(1.15) rotate(3deg)}100%{opacity:0;transform:scale(1.5)}}
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CONTROLLER LAB • PROTOTYPE 123</b><br><span id="status"><div id="joyconImuStatus" class="statusLine">JOY-CON IMU: OFF</div>Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="headLockToggle" class="cameraToggle" aria-pressed="false">🧠 HEAD LOCK: OFF</button><button id="sensorFusionToggle" class="cameraToggle" aria-pressed="false">🧩 WEBXR SENSOR FUSION: OFF</button><button id="handTrackingToggle" class="cameraToggle" aria-pressed="false">✋ HAND + ARM TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: HAND FUSION OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button><button id="hidDevice" class="topJoycon">CONNECT ANY HID</button><button id="usbDevice" class="topJoycon">CONNECT USB</button><button id="motionTest" class="topJoycon">📱 MOTION TEST</button><button id="cameraAccess" class="topJoycon">📷 REQUEST CAMERA ACCESS</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">VR INPUT: waiting</span></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CONTROLLER LAB • PROTOTYPE 124</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="headLockToggle" class="cameraToggle" aria-pressed="false">🧠 HEAD LOCK: OFF</button><button id="handTrackingToggle" class="cameraToggle" aria-pressed="false">✋ HAND + ARM TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: HAND FUSION OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button><button id="hidDevice" class="topJoycon">CONNECT ANY HID</button><button id="motionTest" class="topJoycon">📱 MOTION TEST</button><button id="cameraAccess" class="topJoycon">📷 REQUEST CAMERA ACCESS</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">VR INPUT: waiting</span><div id="joyconImuStatus" class="imuIndicator">JOY-CON IMU • OFF</div></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action squidButton" id="squidButton">🦑 SQUID</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -32,48 +32,6 @@ document.body.appendChild(renderer.domElement);
 const xrCameraTracking={enabled:false,mode:"vr"};
 const vrFancyFeatures={headLock:false,handTracking:false};
 const headLockToggle=document.getElementById("headLockToggle");
-const sensorFusionToggle=document.getElementById("sensorFusionToggle");
-let sensorFusionEnabled=false;
-let sensorFusionInstance=null;
-async function setSensorFusionEnabled(enabled){
-  if(enabled===sensorFusionEnabled)return;
-  if(renderer.xr.isPresenting){
-    document.getElementById("status").textContent="SENSOR FUSION • Exit VR, then toggle";
-    sensorFusionToggle.classList.toggle("on",sensorFusionEnabled);
-    sensorFusionToggle.setAttribute("aria-pressed",String(sensorFusionEnabled));
-    sensorFusionToggle.textContent=sensorFusionEnabled?"🧩 WEBXR SENSOR FUSION: ON":"🧩 WEBXR SENSOR FUSION: OFF";
-    return;
-  }
-  if(!enabled){
-    sensorFusionEnabled=false;
-    sensorFusionToggle.classList.remove("on");
-    sensorFusionToggle.setAttribute("aria-pressed","false");
-    sensorFusionToggle.textContent="🧩 WEBXR SENSOR FUSION: OFF";
-    document.getElementById("status").textContent="SENSOR FUSION OFF • Native WebXR";
-    return;
-  }
-  sensorFusionToggle.disabled=true;
-  sensorFusionToggle.textContent="🧩 LOADING SENSOR FUSION…";
-  try{
-    const mod=await import("https://cdn.jsdelivr.net/npm/webxr-polyfill@2.0.3/build/webxr-polyfill.module.js");
-    const Polyfill=mod.default||mod.WebXRPolyfill;
-    if(typeof Polyfill!=="function")throw new Error("WebXR Polyfill constructor unavailable");
-    sensorFusionInstance=new Polyfill({cardboard:true});
-    sensorFusionEnabled=true;
-    sensorFusionToggle.classList.add("on");
-    sensorFusionToggle.setAttribute("aria-pressed","true");
-    sensorFusionToggle.textContent="🧩 WEBXR SENSOR FUSION: ON";
-    document.getElementById("status").textContent="SENSOR FUSION ON • Enter VR";
-  }catch(err){
-    console.error("WebXR Polyfill load failed",err);
-    sensorFusionEnabled=false;
-    sensorFusionToggle.textContent="🧩 SENSOR FUSION: FAILED";
-    document.getElementById("status").textContent="SENSOR FUSION ERROR • "+(err?.message||"load failed");
-  }finally{
-    sensorFusionToggle.disabled=false;
-  }
-}
-sensorFusionToggle.addEventListener("click",()=>setSensorFusionEnabled(!sensorFusionEnabled));
 const handTrackingToggle=document.getElementById("handTrackingToggle");
 const armTestToggle=document.getElementById("armTestToggle");
 let armTestMode=false;
@@ -932,7 +890,7 @@ function updateJoyconImuIndicator(){
   if(!el)return;
   const age=Math.max(0,performance.now()-joyconState.imuLastTime);
   const live=joyconState.imuActive&&age<100;
-  el.textContent=live?"JOY-CON IMU: ON • LIVE":joyconState.imuActive?"JOY-CON IMU: ON • WAITING":"JOY-CON IMU: OFF";
+  el.textContent=live?"JOY-CON IMU • LIVE":joyconState.imuActive?"JOY-CON IMU • WAITING":"JOY-CON IMU • OFF";
   el.classList.toggle("on",live);
 }
 function parseJoyconImu(data, isLeft) {
@@ -1143,100 +1101,6 @@ async function connectAnyHid(){
   }
 }
 hidDeviceButton.addEventListener("click",connectAnyHid);
-const usbDeviceButton=document.getElementById("usbDevice");
-const genericUsbDevices=new Map();
-function usbHex(value){return Number(value||0).toString(16).padStart(4,"0");}
-function usbDeviceLabel(device){return device.productName||device.manufacturerName||"USB DEVICE";}
-async function inspectUsbDevice(device){
-  if(!device)return;
-  try{
-    genericUsbDevices.set(device,device);
-    console.info("SPLATVR WebUSB connected",{
-      productName:device.productName||"",
-      manufacturerName:device.manufacturerName||"",
-      vendorId:"0x"+usbHex(device.vendorId),
-      productId:"0x"+usbHex(device.productId),
-      serialNumber:device.serialNumber||"",
-      opened:!!device.opened,
-      configurations:(device.configurations||[]).map(c=>({
-        configurationValue:c.configurationValue,
-        interfaces:(c.interfaces||[]).map(i=>({
-          interfaceNumber:i.interfaceNumber,
-          alternates:(i.alternates||[]).map(a=>({
-            alternateSetting:a.alternateSetting,
-            interfaceClass:a.interfaceClass,
-            interfaceSubclass:a.interfaceSubclass,
-            interfaceProtocol:a.interfaceProtocol,
-            endpoints:(a.endpoints||[]).map(e=>({endpointNumber:e.endpointNumber,direction:e.direction,type:e.type}))
-          }))
-        }))
-      }))
-    });
-    const status=document.getElementById("status");
-    if(status)status.textContent="WEBUSB READY • "+usbDeviceLabel(device)+" • 0x"+usbHex(device.vendorId)+"/0x"+usbHex(device.productId);
-    const input=document.getElementById("vrInputStatus");
-    if(input)input.textContent="WEBUSB: "+usbDeviceLabel(device)+" • USB permission granted";
-    usbDeviceButton.textContent=genericUsbDevices.size>1?"USB DEVICES CONNECTED":"USB CONNECTED";
-  }catch(err){
-    console.error("WebUSB inspection failed",err);
-    const status=document.getElementById("status");
-    if(status)status.textContent="WEBUSB ERROR • "+(err?.message||"could not inspect device");
-  }
-}
-async function connectAnyUsb(){
-  if(!("usb" in navigator)){
-    document.getElementById("status").textContent="WebUSB unavailable in this browser";
-    return;
-  }
-  usbDeviceButton.disabled=true;
-  usbDeviceButton.textContent="CHOOSE USB DEVICE…";
-  try{
-    const device=await navigator.usb.requestDevice({filters:[]});
-    if(!device){
-      document.getElementById("status").textContent="NO USB DEVICE SELECTED";
-      usbDeviceButton.textContent="CONNECT USB";
-      return;
-    }
-    await inspectUsbDevice(device);
-  }catch(err){
-    console.warn("Generic WebUSB request failed",err);
-    document.getElementById("status").textContent="WEBUSB REQUEST FAILED • "+(err?.message||"permission cancelled");
-  }finally{
-    usbDeviceButton.disabled=false;
-    if(usbDeviceButton.textContent==="CHOOSE USB DEVICE…")usbDeviceButton.textContent="CONNECT USB";
-  }
-}
-usbDeviceButton.addEventListener("click",connectAnyUsb);
-if("usb" in navigator){
-  navigator.usb.addEventListener("connect",event=>{if(event.device)inspectUsbDevice(event.device);});
-  navigator.usb.addEventListener("disconnect",event=>{
-    const device=event.device;
-    if(genericUsbDevices.has(device))genericUsbDevices.delete(device);
-    if(!genericUsbDevices.size&&document.getElementById("status")?.textContent.startsWith("WEBUSB")){
-      document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready";
-    }
-  });
-  navigator.usb.getDevices().then(devices=>devices.forEach(inspectUsbDevice)).catch(()=>{});
-}
-
-if("hid" in navigator){
-  navigator.hid.addEventListener("connect",event=>{
-    if(event.device?.opened)attachGenericHid(event.device);
-  });
-  navigator.hid.addEventListener("disconnect",event=>{
-    const device=event.device;
-    if(genericHidDevices.has(device))genericHidDevices.delete(device);
-    if(!genericHidDevices.size && document.getElementById("status")?.textContent.startsWith("WEBHID"))document.getElementById("status").textContent=renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready";
-  });
-  navigator.hid.getDevices().then(devices=>{
-    devices.forEach(device=>{
-      if(device.vendorId===JOYCON_VENDOR && JOYCON_PRODUCTS.has(device.productId))return;
-      attachGenericHid(device);
-    });
-  }).catch(()=>{});
-}
-
-
 if ("hid" in navigator) {
   navigator.hid.addEventListener("disconnect", event => {
     joycons.delete(event.device.productId);
