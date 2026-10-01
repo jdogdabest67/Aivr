@@ -35,7 +35,7 @@ const headLockToggle=document.getElementById("headLockToggle");
 const handTrackingToggle=document.getElementById("handTrackingToggle");
 function setVrFancyUI(){
   headLockToggle.classList.toggle("on",vrFancyFeatures.headLock);headLockToggle.setAttribute("aria-pressed",String(vrFancyFeatures.headLock));headLockToggle.textContent=vrFancyFeatures.headLock?"🧠 HEAD LOCK: ON":"🧠 HEAD LOCK: OFF";
-  handTrackingToggle.classList.toggle("on",vrFancyFeatures.handTracking);handTrackingToggle.setAttribute("aria-pressed",String(vrFancyFeatures.handTracking));handTrackingToggle.textContent=vrFancyFeatures.handTracking?"✋ HAND + ARM TRACKING: ON":"✋ HAND TRACKING: OFF";
+  handTrackingToggle.classList.toggle("on",vrFancyFeatures.handTracking);handTrackingToggle.setAttribute("aria-pressed",String(vrFancyFeatures.handTracking));handTrackingToggle.textContent=vrFancyFeatures.handTracking?"✋ HAND + ARM TRACKING: ON":"✋ HAND + ARM TRACKING: OFF";
 }
 headLockToggle.addEventListener("click",()=>{vrFancyFeatures.headLock=!vrFancyFeatures.headLock;if(!vrFancyFeatures.headLock){imuHeadOffset.x=0;imuHeadOffset.y=0;imuHeadOffset.z=0;imuHeadVelocity.x=0;imuHeadVelocity.y=0;imuHeadVelocity.z=0;vrMotionRig.position.set(0,0,0);}setVrFancyUI();});
 handTrackingToggle.addEventListener("click",()=>{vrFancyFeatures.handTracking=!vrFancyFeatures.handTracking;armTestMode=vrFancyFeatures.handTracking;if(!vrFancyFeatures.handTracking){vrHandJoints.left.visible=false;vrHandJoints.right.visible=false;resetTrackedArmPose();}setVrFancyUI();updateArmFusionUI();});
