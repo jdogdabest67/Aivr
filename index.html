@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // CUBE PROTOTYPE 75 • CODE STABILIZATION + DEAD STATE CLEANUP</title>
+<title>SPLATVR // CUBE PROTOTYPE 76 • CODE STABILIZATION + DEAD STATE CLEANUP</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 75</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 76</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -116,7 +116,9 @@ arenaRing.rotation.x=-Math.PI/2;
 arenaRing.position.y=.008;
 scene.add(arenaRing);
 const wallMat=new THREE.MeshStandardMaterial({color:0x3d4660});const inkableWalls=[];for(const [x,z,sx,sz] of [[0,-7,14,.15],[-7,0,.15,14],[7,0,.15,14],[0,7,14,.15]]){const w=new THREE.Mesh(new THREE.BoxGeometry(sx,3,sz),wallMat.clone());w.position.set(x,1.5,z);w.receiveShadow=true;scene.add(w);inkableWalls.push(w)}
-const solidObstacles=[];\nconst OBSTACLE_HALF_X=.6;\nconst OBSTACLE_HALF_Z=.6;
+const solidObstacles=[];
+const OBSTACLE_HALF_X=.6;
+const OBSTACLE_HALF_Z=.6;
 // Patch notes live on a normal arena cube so the magenta cube stays sacred.
 function makePatchNotesCubeNote(){
   const canvas=document.createElement("canvas");
@@ -129,7 +131,7 @@ function makePatchNotesCubeNote(){
   ctx.strokeRect(24,24,976,976);
   ctx.fillStyle="#ffffff";
   ctx.font="900 76px system-ui, sans-serif";
-  ctx.fillText("BUILD 75",72,130);
+  ctx.fillText("BUILD 76",72,130);
   ctx.font="800 52px system-ui, sans-serif";
   ctx.fillStyle="#67e8f9";
   ctx.fillText("PATCH NOTES",72,205);
