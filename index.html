@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 121 • CONTROLLER-AGNOSTIC BLASTER</title>
+<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 122 • JOY-CON IMU INPUT</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CONTROLLER LAB • PROTOTYPE 121</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="headLockToggle" class="cameraToggle" aria-pressed="false">🧠 HEAD LOCK: OFF</button><button id="sensorFusionToggle" class="cameraToggle" aria-pressed="false">🧩 WEBXR SENSOR FUSION: OFF</button><button id="handTrackingToggle" class="cameraToggle" aria-pressed="false">✋ HAND + ARM TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: HAND FUSION OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button><button id="hidDevice" class="topJoycon">CONNECT ANY HID</button><button id="usbDevice" class="topJoycon">CONNECT USB</button><button id="motionTest" class="topJoycon">📱 MOTION TEST</button><button id="cameraAccess" class="topJoycon">📷 REQUEST CAMERA ACCESS</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">VR INPUT: waiting</span></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CONTROLLER LAB • PROTOTYPE 122</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="headLockToggle" class="cameraToggle" aria-pressed="false">🧠 HEAD LOCK: OFF</button><button id="sensorFusionToggle" class="cameraToggle" aria-pressed="false">🧩 WEBXR SENSOR FUSION: OFF</button><button id="handTrackingToggle" class="cameraToggle" aria-pressed="false">✋ HAND + ARM TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: HAND FUSION OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button><button id="hidDevice" class="topJoycon">CONNECT ANY HID</button><button id="usbDevice" class="topJoycon">CONNECT USB</button><button id="motionTest" class="topJoycon">📱 MOTION TEST</button><button id="cameraAccess" class="topJoycon">📷 REQUEST CAMERA ACCESS</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">VR INPUT: waiting</span></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action squidButton" id="squidButton">🦑 SQUID</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -908,7 +908,14 @@ const moveButtons={up:"up",down:"down",left:"left",right:"right"};document.query
 const joycons = new Map();
 const JOYCON_VENDOR = 0x057e;
 const JOYCON_PRODUCTS = new Set([0x2006, 0x2007]);
-const joyconState = {x:0,z:0,fire:false,booyah:false,leftTrigger:false};
+const joyconState = {
+  x:0,z:0,fire:false,booyah:false,leftTrigger:false,
+  imuActive:false,
+  accel:new THREE.Vector3(),
+  gyro:new THREE.Vector3(),
+  imuSamples:0,
+  imuLastTime:0
+};
 
 function joyconStick(data, offset) {
   if (data.byteLength < offset + 3) return {x:0,y:0};
@@ -920,11 +927,40 @@ function joyconStick(data, offset) {
   };
 }
 
+function parseJoyconImu(data, isLeft) {
+  if (data.byteLength < 49) return;
+  const base = 13;
+  const samples = [];
+  for (let sample = 0; sample < 3; sample++) {
+    const o = base + sample * 12;
+    const rawAccel = new THREE.Vector3(
+      data.getInt16(o, true),
+      data.getInt16(o + 2, true),
+      data.getInt16(o + 4, true)
+    );
+    const rawGyro = new THREE.Vector3(
+      data.getInt16(o + 6, true),
+      data.getInt16(o + 8, true),
+      data.getInt16(o + 10, true)
+    );
+    samples.push({accel:rawAccel,gyro:rawGyro});
+  }
+  const latest=samples[2];
+  // Keep raw sensor units for now. Calibration/scaling comes in a later step.
+  joyconState.accel.copy(latest.accel);
+  joyconState.gyro.copy(latest.gyro);
+  joyconState.imuActive=true;
+  joyconState.imuSamples+=samples.length;
+  joyconState.imuLastTime=performance.now();
+  return samples;
+}
+
 function handleJoyconReport(event) {
   const d = event.data;
-  if (event.reportId !== 0x30 || d.byteLength < 12) return;
+  if (event.reportId !== 0x30 || d.byteLength < 49) return;
   const device = event.device;
   const isLeft = device.productId === 0x2006;
+  parseJoyconImu(d,isLeft);
   const stick = joyconStick(d, isLeft ? 6 : 9);
 
   if (isLeft) {
@@ -963,6 +999,10 @@ async function setupJoyCon(device) {
     await device.sendReport(0x01, new Uint8Array([
       0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x03,0x30
     ]));
+    // Subcommand 0x40 enables the Joy-Con 6-axis IMU.
+    await device.sendReport(0x01, new Uint8Array([
+      0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x40,0x01
+    ]));
     await new Promise(r => setTimeout(r, 150));
   } catch (err) {
     console.warn("Joy-Con report-mode setup failed", err);
@@ -972,7 +1012,7 @@ async function setupJoyCon(device) {
   const button = document.getElementById("joycon");
   const status = document.getElementById("status");
   button.textContent = joycons.size > 1 ? "JOY-CONS CONNECTED" : "JOY-CON CONNECTED";
-  status.textContent = `JOY-CON READY • ${device.productName || "Nintendo controller"}`;
+  status.textContent = `JOY-CON READY • IMU ON • ${device.productName || "Nintendo controller"}`;
 }
 
 async function connectJoyCon() {
