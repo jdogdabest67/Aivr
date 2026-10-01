@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 96 • ORIGINAL BALL PASS</title>
+<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 97 • VR TRACKING PASS</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 96</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 97</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">VR INPUT: waiting</span></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action squidButton" id="squidButton">🦑 SQUID</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -95,8 +95,51 @@ armTestToggle.addEventListener("click",()=>{
 });
 
 // Three.js VR entry button. Keep this as the single VR button creation point.
-const vrButton=VRButton.createButton(renderer);
+const vrButton=VRButton.createButton(renderer,{optionalFeatures:["hand-tracking"]});
 document.body.appendChild(vrButton);
+
+// VR INPUT PASS: WebXR controller/hand pose tracking.
+const vrHands=new THREE.Group();scene.add(vrHands);
+const vrHandVisuals={left:new THREE.Group(),right:new THREE.Group()};
+const vrHandColors={left:0x67e8f9,right:0xf472b6};
+for(const side of ["left","right"]){
+  const g=vrHandVisuals[side];
+  const palm=new THREE.Mesh(new THREE.SphereGeometry(.075,12,8),new THREE.MeshStandardMaterial({color:vrHandColors[side],roughness:.5,emissive:vrHandColors[side],emissiveIntensity:.18}));
+  g.add(palm);
+  const pointer=new THREE.Mesh(new THREE.CapsuleGeometry(.025,.13,4,8),new THREE.MeshStandardMaterial({color:0xffffff,roughness:.45}));
+  pointer.position.set(0,0,-.10);pointer.rotation.x=Math.PI/2;g.add(pointer);
+  g.visible=false;vrHands.add(g);
+}
+const vrControllers=[renderer.xr.getController(0),renderer.xr.getController(1)];
+const vrGrips=[renderer.xr.getControllerGrip(0),renderer.xr.getControllerGrip(1)];
+vrControllers.forEach(c=>scene.add(c));
+vrGrips.forEach((g,i)=>{g.add(vrHandVisuals[i===0?"left":"right"]);scene.add(g);});
+function refreshVRInputSources(){
+  const session=renderer.xr.getSession();
+  const sources=session?Array.from(session.inputSources):[];
+  const status=document.getElementById("vrInputStatus");
+  if(!status)return;
+  if(!renderer.xr.isPresenting){status.textContent="VR INPUT: waiting";return;}
+  const tracked=sources.filter(s=>s.gripSpace||s.hand).length;
+  const hands=sources.filter(s=>s.hand).length;
+  status.textContent=hands?"VR INPUT: "+hands+" hand"+(hands===1?"":"s")+" tracked":"VR INPUT: "+tracked+" controller"+(tracked===1?"":"s")+" tracked";
+}
+function updateVRTracking(){
+  if(!renderer.xr.isPresenting){vrHandVisuals.left.visible=false;vrHandVisuals.right.visible=false;return;}
+  const session=renderer.xr.getSession();if(!session)return;
+  const sources=Array.from(session.inputSources);
+  for(const side of ["left","right"]){
+    const source=sources.find(s=>s.handedness===side);
+    const visual=vrHandVisuals[side];
+    if(!source){visual.visible=false;continue;}
+    const index=side==="left"?0:1;
+    const grip=vrGrips[index];
+    visual.visible=!!(source.gripSpace||source.hand);
+    if(grip)visual.position.set(0,0,0);
+  }
+  refreshVRInputSources();
+}
+
 scene.add(new THREE.HemisphereLight(0xffffff,0x172033,1.8));
 const sun=new THREE.DirectionalLight(0xffffff,2.4);
 sun.position.set(3,8,2);
@@ -196,7 +239,7 @@ function makePatchNotesCubeNote(){
   lines.forEach((line,i)=>ctx.fillText(line,72,305+i*100));
   ctx.fillStyle="#94a3b8";
   ctx.font="500 30px system-ui, sans-serif";
-  ctx.fillText("SPLATVR // CUBE • PROTOTYPE 96",72,900);
+  ctx.fillText("SPLATVR // CUBE • PROTOTYPE 97",72,900);
   const tex=new THREE.CanvasTexture(canvas);
   tex.colorSpace=THREE.SRGBColorSpace;
   const note=new THREE.Mesh(
@@ -936,7 +979,8 @@ if(lookForward.lengthSq()>.0001){
 }
 const armInput=getArmTestInput();updateTestArms(armInput.x,armInput.z);
 const ballTriggers=getBallTriggerState();
-  updateHitboxes();
+  updateVRTracking();
+updateHitboxes();
 updateSquidForm(ballTriggers.leftTrigger);
 // In this early SQUID MODE build, the left trigger belongs to transformation.
 // Keep the existing ball system alive, but do not let LT/L2/ZL also grab the ball.
