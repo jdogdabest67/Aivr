@@ -1,5 +1,5 @@
 name: Deploy to GitHub Pages
-# Build 76 deployment refresh • prototype-name verification • restore stage and VR startup
+# Build 77 deployment refresh • prototype-name verification • fix resetGame syntax and runtime freeze
 
 on:
   push:
