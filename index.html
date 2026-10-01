@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 133 • CORE CONTROLLER BUILD</title>
+<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 134 • CORE GAMEPLAY BUILD</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CONTROLLER LAB • PROTOTYPE 133</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="joycon" class="topJoycon">CONNECT CONTROLLER</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">CONTROLLER: waiting</span></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CONTROLLER LAB • PROTOTYPE 134</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="joycon" class="topJoycon">CONNECT CONTROLLER</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">CONTROLLER: waiting</span></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action squidButton" id="squidButton">🦑 SQUID</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -641,16 +641,7 @@ function joyconStick(data, offset) {
 }
 
 function updateJoyconHardwareStatus(){
-  const el=document.getElementById("joyconHardwareStatus");
-  if(!el)return;
-  if(!joycons.size){el.textContent="JOY-CON HW • WAITING";el.classList.remove("on");return;}
-  const battery=joyconState.batteryLevel>=0?joyconState.batteryLevel+"%":"BAT ?";
-  const charge=joyconState.charging?" • CHARGING":"";
-  const rate=joyconState.packetRate>0?Math.round(joyconState.packetRate)+"Hz":"WAIT";
-  el.textContent="JOY-CON HW • "+battery+charge+" • "+rate;
-  el.classList.toggle("on",joyconState.packetRate>20);
-}
-function handleJoyconReport(event) {
+  function handleJoyconReport(event) {
   const d = event.data;
   const device = event.device;
   if(reportId!==0x30||reportBytes<48)return;
@@ -780,114 +771,12 @@ navigator.hid?.addEventListener("disconnect",(event)=>{
   joycons.delete(device.productId);
   if(!joycons.size){
     joyconState.x=0;joyconState.z=0;joyconState.fire=false;joyconState.booyah=false;joyconState.leftTrigger=false;
-    joyconState.imuActive=false;joyconState.packetRate=0;joyconState.lastPacketTime=0;
+    joyconState.packetRate=0;joyconState.lastPacketTime=0;
   }
   const status=document.getElementById("status");
   if(status)status.textContent="NINTENDO HID DISCONNECTED";
   document.getElementById("joycon").textContent="CONNECT JOY-CON";
 });
-const hidDeviceButton=document.getElementById("hidDevice");
-const genericHidDevices=new Map();
-const genericHidMotion={x:0,y:0,z:0,rx:0,ry:0,rz:0,lastReport:0,reportCount:0,bytes:0,name:"",vendorId:0,productId:0};
-function hidHex(value){return Number(value).toString(16).padStart(4,"0");}
-function inspectHidCollections(device){
-  try{
-    return (device.collections||[]).map(c=>({
-      usagePage:c.usagePage,usage:c.usage,reportIds:c.reportIds||[],
-      inputReports:(c.inputReports||[]).length,
-      outputReports:(c.outputReports||[]).length,
-      featureReports:(c.featureReports||[]).length
-    }));
-  }catch(err){return [];}
-}
-function genericHidReport(event){
-  const data=event.data;
-  if(!data)return;
-  genericHidMotion.lastReport=performance.now();
-  genericHidMotion.reportCount++;
-  genericHidMotion.bytes=data.byteLength||0;
-  const device=event.device;
-  genericHidMotion.name=device.productName||"HID DEVICE";
-  genericHidMotion.vendorId=device.vendorId||0;
-  genericHidMotion.productId=device.productId||0;
-  // Keep the raw report available for future device-specific parsers.
-  // Do not pretend arbitrary bytes are gyro values: HID descriptors differ by device.
-  const status=document.getElementById("vrInputStatus");
-  if(status)status.textContent="WEBHID: "+genericHidMotion.name+" • report 0x"+hidHex(event.reportId)+" • "+genericHidMotion.bytes+" bytes";
-}
-async function attachGenericHid(device){
-  if(!device)return;
-  try{
-    if(!device.opened)await device.open();
-    if(!genericHidDevices.has(device)){
-      const handler=e=>genericHidReport(e);
-      device.addEventListener("inputreport",handler);
-      genericHidDevices.set(device,handler);
-    }
-    const collections=inspectHidCollections(device);
-    console.info("SPLATVR WebHID connected",{
-      name:device.productName,vendorId:"0x"+hidHex(device.vendorId),productId:"0x"+hidHex(device.productId),
-      collections
-    });
-    genericHidMotion.name=device.productName||"HID DEVICE";
-    genericHidMotion.vendorId=device.vendorId||0;
-    genericHidMotion.productId=device.productId||0;
-    const status=document.getElementById("status");
-    if(status)status.textContent="WEBHID READY • "+genericHidMotion.name+" • 0x"+hidHex(device.vendorId)+"/0x"+hidHex(device.productId);
-    hidDeviceButton.textContent=genericHidDevices.size>1?"HID DEVICES CONNECTED":"HID CONNECTED";
-  }catch(err){
-    console.error("WebHID open failed",err);
-    const status=document.getElementById("status");
-    if(status)status.textContent="WEBHID ERROR • "+(err?.message||"could not open device");
-  }
-}
-async function connectAnyHid(){
-  if(!("hid" in navigator)){
-    document.getElementById("status").textContent="WebHID unavailable in this browser";
-    return;
-  }
-  hidDeviceButton.disabled=true;
-  hidDeviceButton.textContent="CHOOSE HID DEVICE…";
-  try{
-    const devices=await navigator.hid.requestDevice({filters:[]});
-    if(!devices.length){
-      document.getElementById("status").textContent="NO HID DEVICE SELECTED";
-      hidDeviceButton.textContent="CONNECT ANY HID";
-      hidDeviceButton.disabled=false;
-      return;
-    }
-    for(const device of devices)await attachGenericHid(device);
-  }catch(err){
-    console.warn("Generic WebHID request failed",err);
-    document.getElementById("status").textContent="WEBHID REQUEST FAILED • "+(err?.message||"permission cancelled");
-  }finally{
-    hidDeviceButton.disabled=false;
-    if(hidDeviceButton.textContent==="CHOOSE HID DEVICE…")hidDeviceButton.textContent="CONNECT ANY HID";
-  }
-}
-hidDeviceButton.addEventListener("click",connectAnyHid);
-if ("hid" in navigator) {
-  navigator.hid.addEventListener("disconnect", event => {
-    joycons.delete(event.device.productId);
-    if (!joycons.size) {
-      joyconState.x = 0;
-      joyconState.z = 0;
-      joyconState.fire = false;
-      joyconState.booyah = false;
-      joyconState.leftTrigger = false;
-      document.getElementById("joycon").textContent = "CONNECT JOY-CON";
-      document.getElementById("joycon").disabled = false;
-      document.getElementById("status").textContent = "JOY-CON DISCONNECTED";
-    }
-  });
-
-  navigator.hid.getDevices()
-    .then(devices => devices
-      .filter(d => d.vendorId === JOYCON_VENDOR && JOYCON_PRODUCTS.has(d.productId))
-      .forEach(setupJoyCon))
-    .catch(() => {});
-}
-
 let controllerIndex = null;
 let booyahLatch = false;
 let gamepadFireLatch = false;
@@ -1238,7 +1127,6 @@ if(lookForward.lengthSq()>.0001){
   const desiredYaw=Math.atan2(lookForward.x,lookForward.z);
   playerBody.rotation.y=THREE.MathUtils.damp(playerBody.rotation.y,desiredYaw,3.2,dt);
 }
-const armInput=getArmTestInput();if(!vrFancyFeatures.handTracking)updateTestArms(armInput.x,armInput.z);
 const ballTriggers=getBallTriggerState();
 updateHitboxes();
 updateSquidForm(ballTriggers.leftTrigger);
