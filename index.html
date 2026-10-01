@@ -119,8 +119,38 @@ const bodyMat=new THREE.MeshStandardMaterial({color:0x64748b,roughness:.68,metal
 const limbMat=new THREE.MeshStandardMaterial({color:0x94a3b8,roughness:.72,metalness:.05});
 const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.10,.62,6,10),bodyMat);torso.position.set(0,.72,0);playerBody.add(torso);
 const head=new THREE.Mesh(new THREE.SphereGeometry(.13,14,10),limbMat);head.position.set(0,1.25,0);playerBody.add(head);
-for(const side of [-1,1]){const arm=new THREE.Group();arm.position.set(side*.17,1.0,0);const mesh=new THREE.Mesh(new THREE.BoxGeometry(.08,.58,.08),limbMat);mesh.position.y=-.29;arm.add(mesh);playerBody.add(arm);playerBody.userData[side<0?"leftArm":"rightArm"]=arm;}
-for(const side of [-1,1]){const leg=new THREE.Group();leg.position.set(side*.08,.40,0);const mesh=new THREE.Mesh(new THREE.BoxGeometry(.09,.62,.09),limbMat);mesh.position.y=-.31;leg.add(mesh);playerBody.add(leg);playerBody.userData[side<0?"leftLeg":"rightLeg"]=leg;}
+for(const side of [-1,1]){
+  const arm=new THREE.Group();
+  arm.position.set(side*.17,1.0,0);
+  const upper=new THREE.Mesh(new THREE.BoxGeometry(.075,.30,.075),limbMat);
+  upper.position.y=-.15;
+  arm.add(upper);
+  const elbow=new THREE.Group();
+  elbow.position.y=-.30;
+  const forearm=new THREE.Mesh(new THREE.BoxGeometry(.07,.28,.07),limbMat);
+  forearm.position.y=-.14;
+  elbow.add(forearm);
+  arm.add(elbow);
+  playerBody.add(arm);
+  playerBody.userData[side<0?"leftArm":"rightArm"]=arm;
+  playerBody.userData[side<0?"leftElbow":"rightElbow"]=elbow;
+}
+for(const side of [-1,1]){
+  const leg=new THREE.Group();
+  leg.position.set(side*.08,.40,0);
+  const upper=new THREE.Mesh(new THREE.BoxGeometry(.085,.30,.085),limbMat);
+  upper.position.y=-.15;
+  leg.add(upper);
+  const knee=new THREE.Group();
+  knee.position.y=-.30;
+  const lower=new THREE.Mesh(new THREE.BoxGeometry(.08,.32,.08),limbMat);
+  lower.position.y=-.16;
+  knee.add(lower);
+  leg.add(knee);
+  playerBody.add(leg);
+  playerBody.userData[side<0?"leftLeg":"rightLeg"]=leg;
+  playerBody.userData[side<0?"leftKnee":"rightKnee"]=knee;
+}
 player.add(playerBody);
 const floorMat=new THREE.MeshStandardMaterial({color:0x202946,roughness:.78,metalness:.05});
 const floor=new THREE.Mesh(new THREE.BoxGeometry(30,.12,30),floorMat);
@@ -678,11 +708,40 @@ function updateTestBalls(dt){
     if(m.position.x>arena){m.position.x=arena;v.x=-Math.abs(v.x)*.52;}
     if(m.position.z<-arena){m.position.z=-arena;v.z=Math.abs(v.z)*.52;}
     if(m.position.z>arena){m.position.z=arena;v.z=-Math.abs(v.z)*.52;}
-    const dx=m.position.x-player.position.x,dz=m.position.z-player.position.z;
-    if(Math.hypot(dx,dz)<r+.35&&moveVelocity.lengthSq()>.18){
-      const kick=new THREE.Vector3(moveVelocity.x,0,moveVelocity.z).normalize();
-      const impulse=6.5/Math.max(1,b.mass);
-      v.set(kick.x*impulse,Math.min(3.2,1.8/Math.max(1,b.mass*.55)),kick.z*impulse);
+    // Ball-to-ball collision: push overlapping test balls apart and exchange momentum.
+    for(const other of testBalls){
+      if(other===b)continue;
+      const dx=m.position.x-other.mesh.position.x,dz=m.position.z-other.mesh.position.z;
+      const dist=Math.hypot(dx,dz),minDist=r+other.radius;
+      if(dist<minDist){
+        const nx=dist>.0001?dx/dist:1,nz=dist>.0001?dz/dist:0;
+        const push=(minDist-dist)*.52;
+        m.position.x+=nx*push;m.position.z+=nz*push;
+        const rel=(v.x-other.velocity.x)*nx+(v.z-other.velocity.z)*nz;
+        if(rel<0){
+          const restitution=.62;
+          const invA=1/Math.max(.01,b.mass),invB=1/Math.max(.01,other.mass);
+          const impulse=-(1+restitution)*rel/(invA+invB);
+          v.x+=nx*impulse*invA;v.z+=nz*impulse*invA;
+          other.velocity.x-=nx*impulse*invB;other.velocity.z-=nz*impulse*invB;
+        }
+      }
+    }
+    const pdx=m.position.x-player.position.x,pdz=m.position.z-player.position.z;
+    const playerDist=Math.hypot(pdx,pdz),playerMin=r+.34;
+    if(playerDist<playerMin){
+      const nx=playerDist>.0001?pdx/playerDist:1,nz=playerDist>.0001?pdz/playerDist:0;
+      const push=playerMin-playerDist;
+      m.position.x+=nx*push;m.position.z+=nz*push;
+      if(moveVelocity.lengthSq()>.18){
+        const kick=new THREE.Vector3(moveVelocity.x,0,moveVelocity.z).normalize();
+        const impulse=6.5/Math.max(1,b.mass);
+        v.set(kick.x*impulse,Math.min(3.2,1.8/Math.max(1,b.mass*.55)),kick.z*impulse);
+      }else{
+        const outward=Math.max(0,v.x*nx+v.z*nz);
+        v.x=nx*Math.max(outward,1.2)*.7;
+        v.z=nz*Math.max(outward,1.2)*.7;
+      }
     }
     if(v.lengthSq()>.01){m.rotation.x+=dt*(4.5/b.mass);m.rotation.y+=dt*(3/b.mass);}
   }
@@ -806,7 +865,19 @@ function syncDesktopCamera(){
   camera.position.set(0,1.6,0);
   camera.rotation.set(screenPitch,screenYaw,0,"YXZ");
 }
-function updateWalkAnimation(speed){const moving=speed>.12;const swing=moving?Math.sin(performance.now()*.012)*Math.min(.62,speed*.22):0;playerBody.userData.leftLeg.rotation.x=swing;playerBody.userData.rightLeg.rotation.x=-swing;playerBody.userData.leftArm.rotation.x=-swing*.7;playerBody.userData.rightArm.rotation.x=swing*.7;playerBody.position.y=moving?Math.abs(Math.sin(performance.now()*.012))*.012:0;}
+function updateWalkAnimation(speed){
+  const moving=speed>.12;
+  const swing=moving?Math.sin(performance.now()*.012)*Math.min(.62,speed*.22):0;
+  playerBody.userData.leftLeg.rotation.x=swing;
+  playerBody.userData.rightLeg.rotation.x=-swing;
+  playerBody.userData.leftArm.rotation.x=-swing*.7;
+  playerBody.userData.rightArm.rotation.x=swing*.7;
+  playerBody.userData.leftElbow.rotation.x=.18;
+  playerBody.userData.rightElbow.rotation.x=.18;
+  playerBody.userData.leftKnee.rotation.x=.06;
+  playerBody.userData.rightKnee.rotation.x=.06;
+  playerBody.position.y=moving?Math.abs(Math.sin(performance.now()*.012))*.012:0;
+}
 function updateTestArms(x,z){if(!armTestMode)return;const lean=THREE.MathUtils.clamp(x,-1,1)*.85,lift=THREE.MathUtils.clamp(-z,-1,1)*.8;playerBody.userData.leftArm.rotation.z=.12-lean;playerBody.userData.rightArm.rotation.z=-.12+lean;playerBody.userData.leftArm.rotation.x=lift;playerBody.userData.rightArm.rotation.x=lift;}
 function getArmTestInput(){
   if(!armTestMode)return {x:0,z:0};
