@@ -1,5 +1,5 @@
 name: Deploy to GitHub Pages
-# Build 83 deployment refresh • prototype-name verification • touch look no gyro
+# Build 84 deployment refresh • SQUID MODE left-trigger prototype
 
 on:
   push:
