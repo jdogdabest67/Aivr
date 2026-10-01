@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 94 • BALL + LIMB PASS</title>
+<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 95 • BALL PHYSICS + STICK PASS</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -117,17 +117,17 @@ camera.add(vrReticle);
 const playerBody=new THREE.Group();
 const bodyMat=new THREE.MeshStandardMaterial({color:0x64748b,roughness:.68,metalness:.1});
 const limbMat=new THREE.MeshStandardMaterial({color:0x94a3b8,roughness:.72,metalness:.05});
-const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.10,.62,6,10),bodyMat);torso.position.set(0,.72,0);playerBody.add(torso);
-const head=new THREE.Mesh(new THREE.SphereGeometry(.13,14,10),limbMat);head.position.set(0,1.25,0);playerBody.add(head);
+const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.075,.46,6,10),bodyMat);torso.position.set(0,.67,0);playerBody.add(torso);
+const head=new THREE.Mesh(new THREE.SphereGeometry(.10,14,10),limbMat);head.position.set(0,1.08,0);playerBody.add(head);
 for(const side of [-1,1]){
   const arm=new THREE.Group();
-  arm.position.set(side*.17,1.0,0);
-  const upper=new THREE.Mesh(new THREE.BoxGeometry(.075,.30,.075),limbMat);
+  arm.position.set(side*.13,.91,0);
+  const upper=new THREE.Mesh(new THREE.BoxGeometry(.06,.25,.06),limbMat);
   upper.position.y=-.15;
   arm.add(upper);
   const elbow=new THREE.Group();
-  elbow.position.y=-.30;
-  const forearm=new THREE.Mesh(new THREE.BoxGeometry(.07,.28,.07),limbMat);
+  elbow.position.y=-.25;
+  const forearm=new THREE.Mesh(new THREE.BoxGeometry(.055,.24,.055),limbMat);
   forearm.position.y=-.14;
   elbow.add(forearm);
   arm.add(elbow);
@@ -137,13 +137,13 @@ for(const side of [-1,1]){
 }
 for(const side of [-1,1]){
   const leg=new THREE.Group();
-  leg.position.set(side*.08,.40,0);
-  const upper=new THREE.Mesh(new THREE.BoxGeometry(.085,.30,.085),limbMat);
+  leg.position.set(side*.065,.36,0);
+  const upper=new THREE.Mesh(new THREE.BoxGeometry(.065,.28,.065),limbMat);
   upper.position.y=-.15;
   leg.add(upper);
   const knee=new THREE.Group();
-  knee.position.y=-.30;
-  const lower=new THREE.Mesh(new THREE.BoxGeometry(.08,.32,.08),limbMat);
+  knee.position.y=-.28;
+  const lower=new THREE.Mesh(new THREE.BoxGeometry(.06,.29,.06),limbMat);
   lower.position.y=-.16;
   knee.add(lower);
   leg.add(knee);
@@ -690,63 +690,79 @@ function resolveBallAABB(obstacle){
   else{ball.position.z=obstacle.position.z+halfZ+BALL_RADIUS;ballVelocity.z=Math.abs(ballVelocity.z)*BALL_RESTITUTION;}
 }
 function updateTestBalls(dt){
+  const steps=Math.max(1,Math.min(4,Math.ceil(dt/.012)));
+  const subDt=dt/steps;
+  for(let s=0;s<steps;s++){
+    for(const b of testBalls){
+      const m=b.mesh,r=b.radius,v=b.velocity;
+      v.y-=9.8*subDt;
+      m.position.addScaledVector(v,subDt);
+      if(m.position.y<r){
+        m.position.y=r;
+        if(v.y<-.35)v.y=-v.y*(BALL_RESTITUTION-.03);
+        else v.y=0;
+        v.x*=Math.pow(BALL_GROUND_FRICTION,subDt*60);
+        v.z*=Math.pow(BALL_GROUND_FRICTION,subDt*60);
+      }
+      for(const obstacle of solidObstacles){
+        resolveLabBallAABB(b,obstacle);
+      }
+      const arena=14.84-r;
+      if(m.position.x<-arena){m.position.x=-arena;v.x=Math.abs(v.x)*BALL_RESTITUTION;}
+      if(m.position.x>arena){m.position.x=arena;v.x=-Math.abs(v.x)*BALL_RESTITUTION;}
+      if(m.position.z<-arena){m.position.z=-arena;v.z=Math.abs(v.z)*BALL_RESTITUTION;}
+      if(m.position.z>arena){m.position.z=arena;v.z=-Math.abs(v.z)*BALL_RESTITUTION;}
+    }
+    for(let i=0;i<testBalls.length;i++){
+      for(let j=i+1;j<testBalls.length;j++)resolveLabBallBall(testBalls[i],testBalls[j]);
+    }
+    for(const b of testBalls)resolveLabBallPlayer(b);
+  }
   for(const b of testBalls){
-    const m=b.mesh,r=b.radius,v=b.velocity;
-    v.y-=9.8*dt;
-    m.position.addScaledVector(v,dt);
-    if(m.position.y<r){m.position.y=r;if(v.y<-.35)v.y=-v.y*.52;else v.y=0;v.x*=Math.pow(.86,dt*60);v.z*=Math.pow(.86,dt*60);}
-    for(const obstacle of solidObstacles){
-      const dx=m.position.x-obstacle.position.x,dz=m.position.z-obstacle.position.z;
-      const hx=.6+r,hz=.6+r;
-      if(Math.abs(dx)<hx&&Math.abs(dz)<hz){
-        if(hx-Math.abs(dx)<hz-Math.abs(dz)){m.position.x=obstacle.position.x+(dx<0?-hx:hx);v.x=-v.x*.52;}
-        else{m.position.z=obstacle.position.z+(dz<0?-hz:hz);v.z=-v.z*.52;}
-      }
-    }
-    const arena=14.84-r;
-    if(m.position.x<-arena){m.position.x=-arena;v.x=Math.abs(v.x)*.52;}
-    if(m.position.x>arena){m.position.x=arena;v.x=-Math.abs(v.x)*.52;}
-    if(m.position.z<-arena){m.position.z=-arena;v.z=Math.abs(v.z)*.52;}
-    if(m.position.z>arena){m.position.z=arena;v.z=-Math.abs(v.z)*.52;}
-    // Ball-to-ball collision: push overlapping test balls apart and exchange momentum.
-    for(const other of testBalls){
-      if(other===b)continue;
-      const dx=m.position.x-other.mesh.position.x,dz=m.position.z-other.mesh.position.z;
-      const dist=Math.hypot(dx,dz),minDist=r+other.radius;
-      if(dist<minDist){
-        const nx=dist>.0001?dx/dist:1,nz=dist>.0001?dz/dist:0;
-        const push=(minDist-dist)*.52;
-        m.position.x+=nx*push;m.position.z+=nz*push;
-        const rel=(v.x-other.velocity.x)*nx+(v.z-other.velocity.z)*nz;
-        if(rel<0){
-          const restitution=.62;
-          const invA=1/Math.max(.01,b.mass),invB=1/Math.max(.01,other.mass);
-          const impulse=-(1+restitution)*rel/(invA+invB);
-          v.x+=nx*impulse*invA;v.z+=nz*impulse*invA;
-          other.velocity.x-=nx*impulse*invB;other.velocity.z-=nz*impulse*invB;
-        }
-      }
-    }
-    const pdx=m.position.x-player.position.x,pdz=m.position.z-player.position.z;
-    const playerDist=Math.hypot(pdx,pdz),playerMin=r+.34;
-    if(playerDist<playerMin){
-      const nx=playerDist>.0001?pdx/playerDist:1,nz=playerDist>.0001?pdz/playerDist:0;
-      const push=playerMin-playerDist;
-      m.position.x+=nx*push;m.position.z+=nz*push;
-      if(moveVelocity.lengthSq()>.18){
-        const kick=new THREE.Vector3(moveVelocity.x,0,moveVelocity.z).normalize();
-        const impulse=6.5/Math.max(1,b.mass);
-        v.set(kick.x*impulse,Math.min(3.2,1.8/Math.max(1,b.mass*.55)),kick.z*impulse);
-      }else{
-        const outward=Math.max(0,v.x*nx+v.z*nz);
-        v.x=nx*Math.max(outward,1.2)*.7;
-        v.z=nz*Math.max(outward,1.2)*.7;
-      }
-    }
-    if(v.lengthSq()>.01){m.rotation.x+=dt*(4.5/b.mass);m.rotation.y+=dt*(3/b.mass);}
+    if(b.velocity.lengthSq()>.01){b.mesh.rotation.x+=dt*(5/b.mass);b.mesh.rotation.y+=dt*(3/b.mass);}
   }
 }
-
+function resolveLabBallAABB(b,obstacle){
+  const m=b.mesh,r=b.radius,v=b.velocity;
+  const dx=m.position.x-obstacle.position.x,dz=m.position.z-obstacle.position.z;
+  const hx=.6+r,hz=.6+r;
+  if(Math.abs(dx)<hx&&Math.abs(dz)<hz){
+    if(hx-Math.abs(dx)<hz-Math.abs(dz)){m.position.x=obstacle.position.x+(dx<0?-hx:hx);v.x=-v.x*BALL_RESTITUTION;}
+    else{m.position.z=obstacle.position.z+(dz<0?-hz:hz);v.z=-v.z*BALL_RESTITUTION;}
+  }
+}
+function resolveLabBallBall(a,b){
+  const dx=a.mesh.position.x-b.mesh.position.x,dz=a.mesh.position.z-b.mesh.position.z;
+  const dist=Math.hypot(dx,dz),minDist=a.radius+b.radius;
+  if(dist>=minDist)return;
+  const nx=dist>.0001?dx/dist:1,nz=dist>.0001?dz/dist:0;
+  const push=(minDist-dist)*.5;
+  a.mesh.position.x+=nx*push;a.mesh.position.z+=nz*push;
+  b.mesh.position.x-=nx*push;b.mesh.position.z-=nz*push;
+  const rel=(a.velocity.x-b.velocity.x)*nx+(a.velocity.z-b.velocity.z)*nz;
+  if(rel<0){
+    const invA=1/Math.max(.01,a.mass),invB=1/Math.max(.01,b.mass);
+    const impulse=-(1+BALL_RESTITUTION)*rel/(invA+invB);
+    a.velocity.x+=nx*impulse*invA;a.velocity.z+=nz*impulse*invA;
+    b.velocity.x-=nx*impulse*invB;b.velocity.z-=nz*impulse*invB;
+  }
+}
+function resolveLabBallPlayer(b){
+  const m=b.mesh,r=b.radius;
+  const dx=m.position.x-player.position.x,dz=m.position.z-player.position.z;
+  const dist=Math.hypot(dx,dz),minDist=r+PLAYER_RADIUS;
+  if(dist>=minDist)return;
+  const nx=dist>.0001?dx/dist:1,nz=dist>.0001?dz/dist:0;
+  const push=minDist-dist;
+  m.position.x+=nx*push;m.position.z+=nz*push;
+  const toward=b.velocity.x*nx+b.velocity.z*nz;
+  if(toward<0){b.velocity.x-=nx*toward*1.35;b.velocity.z-=nz*toward*1.35;}
+  if(moveVelocity.lengthSq()>.18){
+    const kick=new THREE.Vector3(moveVelocity.x,0,moveVelocity.z).normalize();
+    const impulse=6.5/Math.max(1,b.mass);
+    b.velocity.set(kick.x*impulse,Math.min(3.2,1.8/Math.max(1,b.mass*.55)),kick.z*impulse);
+  }
+}
 function updateBall(leftTrigger,dt){
   const xrCam=getActiveCamera();
   const near=new THREE.Vector3();
