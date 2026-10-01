@@ -33,12 +33,24 @@ const xrCameraTracking={enabled:false,mode:"vr"};
 const vrFancyFeatures={headLock:false,handTracking:false};
 const headLockToggle=document.getElementById("headLockToggle");
 const handTrackingToggle=document.getElementById("handTrackingToggle");
+const armTestToggle=document.getElementById("armTestToggle");
+let armTestMode=false;
+function updateArmFusionUI(){
+  armTestToggle.classList.toggle("on",armTestMode);
+  armTestToggle.setAttribute("aria-pressed",String(armTestMode));
+  armTestToggle.textContent=armTestMode?"🦾 ARM TEST: HAND FUSION ON":"🦾 ARM TEST: HAND FUSION OFF";
+}
 function setVrFancyUI(){
   headLockToggle.classList.toggle("on",vrFancyFeatures.headLock);headLockToggle.setAttribute("aria-pressed",String(vrFancyFeatures.headLock));headLockToggle.textContent=vrFancyFeatures.headLock?"🧠 HEAD LOCK: ON":"🧠 HEAD LOCK: OFF";
   handTrackingToggle.classList.toggle("on",vrFancyFeatures.handTracking);handTrackingToggle.setAttribute("aria-pressed",String(vrFancyFeatures.handTracking));handTrackingToggle.textContent=vrFancyFeatures.handTracking?"✋ HAND + ARM TRACKING: ON":"✋ HAND + ARM TRACKING: OFF";
 }
 headLockToggle.addEventListener("click",()=>{vrFancyFeatures.headLock=!vrFancyFeatures.headLock;if(!vrFancyFeatures.headLock){imuHeadOffset.x=0;imuHeadOffset.y=0;imuHeadOffset.z=0;imuHeadVelocity.x=0;imuHeadVelocity.y=0;imuHeadVelocity.z=0;vrMotionRig.position.set(0,0,0);}setVrFancyUI();});
-handTrackingToggle.addEventListener("click",()=>{vrFancyFeatures.handTracking=!vrFancyFeatures.handTracking;armTestMode=vrFancyFeatures.handTracking;if(!vrFancyFeatures.handTracking){vrHandJoints.left.visible=false;vrHandJoints.right.visible=false;resetTrackedArmPose();}setVrFancyUI();updateArmFusionUI();});
+handTrackingToggle.addEventListener("click",()=>{
+  vrFancyFeatures.handTracking=!vrFancyFeatures.handTracking;
+  armTestMode=vrFancyFeatures.handTracking;
+  if(!vrFancyFeatures.handTracking){vrHandJoints.left.visible=false;vrHandJoints.right.visible=false;resetTrackedArmPose();}
+  setVrFancyUI();updateArmFusionUI();
+});
 setVrFancyUI();
 const cameraToggle=document.getElementById("cameraToggle");
 async function updateCameraTrackingSupport(){
@@ -199,7 +211,6 @@ function updateVrImuHead(){
   imuHeadOffset.z=THREE.MathUtils.clamp(imuHeadOffset.z+imuHeadVelocity.z*dt,-.65,.65);
   vrMotionRig.position.set(imuHeadOffset.x,imuHeadOffset.y,imuHeadOffset.z);
 }
-const armTestToggle=document.getElementById("armTestToggle");
 const debugToggle=document.getElementById("debugToggle");
 const hitboxToggle=document.getElementById("hitboxToggle");
 let debugMode=false;
@@ -222,13 +233,12 @@ hitboxToggle.addEventListener("click",()=>{
   hitboxToggle.textContent=hitboxMode?"▣ HITBOXES: ON":"▣ HITBOXES: OFF";
   document.getElementById("status").textContent=hitboxMode?"HITBOXES ON • Yellow = collision":"DEBUG ON • Hitboxes available";
 });
-let armTestMode=false;
 armTestToggle.addEventListener("click",()=>{
   armTestMode=!armTestMode;
-  armTestToggle.classList.toggle("on",armTestMode);
-  armTestToggle.setAttribute("aria-pressed",String(armTestMode));
-  armTestToggle.textContent=armTestMode?"🦾 ARM TEST: HAND FUSION ON":"🦾 ARM TEST: OFF";
-  document.getElementById("status").textContent=armTestMode?"ARM TEST MODE • Sticks move arms":(renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready");
+  vrFancyFeatures.handTracking=armTestMode;
+  if(!armTestMode)resetTrackedArmPose();
+  setVrFancyUI();updateArmFusionUI();
+  document.getElementById("status").textContent=armTestMode?"HAND FUSION ARM TEST • Move your hands":(renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready");
 });
 
 // Three.js VR entry button. Keep this as the single VR button creation point.
