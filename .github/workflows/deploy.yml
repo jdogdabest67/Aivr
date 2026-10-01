@@ -1,5 +1,5 @@
 name: Deploy to GitHub Pages
-# Build 93 final sanity • freeze fix + configured arena
+# Build 94 final sanity • ball collisions + corrected limbs
 
 on:
   push:
