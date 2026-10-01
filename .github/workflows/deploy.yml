@@ -1,5 +1,5 @@
 name: Deploy to GitHub Pages
-# Build 77 deployment refresh • prototype-name verification • fix resetGame syntax and runtime freeze
+# Build 78 deployment refresh • prototype-name verification • close animateFrame block and fix startup parser failure
 
 on:
   push:
