@@ -1,5 +1,5 @@
 # Deploy Build 54 Core controller build refresh
-# Build 54 controller haptics • version 53 rollback
+# Build 54 sanity • controller support + magenta cube
 
 on:
   push:
