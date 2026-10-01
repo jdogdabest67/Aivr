@@ -1,9 +1,11 @@
+# Deploy Build 96 Pages trigger refresh
 name: Deploy to GitHub Pages
-# Build 96 final sanity • original working ball replaces lab balls
+# Build 96 final sanity • original working ball replaces lab balls • explicit trigger
 
 on:
   push:
-    branches: ["main"]
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
