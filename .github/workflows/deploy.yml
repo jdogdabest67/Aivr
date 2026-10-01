@@ -1,5 +1,5 @@
 name: Deploy to GitHub Pages
-# Build 84 final sanity • SQUID MODE left-trigger prototype
+# Build 85 final sanity • green ink button + refined SQUID MODE
 
 on:
   push:
