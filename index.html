@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 108 • BACK CAMERA PIPELINE</title>
+<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 109 • BACK CAMERA PIPELINE</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CONTROLLER LAB • PROTOTYPE 108</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="headLockToggle" class="cameraToggle" aria-pressed="false">🧠 HEAD LOCK: OFF</button><button id="handTrackingToggle" class="cameraToggle" aria-pressed="false">✋ HAND TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button><button id="hidDevice" class="topJoycon">CONNECT ANY HID</button><button id="usbDevice" class="topJoycon">CONNECT USB</button><button id="motionTest" class="topJoycon">📱 MOTION TEST</button><button id="cameraAccess" class="topJoycon">📷 REQUEST CAMERA ACCESS</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">VR INPUT: waiting</span></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CONTROLLER LAB • PROTOTYPE 108</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="headLockToggle" class="cameraToggle" aria-pressed="false">🧠 HEAD LOCK: OFF</button><button id="handTrackingToggle" class="cameraToggle" aria-pressed="false">✋ HAND + ARM TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: HAND FUSION OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button><button id="hidDevice" class="topJoycon">CONNECT ANY HID</button><button id="usbDevice" class="topJoycon">CONNECT USB</button><button id="motionTest" class="topJoycon">📱 MOTION TEST</button><button id="cameraAccess" class="topJoycon">📷 REQUEST CAMERA ACCESS</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">VR INPUT: waiting</span></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action squidButton" id="squidButton">🦑 SQUID</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -35,10 +35,10 @@ const headLockToggle=document.getElementById("headLockToggle");
 const handTrackingToggle=document.getElementById("handTrackingToggle");
 function setVrFancyUI(){
   headLockToggle.classList.toggle("on",vrFancyFeatures.headLock);headLockToggle.setAttribute("aria-pressed",String(vrFancyFeatures.headLock));headLockToggle.textContent=vrFancyFeatures.headLock?"🧠 HEAD LOCK: ON":"🧠 HEAD LOCK: OFF";
-  handTrackingToggle.classList.toggle("on",vrFancyFeatures.handTracking);handTrackingToggle.setAttribute("aria-pressed",String(vrFancyFeatures.handTracking));handTrackingToggle.textContent=vrFancyFeatures.handTracking?"✋ HAND TRACKING: ON":"✋ HAND TRACKING: OFF";
+  handTrackingToggle.classList.toggle("on",vrFancyFeatures.handTracking);handTrackingToggle.setAttribute("aria-pressed",String(vrFancyFeatures.handTracking));handTrackingToggle.textContent=vrFancyFeatures.handTracking?"✋ HAND + ARM TRACKING: ON":"✋ HAND TRACKING: OFF";
 }
 headLockToggle.addEventListener("click",()=>{vrFancyFeatures.headLock=!vrFancyFeatures.headLock;if(!vrFancyFeatures.headLock){imuHeadOffset.x=0;imuHeadOffset.y=0;imuHeadOffset.z=0;imuHeadVelocity.x=0;imuHeadVelocity.y=0;imuHeadVelocity.z=0;vrMotionRig.position.set(0,0,0);}setVrFancyUI();});
-handTrackingToggle.addEventListener("click",()=>{vrFancyFeatures.handTracking=!vrFancyFeatures.handTracking;if(!vrFancyFeatures.handTracking){vrHandJoints.left.visible=false;vrHandJoints.right.visible=false;}setVrFancyUI();});
+handTrackingToggle.addEventListener("click",()=>{vrFancyFeatures.handTracking=!vrFancyFeatures.handTracking;armTestMode=vrFancyFeatures.handTracking;if(!vrFancyFeatures.handTracking){vrHandJoints.left.visible=false;vrHandJoints.right.visible=false;resetTrackedArmPose();}setVrFancyUI();updateArmFusionUI();});
 setVrFancyUI();
 const cameraToggle=document.getElementById("cameraToggle");
 async function updateCameraTrackingSupport(){
@@ -227,7 +227,7 @@ armTestToggle.addEventListener("click",()=>{
   armTestMode=!armTestMode;
   armTestToggle.classList.toggle("on",armTestMode);
   armTestToggle.setAttribute("aria-pressed",String(armTestMode));
-  armTestToggle.textContent=armTestMode?"🦾 ARM TEST: ON":"🦾 ARM TEST: OFF";
+  armTestToggle.textContent=armTestMode?"🦾 ARM TEST: HAND FUSION ON":"🦾 ARM TEST: OFF";
   document.getElementById("status").textContent=armTestMode?"ARM TEST MODE • Sticks move arms":(renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready");
 });
 
@@ -279,6 +279,39 @@ function refreshVRInputSources(){
   const hands=sources.filter(s=>s.hand).length;
   status.textContent=hands?"VR INPUT: "+hands+" hand"+(hands===1?"":"s")+" tracked":"VR INPUT: "+tracked+" controller"+(tracked===1?"":"s")+" tracked";
 }
+const trackedArmState={left:{active:false,position:new THREE.Vector3(),wrist:new THREE.Vector3()},right:{active:false,position:new THREE.Vector3(),wrist:new THREE.Vector3()}};
+function resetTrackedArmPose(){
+  trackedArmState.left.active=false;trackedArmState.right.active=false;
+}
+function updateTrackedArm(side,worldWrist,worldIndex){
+  const arm=playerBody.userData[side+"Arm"];if(!arm)return;
+  const shoulderWorld=new THREE.Vector3();arm.getWorldPosition(shoulderWorld);
+  const targetWorld=worldIndex||worldWrist;
+  const parentWorldQuat=new THREE.Quaternion();playerBody.getWorldQuaternion(parentWorldQuat);
+  const localTarget=targetWorld.clone();player.worldToLocal(localTarget);
+  const shoulderLocal=shoulderWorld.clone();player.worldToLocal(shoulderLocal);
+  const dx=localTarget.x-shoulderLocal.x;
+  const dy=localTarget.y-shoulderLocal.y;
+  const dz=localTarget.z-shoulderLocal.z;
+  const horizontal=Math.hypot(dx,dz);
+  const yaw=Math.atan2(dx,dz);
+  const pitch=Math.atan2(dy,Math.max(.001,horizontal));
+  arm.rotation.y=THREE.MathUtils.damp(arm.rotation.y,yaw,14,1/60);
+  arm.rotation.x=THREE.MathUtils.damp(arm.rotation.x,-pitch,14,1/60);
+  arm.rotation.z=THREE.MathUtils.damp(arm.rotation.z,side==="left"?.12:-.12,14,1/60);
+  trackedArmState[side].active=true;
+  trackedArmState[side].wrist.copy(worldWrist);
+}
+function applyTrackedArmFusion(){
+  if(!armTestMode||!vrFancyFeatures.handTracking||!renderer.xr.isPresenting)return;
+  for(const side of ["left","right"]){
+    if(trackedArmState[side].active){
+      const wrist=trackedArmState[side].wrist;
+      updateTrackedArm(side,wrist,wrist);
+    }
+  }
+}
+
 function updateVRTracking(){
   if(!renderer.xr.isPresenting){
     vrHandVisuals.left.visible=false;vrHandVisuals.right.visible=false;
@@ -294,15 +327,31 @@ function updateVRTracking(){
     const visual=vrHandVisuals[side];
     const jointGroup=vrHandJoints[side];
     if(!source){
-      visual.visible=false;jointGroup.visible=false;
+      visual.visible=false;jointGroup.visible=false;trackedArmState[side].active=false;
       continue;
     }
     const hasHand=vrFancyFeatures.handTracking&&!!source.hand;
+    if(!hasHand)trackedArmState[side].active=false;
     visual.visible=!hasHand&&!!source.gripSpace;
     jointGroup.visible=hasHand&&!!frame&&!!refSpace;
     if(hasHand&&frame&&refSpace){
       for(let i=0;i<XR_HAND_JOINTS.length;i++){
         const jointSpace=source.hand.get(XR_HAND_JOINTS[i]);
+        const wristPose=frame.getJointPose(source.hand.get("wrist"),refSpace);
+        const indexPose=frame.getJointPose(source.hand.get("index-finger-tip"),refSpace);
+        if(i===0&&wristPose){
+          const wp=new THREE.Vector3(wristPose.transform.position.x,wristPose.transform.position.y,wristPose.transform.position.z);
+          const ip=indexPose?new THREE.Vector3(indexPose.transform.position.x,indexPose.transform.position.y,indexPose.transform.position.z):wp.clone();
+          const handWorld=new THREE.Vector3();const handQuat=new THREE.Quaternion();
+          handWorld.copy(wp);handQuat.copy(camera.quaternion);
+          const xrCam=renderer.xr.getCamera();
+          const xrPos=new THREE.Vector3();xrCam.getWorldPosition(xrPos);
+          handWorld.add(xrPos);
+          const indexWorld=ip.clone().add(xrPos);
+          trackedArmState[side].wrist.copy(handWorld);
+          trackedArmState[side].position.copy(indexWorld);
+          trackedArmState[side].active=true;
+        }
         const jointMesh=vrHandJointMeshes[side][i];
         const pose=jointSpace?frame.getJointPose(jointSpace,refSpace):null;
         if(pose){
@@ -1407,7 +1456,7 @@ if(lookForward.lengthSq()>.0001){
   const desiredYaw=Math.atan2(lookForward.x,lookForward.z);
   playerBody.rotation.y=THREE.MathUtils.damp(playerBody.rotation.y,desiredYaw,3.2,dt);
 }
-const armInput=getArmTestInput();updateTestArms(armInput.x,armInput.z);
+const armInput=getArmTestInput();if(!vrFancyFeatures.handTracking)updateTestArms(armInput.x,armInput.z);
 const ballTriggers=getBallTriggerState();
   updateVRTracking();
 updateVrImuHead();
