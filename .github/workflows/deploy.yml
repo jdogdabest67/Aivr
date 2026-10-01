@@ -1,6 +1,6 @@
-# Deploy Build 105 Pages trigger refresh
+# Deploy Build 106 Pages trigger refresh
 name: Deploy to GitHub Pages
-# Build 105 final sanity • VR-only IMU recenter
+# Build 106 final sanity • VR-only IMU recenter
 
 on:
   push:
