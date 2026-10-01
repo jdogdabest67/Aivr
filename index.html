@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // CUBE PROTOTYPE 68 • TRIGGERS FIX</title>
+<title>SPLATVR // CUBE PROTOTYPE 69 • BIG SPLATS</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 68</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 69</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -98,8 +98,8 @@ camera.add(vrReticle);
 const playerBody=new THREE.Group();
 const bodyMat=new THREE.MeshStandardMaterial({color:0x64748b,roughness:.68,metalness:.1});
 const limbMat=new THREE.MeshStandardMaterial({color:0x94a3b8,roughness:.72,metalness:.05});
-const torso=new THREE.Mesh(new THREE.BoxGeometry(.42,.58,.26),bodyMat);torso.position.set(0,.78,0);playerBody.add(torso);
-const head=new THREE.Mesh(new THREE.BoxGeometry(.34,.34,.34),limbMat);head.position.set(0,1.24,0);playerBody.add(head);
+const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.18,.28,6,12),bodyMat);torso.position.set(0,.78,0);playerBody.add(torso);
+const head=new THREE.Mesh(new THREE.SphereGeometry(.18,16,12),limbMat);head.position.set(0,1.24,0);playerBody.add(head);
 for(const side of [-1,1]){const arm=new THREE.Group();arm.position.set(side*.29,.94,0);const mesh=new THREE.Mesh(new THREE.BoxGeometry(.12,.52,.12),limbMat);mesh.position.y=-.24;arm.add(mesh);playerBody.add(arm);playerBody.userData[side<0?"leftArm":"rightArm"]=arm;}
 for(const side of [-1,1]){const leg=new THREE.Group();leg.position.set(side*.11,.49,0);const mesh=new THREE.Mesh(new THREE.BoxGeometry(.12,.48,.12),limbMat);mesh.position.y=-.24;leg.add(mesh);playerBody.add(leg);playerBody.userData[side<0?"leftLeg":"rightLeg"]=leg;}
 player.add(playerBody);
@@ -129,23 +129,23 @@ function makePatchNotesCubeNote(){
   ctx.strokeRect(24,24,976,976);
   ctx.fillStyle="#ffffff";
   ctx.font="900 76px system-ui, sans-serif";
-  ctx.fillText("BUILD 68",72,130);
+  ctx.fillText("BUILD 69",72,130);
   ctx.font="800 52px system-ui, sans-serif";
   ctx.fillStyle="#67e8f9";
   ctx.fillText("PATCH NOTES",72,205);
   ctx.fillStyle="#ffffff";
   ctx.font="600 38px system-ui, sans-serif";
   const lines=[
-    "• Prototype 68: Triggers fixed",
-    "• Patch notes actually render now",
-    "• Ball can now be kicked around",
-    "• Added blocky R6-style walk animation",
-    "• Magenta cube remains untouched"
+    "• Prototype 69: Bigger irregular ink splats",
+    "• Magenta cube raised + rear cube removed",
+    "• Player body is no longer a box",
+    "• Ink impact tuned for faster feedback",
+    "• Ball + controls remain in prototype mode"
   ];
   lines.forEach((line,i)=>ctx.fillText(line,72,305+i*100));
   ctx.fillStyle="#94a3b8";
   ctx.font="500 30px system-ui, sans-serif";
-  ctx.fillText("SPLATVR // CUBE",72,900);
+  ctx.fillText("SPLATVR // CUBE • PROTOTYPE 69",72,900);
   const tex=new THREE.CanvasTexture(canvas);
   tex.colorSpace=THREE.SRGBColorSpace;
   const note=new THREE.Mesh(
@@ -162,7 +162,7 @@ function makePatchNotesCubeNote(){
 // Actually call the patch notes generator so it shows up in scene
 makePatchNotesCubeNote();
 
-for(const [x,z] of [[-3,-2],[3,-2],[-2,1],[2,2],[0,-4]]){
+for(const [x,z] of [[-3,-2],[3,-2],[-2,1],[2,2]]){
   const o=new THREE.Mesh(new THREE.BoxGeometry(1.2,1.2,1.2),new THREE.MeshStandardMaterial({color:0x56627f,roughness:.68,metalness:.12}));
   o.position.set(x,.6,z);
   o.castShadow=true;
@@ -174,7 +174,7 @@ const renderCube=new THREE.Mesh(
   new THREE.BoxGeometry(.7,.7,.7),
   new THREE.MeshStandardMaterial({color:0xff00aa,emissive:0x7a004f,emissiveIntensity:1.1,roughness:.3,metalness:.15})
 );
-renderCube.position.set(0,.9,-3);
+renderCube.position.set(0,1.65,-3);
 renderCube.castShadow=true;
 scene.add(renderCube);
 
@@ -226,7 +226,7 @@ function updateSquidForm(){
 function updateStats(){document.getElementById("stats").textContent="Ink: "+inkCount+" • Targets: "+targetCount+"/5 • Paint: "+inkArea+"% • Booyah: "+booyahCount}
 function spawnInkTrail(start,end){
   const distance=start.distanceTo(end);
-  const duration=THREE.MathUtils.clamp(distance/16,.22,.55);
+  const duration=THREE.MathUtils.clamp(distance/24,.12,.32);
   const drop=new THREE.Mesh(new THREE.SphereGeometry(.085,12,10),inkParticleMat.clone());
   drop.position.copy(start);
   drop.userData.life=duration;
@@ -238,9 +238,42 @@ function spawnInkTrail(start,end){
   inkParticleGroup.add(drop);
 }
 function makeInk(point){
-  const pulse=new THREE.Mesh(new THREE.CircleGeometry(.12,16),new THREE.MeshBasicMaterial({color:0x67e8f9,transparent:true,opacity:.65,side:THREE.DoubleSide}));
-  pulse.rotation.x=-Math.PI/2;pulse.position.set(point.x,.016,point.z);pulse.userData.life=.35;pulse.userData.maxLife=.35;pulse.userData.kind="pulse";inkParticleGroup.add(pulse);
-  const size=.35+Math.random()*.65;inkArea=Math.min(100,Math.round(inkGroup.children.length/1.8));const m=new THREE.Mesh(new THREE.CircleGeometry(size,20),inkMat);m.rotation.x=-Math.PI/2;m.position.set(point.x,.012,point.z);m.scale.x=.7+Math.random()*.6;m.scale.y=.7+Math.random()*.6;inkGroup.add(m);inkCount++;if(inkGroup.children.length>180)inkGroup.remove(inkGroup.children[0]);updateStats()}
+  const pulse=new THREE.Mesh(new THREE.CircleGeometry(.22,16),new THREE.MeshBasicMaterial({color:0x67e8f9,transparent:true,opacity:.5,side:THREE.DoubleSide}));
+  pulse.rotation.x=-Math.PI/2;pulse.position.set(point.x,.016,point.z);pulse.userData.life=.22;pulse.userData.maxLife=.22;pulse.userData.kind="pulse";inkParticleGroup.add(pulse);
+
+  const size=.62+Math.random()*.42;
+  const shape=new THREE.Shape();
+  const spikes=14;
+  for(let i=0;i<spikes;i++){
+    const a=(i/spikes)*Math.PI*2;
+    const r=size*(.72+Math.random()*.5);
+    const x=Math.cos(a)*r;
+    const y=Math.sin(a)*r;
+    if(i===0)shape.moveTo(x,y);else shape.lineTo(x,y);
+  }
+  shape.closePath();
+  const splat=new THREE.Mesh(new THREE.ShapeGeometry(shape),inkMat.clone());
+  splat.rotation.x=-Math.PI/2;
+  splat.position.set(point.x,.012,point.z);
+  splat.scale.set(.9+Math.random()*.25,.9+Math.random()*.25,1);
+  inkGroup.add(splat);
+
+  const droplets=2+Math.floor(Math.random()*4);
+  for(let i=0;i<droplets;i++){
+    const a=Math.random()*Math.PI*2;
+    const d=size*(1.05+Math.random()*.9);
+    const r=.08+Math.random()*.13;
+    const drop=new THREE.Mesh(new THREE.CircleGeometry(r,10),inkMat.clone());
+    drop.rotation.x=-Math.PI/2;
+    drop.position.set(point.x+Math.cos(a)*d,.013,point.z+Math.sin(a)*d);
+    inkGroup.add(drop);
+  }
+
+  inkCount++;
+  inkArea=Math.min(100,Math.round(inkGroup.children.length/2.2));
+  while(inkGroup.children.length>180)inkGroup.remove(inkGroup.children[0]);
+  updateStats();
+}
 const raycaster=new THREE.Raycaster();
 function shoot(){
   if(shotCooldown>0)return;
