@@ -1,6 +1,6 @@
 # Deploy Build 96 Pages trigger refresh
 name: Deploy to GitHub Pages
-# Build 96 final sanity • original working ball replaces lab balls • explicit trigger
+# Build 97 final sanity • VR pose tracking pass
 
 on:
   push:
