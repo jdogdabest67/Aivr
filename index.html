@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // CUBE PROTOTYPE 83 • CODE STABILIZATION + DEAD STATE CLEANUP</title>
+<title>SPLATVR // CUBE PROTOTYPE 84 • CODE STABILIZATION + DEAD STATE CLEANUP</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 83</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CUBE • PROTOTYPE 84</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -147,7 +147,7 @@ function makePatchNotesCubeNote(){
   lines.forEach((line,i)=>ctx.fillText(line,72,305+i*100));
   ctx.fillStyle="#94a3b8";
   ctx.font="500 30px system-ui, sans-serif";
-  ctx.fillText("SPLATVR // CUBE • PROTOTYPE 83",72,900);
+  ctx.fillText("SPLATVR // CUBE • PROTOTYPE 84",72,900);
   const tex=new THREE.CanvasTexture(canvas);
   tex.colorSpace=THREE.SRGBColorSpace;
   const note=new THREE.Mesh(
@@ -208,31 +208,16 @@ let inkCount=0,targetCount=0,booyahCount=0;let inkArea=0,shotCooldown=0;
 const goofyLines=["THE BALL HAS OPINIONS.","CERTIFIED SPLAT NOISE.","WHY IS THE CUBE JUDGING YOU?","INK ACQUIRED. BRAIN DELETED.","LOCAL SQUID REPORTS: SILLY.","THE WALL WILL REMEMBER THIS.","BOOYAH ENERGY DETECTED.","100% MORE GOOFY THAN NECESSARY."];
 let goofyTimer=8+Math.random()*7;
 
-// Squid form: calibrate the headset height after entering VR, then detect a deliberate crouch.
+// SQUID MODE prototype: left trigger (LT/L2/ZL) toggles squid form.
 let squidForm=false;
-let squidHeightReady=false;
-let squidBaselineSamples=0;
-let squidBaselineSum=0;
-let squidEnterY=1.6;
-
-function updateSquidForm(){
-  if(!renderer.xr.isPresenting)return;
-  const xrCam=getActiveCamera();
-  const currentY=xrCam.position.y;
-  if(!squidHeightReady){
-    squidBaselineSum+=currentY;
-    squidBaselineSamples++;
-    if(squidBaselineSamples>30){
-      squidEnterY=squidBaselineSum/squidBaselineSamples;
-      squidHeightReady=true;
-    }
-    return;
+let squidTriggerLatch=false;
+function updateSquidForm(leftTrigger){
+  const pressed=!!leftTrigger;
+  if(pressed&&!squidTriggerLatch){
+    squidForm=!squidForm;
+    document.getElementById("status").textContent=squidForm?"SQUID MODE! 🦑":"SQUID MODE OFF • VR ACTIVE";
   }
-  const wasSquid=squidForm;
-  squidForm=currentY<squidEnterY-.35;
-  if(squidForm!==wasSquid){
-    document.getElementById("status").textContent=squidForm?"SQUID FORM! 🦑":"VR ACTIVE • Look + ink";
-  }
+  squidTriggerLatch=pressed;
 }
 function updateStats(){document.getElementById("stats").textContent="Ink: "+inkCount+" • Targets: "+targetCount+"/5 • Paint: "+inkArea+"% • Booyah: "+booyahCount}
 function spawnInkTrail(start,end){
@@ -814,7 +799,7 @@ function runPlayerPhysics(dt,inputX,inputZ){
 }
 function animateFrame(){
 renderCube.rotation.x+=.012;renderCube.rotation.y+=.018;
-const dt=Math.min(clock.getDelta(),.05);shotCooldown=Math.max(0,shotCooldown-dt);updateSquidForm();
+const dt=Math.min(clock.getDelta(),.05);shotCooldown=Math.max(0,shotCooldown-dt);
 goofyTimer-=dt;
 if(goofyTimer<=0){goofyTimer=10+Math.random()*14;document.getElementById("status").textContent=goofyLines[Math.floor(Math.random()*goofyLines.length)];if(Math.random()<.35)renderCube.rotation.y+=Math.PI*2;}
 for(let i=inkParticleGroup.children.length-1;i>=0;i--){
@@ -849,7 +834,10 @@ if(lookForward.lengthSq()>.0001){
 }
 const armInput=getArmTestInput();updateTestArms(armInput.x,armInput.z);
 const ballTriggers=getBallTriggerState();
-updateBall(ballTriggers.leftTrigger,dt);
+updateSquidForm(ballTriggers.leftTrigger);
+// In this early SQUID MODE build, the left trigger belongs to transformation.
+// Keep the existing ball system alive, but do not let LT/L2/ZL also grab the ball.
+updateBall(squidForm?false:ballTriggers.leftTrigger,dt);
 runPlayerPhysics(dt,inputX,inputZ);
 updateWalkAnimation(Math.hypot(moveVelocity.x,moveVelocity.z));
 syncDesktopCamera();
