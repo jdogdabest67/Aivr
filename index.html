@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 127 • JOY-CON REPORT DIAGNOSTIC</title>
+<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 128 • JOY-CON HARDWARE PACK</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CONTROLLER LAB • PROTOTYPE 127</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="headLockToggle" class="cameraToggle" aria-pressed="false">🧠 HEAD LOCK: OFF</button><button id="handTrackingToggle" class="cameraToggle" aria-pressed="false">✋ HAND + ARM TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: HAND FUSION OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button><button id="hidDevice" class="topJoycon">CONNECT ANY HID</button><button id="motionTest" class="topJoycon">📱 MOTION TEST</button><button id="cameraAccess" class="topJoycon">📷 REQUEST CAMERA ACCESS</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">VR INPUT: waiting</span><div id="joyconImuStatus" class="imuIndicator">JOY-CON IMU • OFF</div></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CONTROLLER LAB • PROTOTYPE 128</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="headLockToggle" class="cameraToggle" aria-pressed="false">🧠 HEAD LOCK: OFF</button><button id="handTrackingToggle" class="cameraToggle" aria-pressed="false">✋ HAND + ARM TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: HAND FUSION OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button><button id="hidDevice" class="topJoycon">CONNECT ANY HID</button><button id="motionTest" class="topJoycon">📱 MOTION TEST</button><button id="cameraAccess" class="topJoycon">📷 REQUEST CAMERA ACCESS</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">VR INPUT: waiting</span><div id="joyconImuStatus" class="imuIndicator">JOY-CON IMU • OFF</div><div id="joyconHardwareStatus" class="imuIndicator">JOY-CON HW • WAITING</div><button id="joyconInfo" class="topJoycon">JOY-CON INFO</button><button id="joyconRumble" class="topJoycon">HD RUMBLE TEST</button></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action squidButton" id="squidButton">🦑 SQUID</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -867,8 +867,16 @@ const joyconState = {
   accel:new THREE.Vector3(),
   gyro:new THREE.Vector3(),
   imuSamples:0,
-  imuLastTime:0
+  imuLastTime:0,
+  batteryLevel:-1,
+  charging:false,
+  packetCount:0,
+  lastPacketTime:0,
+  packetRate:0,
+  firmware:"unknown",
+  deviceType:"unknown"
 };
+const joyconPacketCounter={value:0};
 
 function joyconStick(data, offset) {
   if (data.byteLength < offset + 3) return {x:0,y:0};
@@ -880,6 +888,16 @@ function joyconStick(data, offset) {
   };
 }
 
+function updateJoyconHardwareStatus(){
+  const el=document.getElementById("joyconHardwareStatus");
+  if(!el)return;
+  if(!joycons.size){el.textContent="JOY-CON HW • WAITING";el.classList.remove("on");return;}
+  const battery=joyconState.batteryLevel>=0?joyconState.batteryLevel+"%":"BAT ?";
+  const charge=joyconState.charging?" • CHARGING":"";
+  const rate=joyconState.packetRate>0?Math.round(joyconState.packetRate)+"Hz":"WAIT";
+  el.textContent="JOY-CON HW • "+battery+charge+" • "+rate;
+  el.classList.toggle("on",joyconState.packetRate>20);
+}
 function updateJoyconImuIndicator(){
   const el=document.getElementById("joyconImuStatus");
   if(!el)return;
@@ -927,7 +945,30 @@ function handleJoyconReport(event) {
     status.textContent="JOY-CON REPORT • 0x"+reportId.toString(16).padStart(2,"0")+" • "+reportBytes+"B";
     status.classList.remove("on");
   }
+  if(reportId===0x21&&reportBytes>=15){
+    const batteryNibble=(d.getUint8(1)>>4)&0x0F;
+    joyconState.batteryLevel=THREE.MathUtils.clamp(batteryNibble*12.5,0,100);
+    joyconState.charging=!!(d.getUint8(1)&0x01);
+    const ack=d.getUint8(12);
+    const replyId=d.getUint8(13);
+    if((ack&0x80)&&replyId===0x02&&reportBytes>=21){
+      joyconState.firmware=d.getUint8(14)+"."+d.getUint8(15);
+      joyconState.deviceType=d.getUint8(16)===1?"LEFT":d.getUint8(16)===2?"RIGHT":"UNKNOWN";
+      const status=document.getElementById("status");
+      if(status)status.textContent="JOY-CON INFO • "+joyconState.deviceType+" • FW "+joyconState.firmware;
+    }
+    updateJoyconHardwareStatus();
+    return;
+  }
   if(reportId!==0x30||reportBytes<48)return;
+  const now=performance.now();
+  if(joyconState.lastPacketTime){
+    const dt=now-joyconState.lastPacketTime;
+    if(dt>0)joyconState.packetRate=joyconState.packetRate*.85+(1000/dt)*.15;
+  }
+  joyconState.lastPacketTime=now;
+  joyconState.packetCount++;
+  updateJoyconHardwareStatus();
   const isLeft=device.productId===0x2006;
   parseJoyconImu(d,isLeft);
   const stick = joyconStick(d, isLeft ? 6 : 9);
@@ -1020,6 +1061,45 @@ async function connectJoyCon() {
   }
 }
 
+async function joyconSubcommand(device,subcommand,data=[]){
+  if(!device||!device.opened)return false;
+  const packet=(joyconPacketCounter.value++&0x0F);
+  const payload=new Uint8Array(11+data.length);
+  payload[0]=0x01;payload[1]=packet;
+  payload[10]=subcommand;
+  for(let i=0;i<data.length;i++)payload[11+i]=data[i];
+  await device.sendReport(0x01,payload);
+  return true;
+}
+async function requestJoyconInfo(){
+  const device=[...joycons.values()][0];
+  if(!device)return;
+  try{
+    await joyconSubcommand(device,0x02);
+    document.getElementById("status").textContent="JOY-CON INFO REQUESTED • waiting for reply";
+  }catch(err){console.warn("Joy-Con info request failed",err);}
+}
+async function joyconRumbleTest(){
+  const devices=[...joycons.values()];
+  if(!devices.length)return;
+  try{
+    for(const device of devices){
+      await joyconSubcommand(device,0x48,[0x01]);
+      const packet=(joyconPacketCounter.value++&0x0F);
+      const rumble=new Uint8Array([0x10,packet,0x00,0x04,0x40,0x62,0x00,0x04,0x40,0x62]);
+      await device.sendReport(0x10,rumble);
+    }
+    document.getElementById("status").textContent="HD RUMBLE TEST • 300ms";
+    setTimeout(async()=>{
+      for(const device of devices){
+        const packet=(joyconPacketCounter.value++&0x0F);
+        await device.sendReport(0x10,new Uint8Array([0x10,packet,0x00,0x01,0x40,0x40,0x00,0x01,0x40,0x40]));
+      }
+    },300);
+  }catch(err){console.warn("Joy-Con rumble test failed",err);}
+}
+document.getElementById("joyconInfo").addEventListener("click",requestJoyconInfo);
+document.getElementById("joyconRumble").addEventListener("click",joyconRumbleTest);
 document.getElementById("joycon").addEventListener("click", connectJoyCon);
 const hidDeviceButton=document.getElementById("hidDevice");
 const genericHidDevices=new Map();
