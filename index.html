@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 119 • XR BLASTER GRIP</title>
+<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 120 • CONTROLLER BLASTER LINK</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:sy
 </style>
 </head>
 <body>
-<div id="ui"><div class="card"><b>🦑 SPLATVR // CONTROLLER LAB • PROTOTYPE 119</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="headLockToggle" class="cameraToggle" aria-pressed="false">🧠 HEAD LOCK: OFF</button><button id="sensorFusionToggle" class="cameraToggle" aria-pressed="false">🧩 WEBXR SENSOR FUSION: OFF</button><button id="handTrackingToggle" class="cameraToggle" aria-pressed="false">✋ HAND + ARM TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: HAND FUSION OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button><button id="hidDevice" class="topJoycon">CONNECT ANY HID</button><button id="usbDevice" class="topJoycon">CONNECT USB</button><button id="motionTest" class="topJoycon">📱 MOTION TEST</button><button id="cameraAccess" class="topJoycon">📷 REQUEST CAMERA ACCESS</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">VR INPUT: waiting</span></div></div>
+<div id="ui"><div class="card"><b>🦑 SPLATVR // CONTROLLER LAB • PROTOTYPE 120</b><br><span id="status">Press ENTER VR</span><div id="stats">Ink: 0 • Targets: 0/5 • Paint: 0% • Booyah: 0</div><button id="cameraToggle" class="cameraToggle" aria-pressed="false">📷 CAMERA TRACKING: OFF</button><button id="headLockToggle" class="cameraToggle" aria-pressed="false">🧠 HEAD LOCK: OFF</button><button id="sensorFusionToggle" class="cameraToggle" aria-pressed="false">🧩 WEBXR SENSOR FUSION: OFF</button><button id="handTrackingToggle" class="cameraToggle" aria-pressed="false">✋ HAND + ARM TRACKING: OFF</button><button id="armTestToggle" class="cameraToggle" aria-pressed="false">🦾 ARM TEST: HAND FUSION OFF</button><button id="debugToggle" class="cameraToggle" aria-pressed="false">🧪 DEBUG: OFF</button><button id="hitboxToggle" class="cameraToggle" aria-pressed="false" style="display:none">▣ HITBOXES: OFF</button><button id="joycon" class="topJoycon">CONNECT JOY-CON</button><button id="hidDevice" class="topJoycon">CONNECT ANY HID</button><button id="usbDevice" class="topJoycon">CONNECT USB</button><button id="motionTest" class="topJoycon">📱 MOTION TEST</button><button id="cameraAccess" class="topJoycon">📷 REQUEST CAMERA ACCESS</button><br><span id="vrInputStatus" style="font-size:11px;color:#cbd5e1">VR INPUT: waiting</span></div></div>
 <div id="cross"></div><div id="booyahFlash">BOOYAH! 🦑</div>
 <div id="controls"><div class="pad"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div><div class="actions"><button class="action booyah" id="booyah">BOOYAH!</button><button class="action squidButton" id="squidButton">🦑 SQUID</button><button class="action fire" id="fire">INK!</button><button class="action" id="reset">RESET</button></div></div>
 <script type="module">
@@ -325,11 +325,36 @@ for(const side of ["left","right"]){
 }
 const vrControllers=[renderer.xr.getController(0),renderer.xr.getController(1)];
 const vrGrips=[renderer.xr.getControllerGrip(0),renderer.xr.getControllerGrip(1)];
-vrControllers.forEach(c=>scene.add(c));
+const vrControllerState={
+  left:{controller:vrControllers[0],grip:vrGrips[0],connected:false},
+  right:{controller:vrControllers[1],grip:vrGrips[1],connected:false}
+};
+vrControllers.forEach((controller,i)=>{
+  scene.add(controller);
+  const grip=vrGrips[i];
+  const fallbackHand=i===0?"left":"right";
+  controller.addEventListener("connected",event=>{
+    const hand=event.data?.handedness||fallbackHand;
+    if(hand==="left"||hand==="right"){
+      vrControllerState[hand].controller=controller;
+      vrControllerState[hand].grip=grip;
+      vrControllerState[hand].connected=true;
+      controller.userData.handedness=hand;
+    }
+  });
+  controller.addEventListener("disconnected",()=>{
+    const hand=controller.userData.handedness||fallbackHand;
+    if(hand==="left"||hand==="right"){
+      vrControllerState[hand].connected=false;
+      vrControllerState[hand].controller=null;
+      vrControllerState[hand].grip=null;
+    }
+  });
+});
 vrGrips.forEach((g,i)=>{g.add(vrHandVisuals[i===0?"left":"right"]);scene.add(g);});
 
-// Tiny XR weapon test: the blaster is a child of the right XR grip.
-// That means WebXR owns the controller pose, and the blaster simply follows it.
+// XR controller weapon link: the controller system owns the grip, and the blaster
+// is attached through the right-hand controller state instead of a separate path.
 const blasterMesh=new THREE.Group();
 const blasterBody=new THREE.Mesh(
   new THREE.BoxGeometry(.10,.12,.30),
@@ -350,7 +375,16 @@ blasterMuzzle.rotation.x=Math.PI/2;
 blasterMuzzle.position.z=-.30;
 blasterMesh.add(blasterBody,blasterHandle,blasterMuzzle);
 blasterMesh.position.set(0,-.02,-.08);
-vrGrips[1].add(blasterMesh);
+function syncControllerBlaster(){
+  const right=vrControllerState.right;
+  const grip=right.connected?right.grip:null;
+  if(grip){
+    if(blasterMesh.parent!==grip)grip.add(blasterMesh);
+    blasterMesh.visible=true;
+  }else{
+    blasterMesh.visible=false;
+  }
+}
 function refreshVRInputSources(){
   const session=renderer.xr.getSession();
   const sources=session?Array.from(session.inputSources):[];
@@ -651,6 +685,7 @@ const usbPulse=new THREE.Mesh(new THREE.TorusGeometry(.13,.025,8,24),new THREE.M
 usbPulse.rotation.x=Math.PI/2;usbPulse.position.set(0,.22,.22);controllerLab.add(usbPulse);
 const controllerTelemetry={x:0,y:0,buttons:0,packets:0,bytes:0,lastPacket:0};
 function updateControllerModel(){
+  syncControllerBlaster();
   const pads=getControllers().filter(g=>g?.connected);
   const gp=pads[0];
   if(gp){
