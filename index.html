@@ -326,7 +326,8 @@ function updateGamepadStatus() {
   const status = document.getElementById("status");
   if (!status) return;
 
-      const names=pads.map(g=>g.id||"GAMEPAD").join(" + ");
+  if (pads.length) {
+    const names=pads.map(g=>g.id||"GAMEPAD").join(" + ");
     if(!joycons.size)status.textContent=`GAMEPAD ACTIVE: ${names}`;
   }else{
     if(!joycons.size&&status.textContent.startsWith("GAMEPAD ACTIVE:"))status.textContent=renderer.xr.isPresenting?"VR ACTIVE • Look + ink":"Ready";
