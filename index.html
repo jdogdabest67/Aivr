@@ -342,12 +342,8 @@ function updateVRTracking(){
         if(i===0&&wristPose){
           const wp=new THREE.Vector3(wristPose.transform.position.x,wristPose.transform.position.y,wristPose.transform.position.z);
           const ip=indexPose?new THREE.Vector3(indexPose.transform.position.x,indexPose.transform.position.y,indexPose.transform.position.z):wp.clone();
-          const handWorld=new THREE.Vector3();const handQuat=new THREE.Quaternion();
-          handWorld.copy(wp);handQuat.copy(camera.quaternion);
-          const xrCam=renderer.xr.getCamera();
-          const xrPos=new THREE.Vector3();xrCam.getWorldPosition(xrPos);
-          handWorld.add(xrPos);
-          const indexWorld=ip.clone().add(xrPos);
+          const handWorld=wp;
+          const indexWorld=ip;
           trackedArmState[side].wrist.copy(handWorld);
           trackedArmState[side].position.copy(indexWorld);
           trackedArmState[side].active=true;
