@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 112 • HEAD LOCK FUSION</title>
+<title>SPLATVR // TEST LAB 2.0 PROTOTYPE 113 • HEAD LOCK SENSITIVITY</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#080b18;font-family:system-ui,sans-serif;color:white}
 #ui{position:fixed;z-index:5;top:12px;left:12px;right:12px;pointer-events:none}.card{display:inline-block;padding:9px 12px;border-radius:12px;background:#000a;backdrop-filter:blur(7px);font-size:13px}#status{color:#a7f3d0}#stats{margin-top:6px}
@@ -204,17 +204,17 @@ function updateVrImuHead(){
   const az=motionTelemetry.az-imuHeadBias.z;
   const deadband=.12;
   const damped=(v)=>Math.abs(v)<deadband?0:v;
-  const accel=new THREE.Vector3(damped(ax),damped(ay),damped(az));
+  const accel=new THREE.Vector3(damped(ax),damped(ay),damped(az)).multiplyScalar(2.4);
   const xrCam=renderer.xr.getCamera();
   const headQuat=new THREE.Quaternion();
   xrCam.getWorldQuaternion(headQuat);
   accel.applyQuaternion(headQuat);
   imuHeadVelocity.addScaledVector(accel,dt);
   imuHeadVelocity.multiplyScalar(Math.pow(.08,dt));
-  imuHeadVelocity.clampLength(0,.55);
+  imuHeadVelocity.clampLength(0,.9);
   imuHeadOffset.addScaledVector(imuHeadVelocity,dt);
   imuHeadOffset.multiplyScalar(Math.pow(.08,dt));
-  imuHeadOffset.clampLength(0,.32);
+  imuHeadOffset.clampLength(0,.55);
   vrMotionRig.position.copy(headLockBase).add(imuHeadOffset);
 }
 const debugToggle=document.getElementById("debugToggle");
