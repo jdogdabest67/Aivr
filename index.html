@@ -374,14 +374,13 @@ function joyconInput() {
 }
 
 function controllerInput() {
-  const pads = getControllers().filter(gp => gp?.connected);
-  for(const gp of pads){
-    if(gp.buttons?.[0]?.pressed&&!window.__jumpLatch)requestJump();
-    if(gp.buttons?.[1]?.pressed)keys.add("crouch");else keys.delete("crouch");
-  }
   // Poll directly every frame. This does not override Chrome/Android ownership,
   // but avoids waiting for browser events before gameplay sees the current state.
   const pads = getControllers().filter(gp => gp?.connected);
+  const jumpPressed=pads.some(gp=>!!gp.buttons?.[0]?.pressed);
+  if(jumpPressed&&!window.__jumpLatch)requestJump();
+  if(pads.some(gp=>!!gp.buttons?.[1]?.pressed))keys.add("crouch");else keys.delete("crouch");
+  window.__jumpLatch=jumpPressed;
   if (!pads.length) return { x: 0, z: 0 };
 
   let x = 0;
