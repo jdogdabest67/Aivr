@@ -1,5 +1,5 @@
-# Deploy Build 55 Core controller build refresh
-# Build 55 sanity • controller support + magenta cube
+# Deploy Build 54 Pages trigger refresh
+# Build 54 sanity • player collision
 
 on:
   push:
